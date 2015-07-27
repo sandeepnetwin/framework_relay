@@ -9,7 +9,7 @@
     if (!defined('BASEPATH'))
         exit('No direct script access allowed');
     
-    class Web extends CI_Controller
+    class Web_new extends CI_Controller
     {
         protected $isHTTPSRequired          = FALSE; // Define whether an HTTPS connection is required
         protected $isAuthenticationRequired = FALSE; // Define whether user authentication is required
@@ -52,20 +52,19 @@
                 $this->webResponse($sformat, $aResponse);
             }
             
-            #INPUTS
-            $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ; // Get the Device(ie. R=Relay,V=Valve,PC=Power Center)
-            $sDeviceNo       = isset($_REQUEST['dn'])  ? $_REQUEST['dn'] : '' ;  // Get the Device No.
-            $iDeviceStatus   = isset($_REQUEST['ds']) ? $_REQUEST['ds'] : '' ;   // Get the status to which Device will be changed         
-            
             if($this->isAuthenticationRequired)
             {
                 //START : Authorisation
                 $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
                 $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
-                $aAuthorisation  = array();
                 $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
                 // END : Authorisation
             }
+            
+            #INPUTS
+            $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ; // Get the Device(ie. R=Relay,V=Valve,PC=Power Center)
+            $sDeviceNo       = isset($_REQUEST['dn'])  ? $_REQUEST['dn'] : '' ;  // Get the Device No.
+            $iDeviceStatus   = isset($_REQUEST['ds']) ? $_REQUEST['ds'] : '' ;   // Get the status to which Device will be changed         
             
             $aResult            = array();
             $aResult['msg']     = "";
@@ -238,6 +237,33 @@
         
          public function getDeviceStatus()
          {
+            // Set default HTTP response of 'ok'
+            $aResponse              =   array();
+            $aResponse['code']      =   0;
+            $aResponse['status']    =   404;
+            $aResponse['data']      =   NULL;
+            $sformat                =   isset($_REQUEST['format']) ? $_REQUEST['format'] : '' ; // Get response Format (json,xml,html etc.)
+            
+            // Optionally require connections to be made via HTTPS
+            if( $this->isHTTPSRequired && $_SERVER['HTTPS'] != 'on' )
+            {
+                $aResponse['code']      = 2;
+                $aResponse['status']    = $aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $aApiResponseCode[ $aResponse['code'] ]['Message'];
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            
+            if($this->isAuthenticationRequired)
+            {
+                //START : Authorisation
+                $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+                $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
+                $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
+                // END : Authorisation
+            }
+             
             #INPUTS
             $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ;
             
@@ -268,12 +294,27 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             $iCntValves     =   strlen($sValves); // Count of Valve Devices.
                             
-                            $aResult['response']   = 1;
+                            /*$aResult['response']   = 1;
                             $aResult['status']     = $sValves;
-                            $aResult['count']      = $iCntValves;
+                            $aResult['count']      = $iCntValves;*/
+                            
+                            $aResponse['code']      = 1;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = $sValves;
+
+                            // Return Response to browser. This will exit the script.
+                            $this->webResponse($sformat, $aResponse);
                         } // END : Checked if Valve Devices are available
                         else
-                            $aResult['msg'] = "Valve devices not available.";
+                        {
+                            //$aResult['msg'] = "Valve devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Valve devices not available.';
+
+                            // Return Response to browser. This will exit the script.
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // if($sDevice == "V") END : If Device is Valve
                     else if($sDevice == "R") // START : If Device is Relay.
                     {
@@ -281,12 +322,25 @@
                         {
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             $iCntRelays     =   strlen($sRelays); // Count of Relay Devices.
-                            $aResult['response'] = 1;
-                            $aResult['status']   = $sRelays;
-                            $aResult['count']    = $iCntRelays;
+                            //$aResult['response'] = 1;
+                            //$aResult['status']   = $sRelays;
+                            //$aResult['count']    = $iCntRelays;
+                            $aResponse['code']      = 1;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = $sRelays;
+                            
+                            $this->webResponse($sformat, $aResponse);
                         }
                         else
-                            $aResult['msg'] = "Relay devices not available.";
+                        {
+                            //$aResult['msg'] = "Relay devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Relay devices not available.';
+
+                            // Return Response to browser. This will exit the script.
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // END : If Device is Relay.
                     else if($sDevice == "PC") // START : If Device is Power Center.
                     {
@@ -294,25 +348,78 @@
                         {
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             $iCntPowercenter=   strlen($sPowercenter); // Count of Power Center Devices.
-                            $aResult['response'] = 1;
-                            $aResult['status']     = $sPowercenter;
-                            $aResult['count']   = $iCntPowercenter;
+                            //$aResult['response'] = 1;
+                            //$aResult['status']     = $sPowercenter;
+                            //$aResult['count']   = $iCntPowercenter;
+                            $aResponse['code']      = 1;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = $sPowercenter;
+                            
+                            $this->webResponse($sformat, $aResponse);
                         }
                         else
-                            $aResult['msg'] = "Power Center devices not available.";
+                        {    
+                            //$aResult['msg'] = "Power Center devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Power Center devices not available.';
+
+                            // Return Response to browser. This will exit the script.
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // END : If Device is Power Center.
                 } // END : If device type is not empty. if($sDevice != '')
                 else
-                    $aResult['msg'] = "Invalid Device Type.";
-                
-                #OUTPUT
-                echo json_encode($aResult);
+                {
+                    $aResponse['code']      = 5;
+                    $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                    $aResponse['data']      = 'Invalid Device Type.';
+
+                    // Return Response to browser. This will exit the script.
+                    $this->webResponse($sformat, $aResponse);
+                }
             } // END : If Mode is Manual.
+            else
+            {
+                $aResponse['code']      = 5;
+                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = 'Invalid mode to perform this operation.';
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
             
          } // END : getDeviceStatus()
          
          public function getDeviceNumberStatus()
          {
+             // Set default HTTP response of 'ok'
+            $aResponse              =   array();
+            $aResponse['code']      =   0;
+            $aResponse['status']    =   404;
+            $aResponse['data']      =   NULL;
+            $sformat                =   isset($_REQUEST['format']) ? $_REQUEST['format'] : '' ; // Get response Format (json,xml,html etc.)
+            
+            // Optionally require connections to be made via HTTPS
+            if( $this->isHTTPSRequired && $_SERVER['HTTPS'] != 'on' )
+            {
+                $aResponse['code']      = 2;
+                $aResponse['status']    = $aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $aApiResponseCode[ $aResponse['code'] ]['Message'];
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            
+            if($this->isAuthenticationRequired)
+            {
+                //START : Authorisation
+                $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+                $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
+                $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
+                // END : Authorisation
+            }
+            
             #INPUTS
             $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ;  // Get the Device(ie. R=Relay,V=Valve,PC=Power Center)
             $sDeviceNo       = isset($_REQUEST['dn'])  ? $_REQUEST['dn'] : '' ;  // Get the Device No.
@@ -340,14 +447,33 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             if(isset($sValves[$sDeviceNo]) && $sValves[$sDeviceNo] != '')
                             {    
-                                $aResult['response']  = 1;
-                                $aResult['status']     = $sValves[$sDeviceNo];
+                                //$aResult['response']  = 1;
+                                //$aResult['status']     = $sValves[$sDeviceNo];
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = $sValves[$sDeviceNo];
+                                
+                                $this->webResponse($sformat, $aResponse);
                             }
                             else
-                                $aResult['msg']     = 'Device Number is not Valid'; 
+                            {
+                                //$aResult['msg']     = 'Device Number is not Valid'; 
+                                $aResponse['code']      = 5;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Device Number is not Valid';
+                                
+                                $this->webResponse($sformat, $aResponse);
+                            }
                         } // END : Checked if Valve Devices are available
                         else
-                            $aResult['msg'] = "Valve devices not available.";
+                        {
+                            //$aResult['msg'] = "Valve devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Valve devices not available.';
+
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // if($sDevice == "V") END : If Device is Valve
                     else if($sDevice == "R") // START : If Device is Relay.
                     {
@@ -356,14 +482,33 @@
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             if(isset($sRelays[$sDeviceNo]) && $sRelays[$sDeviceNo] != '')
                             {    
-                                $aResult['response']  = 1;
-                                $aResult['status']     = $sRelays[$sDeviceNo];
+                                //$aResult['response']  = 1;
+                                //$aResult['status']     = $sRelays[$sDeviceNo];
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = $sRelays[$sDeviceNo];
+
+                                $this->webResponse($sformat, $aResponse);
                             }
                             else
-                                $aResult['msg']     = 'Device Number is not Valid';
+                            {
+                                //$aResult['msg']     = 'Device Number is not Valid';
+                                $aResponse['code']      = 5;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Device Number is not Valid';
+
+                                $this->webResponse($sformat, $aResponse);
+                            }
                         }
                         else
-                            $aResult['msg'] = "Relay devices not available.";
+                        {
+                            //$aResult['msg'] = "Relay devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Relay devices not available.';
+
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // END : If Device is Relay.
                     else if($sDevice == "PC") // START : If Device is Power Center.
                     {
@@ -372,22 +517,56 @@
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             if(isset($sPowercenter[$sDeviceNo]) && $sPowercenter[$sDeviceNo] != '')
                             {    
-                                $aResult['response']  = 1;
-                                $aResult['status']     = $sPowercenter[$sDeviceNo];
+                                //$aResult['response']  = 1;
+                                //$aResult['status']     = $sPowercenter[$sDeviceNo];
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = $sPowercenter[$sDeviceNo];
+
+                                $this->webResponse($sformat, $aResponse);
                             }
                             else
-                                $aResult['msg']     = 'Device Number is not Valid';
+                            {
+                                //$aResult['msg']     = 'Device Number is not Valid';
+                                $aResponse['code']      = 5;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Device Number is not Valid';
+
+                                $this->webResponse($sformat, $aResponse);
+                            }
                         }
                         else
-                            $aResult['msg'] = "Power Center devices not available.";
+                        {
+                            //$aResult['msg'] = "Power Center devices not available.";
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Power Center devices not available.';
+
+                            $this->webResponse($sformat, $aResponse);
+                        }
                     } // END : If Device is Power Center.
                 } // if($sDevice != '')  END : If device type is not empty and Valid Device number is there. 
                 else
-                    $aResult['msg'] = "Invalid Device Type or Device Number.";
-                
-                #OUTPUT
-                echo json_encode($aResult);
+                {
+                    //$aResult['msg'] = "Invalid Device Type or Device Number.";
+                    //$aResult['msg'] = "Power Center devices not available.";
+                    $aResponse['code']      = 5;
+                    $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                    $aResponse['data']      = 'Invalid Device Type or Device Number.';
+
+                    $this->webResponse($sformat, $aResponse);
+                    
+                }
             } // END : If Mode is Manual.
+            else
+            {
+                //$aResult['msg'] = "Power Center devices not available.";
+                $aResponse['code']      = 5;
+                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = 'Invalid mode to perform this operation.';
+
+                $this->webResponse($sformat, $aResponse);
+            }
             
          } // END : function getDeviceNumberStatus()
          
