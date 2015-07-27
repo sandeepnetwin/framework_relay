@@ -27,7 +27,7 @@
             
             $aResult            = array();
             $aResult['msg']     = "";
-            $aResult['status']  = 0;
+            $aResult['response']  = 0;
             $aDeviceStatus      = array('0', '1', '2'); //respective values of status.
             
             $this->load->model('home_model');
@@ -56,7 +56,7 @@
                             {
                                     $sRelayNewResp = replace_return($sRelays, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
                                     onoff_rlb_relay($sRelayNewResp); // Send the request to change the status on server.		
-                                    $aResult['status'] = 1;
+                                    $aResult['response'] = 1;
                                     $aResult['msg'] = "Relay status changed successfully.";
                             } // END : else of if( $sDeviceNo > ($iRelayCount-1) || $sDeviceNo < 0)
                         }
@@ -78,7 +78,7 @@
                             {
                                     $sRelayNewResp = replace_return($sPowercenter, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
                                     onoff_rlb_powercenter($sRelayNewResp); // Send the request to change the status on server.		
-                                    $aResult['status'] = 1;
+                                    $aResult['response'] = 1;
                                     $aResult['msg'] = "Power Center status changed successfully.";
                             } // END : else of if( $sDeviceNo > ($iPowerCenterCount-1) || $sDeviceNo < 0)
                         }
@@ -100,7 +100,7 @@
                             {
                                     $sRelayNewResp = replace_return($sValves, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
                                     onoff_rlb_valve($sRelayNewResp); // Send the request to change the status on server.		
-                                    $aResult['status'] = 1;
+                                    $aResult['response'] = 1;
                                     $aResult['msg'] = "Valve status changed successfully.";
                             } // END : else of if( $sDeviceNo > ($iValveCount-1) || $sDeviceNo < 0)
                         }
@@ -128,7 +128,9 @@
             
             $aResult            = array();
             $aResult['msg']     = "";
+            $aResult['response']= 0;
             $aResult['status']  = 0;
+            
             $sValves            = ""; // Valve Devices Initialization.
             $sRelays            = "";  // Relay Devices Initialization.
             $sPowercenter       = ""; // Power Center Devices Initialization.
@@ -151,9 +153,9 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             $iCntValves     =   strlen($sValves); // Count of Valve Devices.
                             
-                            $aResult['status']  = 1;
-                            $aResult['msg']     = $sValves;
-                            $aResult['count']   = $iCntValves;
+                            $aResult['response']   = 1;
+                            $aResult['status']     = $sValves;
+                            $aResult['count']      = $iCntValves;
                         } // END : Checked if Valve Devices are available
                         else
                             $aResult['msg'] = "Valve devices not available.";
@@ -164,9 +166,9 @@
                         {
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             $iCntRelays     =   strlen($sRelays); // Count of Relay Devices.
-                            $aResult['status'] = 1;
-                            $aResult['msg']     = $sRelays;
-                            $aResult['count']   = $iCntRelays;
+                            $aResult['response'] = 1;
+                            $aResult['status']   = $sRelays;
+                            $aResult['count']    = $iCntRelays;
                         }
                         else
                             $aResult['msg'] = "Relay devices not available.";
@@ -177,8 +179,8 @@
                         {
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             $iCntPowercenter=   strlen($sPowercenter); // Count of Power Center Devices.
-                            $aResult['status'] = 1;
-                            $aResult['msg']     = $sPowercenter;
+                            $aResult['response'] = 1;
+                            $aResult['status']     = $sPowercenter;
                             $aResult['count']   = $iCntPowercenter;
                         }
                         else
@@ -203,6 +205,7 @@
             $aResult            = array();
             $aResult['msg']     = "";
             $aResult['status']  = 0;
+            $aResult['response']="0";
             $sValves            = ""; // Valve Devices Initialization.
             $sRelays            = "";  // Relay Devices Initialization.
             $sPowercenter       = ""; // Power Center Devices Initialization.
@@ -222,8 +225,8 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             if(isset($sValves[$sDeviceNo]) && $sValves[$sDeviceNo] != '')
                             {    
-                                $aResult['status']  = 1;
-                                $aResult['msg']     = $sValves[$sDeviceNo];
+                                $aResult['response']  = 1;
+                                $aResult['status']     = $sValves[$sDeviceNo];
                             }
                             else
                                 $aResult['msg']     = 'Device Number is not Valid'; 
@@ -238,8 +241,8 @@
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             if(isset($sRelays[$sDeviceNo]) && $sRelays[$sDeviceNo] != '')
                             {    
-                                $aResult['status']  = 1;
-                                $aResult['msg']     = $sRelays[$sDeviceNo];
+                                $aResult['response']  = 1;
+                                $aResult['status']     = $sRelays[$sDeviceNo];
                             }
                             else
                                 $aResult['msg']     = 'Device Number is not Valid';
@@ -254,8 +257,8 @@
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             if(isset($sPowercenter[$sDeviceNo]) && $sPowercenter[$sDeviceNo] != '')
                             {    
-                                $aResult['status']  = 1;
-                                $aResult['msg']     = $sPowercenter[$sDeviceNo];
+                                $aResult['response']  = 1;
+                                $aResult['status']     = $sPowercenter[$sDeviceNo];
                             }
                             else
                                 $aResult['msg']     = 'Device Number is not Valid';
