@@ -190,9 +190,88 @@
                 
                 #OUTPUT
                 echo json_encode($aResult);
-            }
+            } // END : If Mode is Manual.
             
-         }
+         } // END : getDeviceStatus()
+         
+         public function getDeviceNumberStatus()
+         {
+            #INPUTS
+            $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ;  // Get the Device(ie. R=Relay,V=Valve,PC=Power Center)
+            $sDeviceNo       = isset($_REQUEST['dn'])  ? $_REQUEST['dn'] : '' ;  // Get the Device No.
+            
+            $aResult            = array();
+            $aResult['msg']     = "";
+            $aResult['status']  = 0;
+            $sValves            = ""; // Valve Devices Initialization.
+            $sRelays            = "";  // Relay Devices Initialization.
+            $sPowercenter       = ""; // Power Center Devices Initialization.
+            
+            $this->load->model('home_model');
+            $iActiveMode =  $this->home_model->getActiveMode();
+            
+             if($iActiveMode == 2) // START : If Mode is Manual.
+            {
+                if($sDevice != '' && $sDeviceNo != '') // START : If device type is not empty and Valid Device number is there.
+                {
+                    $sResponse      =   get_rlb_status(); // Get the relay borad response from server.
+                    if($sDevice == "V") // START : If Device is Valve
+                    {
+                        if($sResponse['valves'] != '') // START : Checked if Valve Devices are available
+                        {
+                            $sValves        =   $sResponse['valves']; // Valve Devices.
+                            if(isset($sValves[$sDeviceNo]) && $sValves[$sDeviceNo] != '')
+                            {    
+                                $aResult['status']  = 1;
+                                $aResult['msg']     = $sValves[$sDeviceNo];
+                            }
+                            else
+                                $aResult['msg']     = 'Device Number is not Valid'; 
+                        } // END : Checked if Valve Devices are available
+                        else
+                            $aResult['msg'] = "Valve devices not available.";
+                    } // if($sDevice == "V") END : If Device is Valve
+                    else if($sDevice == "R") // START : If Device is Relay.
+                    {
+                        if($sResponse['relay'] != '')
+                        {
+                            $sRelays        =   $sResponse['relay'];  // Relay Devices.
+                            if(isset($sRelays[$sDeviceNo]) && $sRelays[$sDeviceNo] != '')
+                            {    
+                                $aResult['status']  = 1;
+                                $aResult['msg']     = $sRelays[$sDeviceNo];
+                            }
+                            else
+                                $aResult['msg']     = 'Device Number is not Valid';
+                        }
+                        else
+                            $aResult['msg'] = "Relay devices not available.";
+                    } // END : If Device is Relay.
+                    else if($sDevice == "PC") // START : If Device is Power Center.
+                    {
+                        if($sResponse['powercenter'] != '')
+                        {
+                            $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
+                            if(isset($sPowercenter[$sDeviceNo]) && $sPowercenter[$sDeviceNo] != '')
+                            {    
+                                $aResult['status']  = 1;
+                                $aResult['msg']     = $sPowercenter[$sDeviceNo];
+                            }
+                            else
+                                $aResult['msg']     = 'Device Number is not Valid';
+                        }
+                        else
+                            $aResult['msg'] = "Power Center devices not available.";
+                    } // END : If Device is Power Center.
+                } // if($sDevice != '')  END : If device type is not empty and Valid Device number is there. 
+                else
+                    $aResult['msg'] = "Invalid Device Type or Device Number.";
+                
+                #OUTPUT
+                echo json_encode($aResult);
+            } // END : If Mode is Manual.
+            
+         } // END : function getDeviceNumberStatus()
         
     } //END : Class Service
     
