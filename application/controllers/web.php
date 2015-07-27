@@ -58,7 +58,7 @@
             {
                 //START : Authorisation
                 $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
-                $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
                 $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
                 // END : Authorisation
             }
@@ -263,7 +263,7 @@
             {
                 //START : Authorisation
                 $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
-                $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
                 $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
                 // END : Authorisation
             }
@@ -421,7 +421,7 @@
             {
                 //START : Authorisation
                 $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
-                $sPassword       = isset($_REQUEST['Password']) ? $_REQUEST['Password'] : '' ;   // Get the password of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
                 $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
                 // END : Authorisation
             }
@@ -580,7 +580,7 @@
          {
              $aResponse             =   array();
              
-             if( $sPassword != '' )
+             if( $sPassword == '' )
              {
                 $aResponse['code'] = 3;
                 $aResponse['status'] = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
