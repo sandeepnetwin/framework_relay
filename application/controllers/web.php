@@ -24,11 +24,22 @@
             $sDevice         = isset($_REQUEST['dvc']) ? $_REQUEST['dvc'] : '' ; // Get the Device(ie. R=Relay,V=Valve,PC=Power Center)
             $sDeviceNo       = isset($_REQUEST['dn'])  ? $_REQUEST['dn'] : '' ;  // Get the Device No.
             $iDeviceStatus   = isset($_REQUEST['ds']) ? $_REQUEST['ds'] : '' ;   // Get the status to which Device will be changed         
+            $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+            $sPassword       = isset($_REQUEST['sPassword']) ? $_REQUEST['sPassword'] : '' ;   // Get the password of webservice 
             
+            $aAuthorisation     = array();
             $aResult            = array();
             $aResult['msg']     = "";
             $aResult['response']  = 0;
             $aDeviceStatus      = array('0', '1', '2'); //respective values of status.
+            
+            $aAuthorisation = json_decode($this->webAuthorisation($sUsername, $sPassword));
+            if($aAuthorisation['status'] == '0')
+            { 
+                $aResult['msg'] = $aAuthorisation['msg'];
+                echo json_encode($aResult);
+                exit;
+            }
             
             $this->load->model('home_model');
             $iActiveMode =  $this->home_model->getActiveMode();
@@ -275,6 +286,27 @@
             } // END : If Mode is Manual.
             
          } // END : function getDeviceNumberStatus()
+         
+         public function webAuthorisation($sUsername,$sPassword)
+         {
+             $aResponse             =   array();
+             $aResponse['status']   =   "1";
+             $aResponse['msg']      =   "";
+             
+             if( $sUsername != '' && $sPassword != '' )
+             {
+                 $aResponse['msg']      =   "Invalid Username or Password";
+                 $aResponse['status']   =   "0";
+             }
+             if( $sUsername != 'foo' && $sPassword != 'bar' )
+             {
+                $aResponse['msg'] = "Invalid Username or Password";
+                $aResponse['status']   =   "0";
+             }
+             
+             return json_encode($aResponse);
+             
+         }
         
     } //END : Class Service
     
