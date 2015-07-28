@@ -13,7 +13,13 @@ if($sDevice == 'PS')
 ?>
 <link href="<?php echo site_url('assets/jquery-toggles-master/css/toggles.css'); ?>" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo site_url('assets/jquery-toggles-master/css/themes/toggles-light.css'); ?>">
-<script src="<?php echo site_url('assets/jquery-toggles-master/toggles.min.js'); ?>" type="text/javascript"></script>     
+<script src="<?php echo site_url('assets/jquery-toggles-master/toggles.min.js'); ?>" type="text/javascript"></script> 
+
+<link href="<?php echo site_url('assets/switchy/switchy.css'); ?>" rel="stylesheet" />
+<link href="<?php echo site_url('assets/switchy/bootstrap.min.css'); ?>" rel="stylesheet" />
+<script type="text/javascript" src="<?php echo site_url('assets/switchy/switchy.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.event.drag.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.animate-color.js'); ?>"></script>
 
     <div id="page-wrapper">
 
@@ -233,13 +239,12 @@ if($sDevice == 'PS')
                             <th class="header">Valve <i class="fa fa-sort"></i></th>
                             <th class="header">Valve Name <i class="fa fa-sort"></i></th>
                             <th class="header">&nbsp;</th>
-                            <th class="header">&nbsp;</th>
-                            <th class="header">&nbsp;</th>
                           </tr>
                         </thead>
                         <tbody>
                         <?php
                             //START : Valve Device 
+                            //$valve_count = 1;
                             for ($i=0;$i < $valve_count; $i++)
                             {
                                 $iValvesVal = $sValves[$i];
@@ -268,90 +273,78 @@ if($sDevice == 'PS')
                               <tr>
                               <td>Valve <?php echo $i;?></td>
                                 <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a></td>
-                                <td style="width:32px;"><span id="loading_valve_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
-                                <td style="width:120px;"><div class="toggle-light" style="width:100px;">
+                                <td>
+                                <!--<div class="toggle-light" style="width:100px;">
                                 <div>
-                                 <div class="toggleV1<?php echo $i;?>"></div>
+                                 <div class="toggleV1<?php //echo $i;?>"></div>
                                 </div>
                                 </div>
-                               <script type="text/javascript">
-                                  var clickOff  = '';
-                                  <?php if($iActiveMode != '2') { ?>
-                                      $('.toggleV1<?php echo $i;?>').toggles({height:40,on:'<?php echo $sValvesVal1;?>',drag: false, click: false});
-                                  <?php } else { ?> 
-                                      $('.toggleV1<?php echo $i;?>').toggles({height:40,on:'<?php echo $sValvesVal1;?>'});
-                                  <?php } ?>    
-                                  
-                                  $( ".toggleV1<?php echo $i;?>" ).find( ".toggle-off" ).css({'padding-left':'10px','font-weight':'bold','font-size':'16px','color':'#B40404'});
-                                  $( ".toggleV1<?php echo $i;?>" ).find( ".toggle-on" ).css({'padding-left':'40px','font-weight':'bold','font-size':'16px'});
-                                  $('.toggleV1<?php echo $i;?>').on('toggle', function (e, active) {
+                                <span id="loading_valve_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span>
+                                -->
+                                
+                                    <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer;">Spa</div>
+                                    <div class="span2" style="margin-left:0px;">
+                                    <select id='switch-me-<?php echo $i;?>'>
+                                    <option value='1' <?php if($iValvesVal == '1') { echo 'selected="selected"';} ?>>Spa</option>
+                                    <option value='0' <?php if($iValvesVal == '0' || $iValvesVal == '') { echo 'selected="selected"';} ?>></option>
+                                    <option value='2' <?php if($iValvesVal == '2') { echo 'selected="selected"';} ?>>Pool</option>
+                                    </select>
+                                    <div class="valve-<?php echo $i?>" value="0" id="off-<?php echo $i;?>" style="color: red;font-weight: bold;width: 0; margin-left: 56px; margin-top: 2px; cursor: pointer;">
+                                        OFF
+</div>                              </div>
+                                    <div class="span1 valve-<?php echo $i?>" value="2" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer;">Pool</div>
+                                  <script type="text/javascript">
+                                  $(function()
+                                  {
+                                    var bgColor = '#E8E8E8';
+                                    <?php if($iValvesVal == '1' || $iValvesVal == '2') { ?>
+                                            bgColor = '#45A31F';
+                                    <?php } else { ?>
+                                            bgColor = '#E8E8E8';
+                                    <?php } ?>
+                                    $('#switch-me-<?php echo $i;?>').switchy();
                                     
-                                    var sStatus = '';
-                                    if (active) {
-                                        sStatus = 1;
-                                        $('.toggleV2<?php echo $i;?>').toggles(false);
-                                    } else {
-                                        sStatus = 0;
-                                    }
-                                    <?php if($iActiveMode == '2') { ?>
-                                     $("#loading_valve_<?php echo $i;?>").css('visibility','visible');
-                                     $.ajax({
-                                        type: "POST",
-                                        url: "<?php echo site_url('home/updateStatusOnOff');?>", 
-                                        data: {sName:'<?php echo $i;?>',sStatus:sStatus,sDevice:'<?php echo $sDevice;?>'},
-                                        success: function(data) {
-                                          $("#loading_valve_<?php echo $i;?>").css('visibility','hidden');
-                                        }
+                                    $('.valve-<?php echo $i?>').on('click', function(){
+                                        $('#switch-me-<?php echo $i;?>').val($(this).attr('value')).change();
+                                    });
+                                    
+                                    $('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+                                            backgroundColor: bgColor
+                                        });
+                                    
+                                    $('#switch-me-<?php echo $i;?>').on('change', function()
+                                    {
+                                        // Animate Switchy Bar background color
+                                        var bgColor = '#E8E8E8';
 
-                                     });
-                                     <?php } else {  ?>
-                                      alert('You can perform this operation in manual mode only.');
-                                     <?php } ?> 
-                                  });
+                                        if ($(this).val() == '1' || $(this).val() == '2')
+                                        {
+                                            bgColor = '#45A31F';
+                                        } 
+                                        $('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+                                            backgroundColor: bgColor
+                                        });
+                                        
+                                        <?php if($iActiveMode == '2') { ?>
+                                            //$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
+                                            $.ajax({
+                                                type: "POST",
+                                                url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+                                                data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
+                                                success: function(data) {
+                                                //$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
+                                                }
+
+                                            });
+                                            <?php } else {  ?>
+                                            alert('You can perform this operation in manual mode only.');
+                                            <?php } ?> 
+                                        
+                                       });
+                                    });
                                </script>
                                </td>
-                               <td><div class="toggle-light" style="width:100px;">
-                                <div>
-                                 <div class="toggleV2<?php echo $i;?>"></div>
-                                </div>
-                                </div>
-                               <script type="text/javascript">
-                                  var clickOff  = '';
-                                  <?php if($iActiveMode != '2') { ?>
-                                      $('.toggleV2<?php echo $i;?>').toggles({height:40,on:'<?php echo $sValvesVal2;?>',drag: false, click: false});
-                                  <?php } else { ?> 
-                                      $('.toggleV2<?php echo $i;?>').toggles({height:40,on:'<?php echo $sValvesVal2;?>'});
-                                  <?php } ?>    
-                                  
-                                  $( ".toggleV2<?php echo $i;?>" ).find( ".toggle-off" ).css({'padding-left':'10px','font-weight':'bold','font-size':'16px','color':'#B40404'});
-                                  $( ".toggleV2<?php echo $i;?>" ).find( ".toggle-on" ).css({'padding-left':'40px','font-weight':'bold','font-size':'16px'});
-                                  $('.toggleV2<?php echo $i;?>').on('toggle', function (e, active) {
-                                    
-                                    var sStatus = '';
-                                    if (active) {
-                                        sStatus = 2;
-                                        $('.toggleV1<?php echo $i;?>').toggles(false);
-                                    } else {
-                                        sStatus = 1;
-                                        $('.toggleV1<?php echo $i;?>').toggles(true);
-                                    }
-                                    <?php if($iActiveMode == '2') { ?>
-                                     $("#loading_valve_<?php echo $i;?>").css('visibility','visible');
-                                     $.ajax({
-                                        type: "POST",
-                                        url: "<?php echo site_url('home/updateStatusOnOff');?>", 
-                                        data: {sName:'<?php echo $i;?>',sStatus:sStatus,sDevice:'<?php echo $sDevice;?>'},
-                                        success: function(data) {
-                                          $("#loading_valve_<?php echo $i;?>").css('visibility','hidden');
-                                        }
-
-                                     });
-                                     <?php } else {  ?>
-                                      alert('You can perform this operation in manual mode only.');
-                                     <?php } ?> 
-                                  });
-                               </script>
-                               </td>
+                               
                               </tr>
                         <?php } ?>
                       </tbody>
