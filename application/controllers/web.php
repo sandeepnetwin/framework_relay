@@ -93,7 +93,6 @@
                             $iRelayCount    = strlen($sRelays); // Count of Relay Devices.
                             if( $sDeviceNo > ($iRelayCount-1) || $sDeviceNo < 0)
                             {
-                                //$aResult['msg'] = "Invalid relay number.";
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Invalid relay number.';
@@ -103,21 +102,20 @@
                             } // END : if( $sDeviceNo > ($iRelayCount-1) || $sDeviceNo < 0)
                             else
                             {
-                                    $sRelayNewResp = replace_return($sRelays, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
-                                    onoff_rlb_relay($sRelayNewResp); // Send the request to change the status on server.		
-                                    //$aResult['response'] = 1;
-                                    //$aResult['msg'] = "Relay status changed successfully.";
-                                    $aResponse['code']      = 1;
-                                    $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
-                                    $aResponse['data']      = 'Relay status changed successfully.';
+                                $sRelayNewResp = replace_return($sRelays, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
+                                onoff_rlb_relay($sRelayNewResp); // Send the request to change the status on server.		
+                                //$aResult['response'] = 1;
+                                //$aResult['msg'] = "Relay status changed successfully.";
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Relay status changed successfully.';
 
-                                    // Return Response to browser. This will exit the script.
-                                    $this->webResponse($sformat, $aResponse);
+                                // Return Response to browser. This will exit the script.
+                                $this->webResponse($sformat, $aResponse);
                             } // END : else of if( $sDeviceNo > ($iRelayCount-1) || $sDeviceNo < 0)
                         }
                         else
                         {
-                            //$aResult['msg'] = "Relay devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Relay devices not available.';
@@ -125,7 +123,6 @@
                             // Return Response to browser. This will exit the script.
                             $this->webResponse($sformat, $aResponse);
                         }
-                        
                     } // END : if($sDevice == 'R')
                                         
                     if($sDevice == 'PC') // START : If Device is Power Center.
@@ -135,7 +132,6 @@
                             $iPowerCenterCount    = strlen($sPowercenter); // Count of Power Center Devices.
                             if( $sDeviceNo > ($iPowerCenterCount-1) || $sDeviceNo < 0)
                             {
-                                //$aResult['msg'] = "Invalid Power Center number.";
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Invalid Power Center number.';
@@ -145,21 +141,20 @@
                             } // END : if( $sDeviceNo > ($iPowerCenterCount-1) || $sDeviceNo < 0)
                             else
                             {
-                                    $sRelayNewResp = replace_return($sPowercenter, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
-                                    onoff_rlb_powercenter($sRelayNewResp); // Send the request to change the status on server.		
-                                    //$aResult['response'] = 1;
-                                    //$aResult['msg'] = "Power Center status changed successfully.";
-                                    $aResponse['code']      = 1;
-                                    $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
-                                    $aResponse['data']      = 'Power Center status changed successfully.';
+                                $sRelayNewResp = replace_return($sPowercenter, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
+                                onoff_rlb_powercenter($sRelayNewResp); // Send the request to change the status on server.		
+                                //$aResult['response'] = 1;
+                                //$aResult['msg'] = "Power Center status changed successfully.";
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Power Center status changed successfully.';
 
-                                    // Return Response to browser. This will exit the script.
-                                    $this->webResponse($sformat, $aResponse);
+                                // Return Response to browser. This will exit the script.
+                                $this->webResponse($sformat, $aResponse);
                             } // END : else of if( $sDeviceNo > ($iPowerCenterCount-1) || $sDeviceNo < 0)
                         }
                         else
                         {
-                            //$aResult['msg'] = "Power Center devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Power Center devices not available.';
@@ -167,7 +162,6 @@
                             // Return Response to browser. This will exit the script.
                             $this->webResponse($sformat, $aResponse);
                         }
-                        
                     } // END : if($sDevice == 'PC')
                                         
                     if($sDevice == 'V') // START : If Device is Power Center.
@@ -177,7 +171,6 @@
                             $iValveCount    = strlen($sValves); // Count of Power Center Devices.
                             if( $sDeviceNo > ($iValveCount-1) || $sDeviceNo < 0)
                             {
-                                //$aResult['msg'] = "Invalid Valve number.";
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Invalid Valve number.';
@@ -187,16 +180,16 @@
                             } // END : if( $sDeviceNo > ($iValveCount-1) || $sDeviceNo < 0)
                             else
                             {
-                                    $sRelayNewResp = replace_return($sValves, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
-                                    onoff_rlb_valve($sRelayNewResp); // Send the request to change the status on server.		
-                                    //$aResult['response'] = 1;
-                                    //$aResult['msg'] = "Valve status changed successfully.";
-                                    $aResponse['code']      = 1;
-                                    $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
-                                    $aResponse['data']      = 'Valve status changed successfully.';
+                                $sRelayNewResp = replace_return($sValves, $iDeviceStatus, $sDeviceNo ); // Change the status with the sent status for the device no.
+                                onoff_rlb_valve($sRelayNewResp); // Send the request to change the status on server.		
+                                //$aResult['response'] = 1;
+                                //$aResult['msg'] = "Valve status changed successfully.";
+                                $aResponse['code']      = 1;
+                                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                                $aResponse['data']      = 'Valve status changed successfully.';
 
-                                    // Return Response to browser. This will exit the script.
-                                    $this->webResponse($sformat, $aResponse);
+                                // Return Response to browser. This will exit the script.
+                                $this->webResponse($sformat, $aResponse);
                             } // END : else of if( $sDeviceNo > ($iValveCount-1) || $sDeviceNo < 0)
                         }
                         else
@@ -209,20 +202,16 @@
                             // Return Response to browser. This will exit the script.
                             $this->webResponse($sformat, $aResponse);
                         }
-                        
                     } // END : if($sDevice == 'V')
-                    
                 } // END : if($sDeviceNo != '' && in_array($iDeviceStatus, $aDeviceStatus) && $sDevice != '')
                 else
                 {
-                    //$aResult['msg'] = "Invalid Device number Or Device status OR Device Type.";
                     $aResponse['code']      = 5;
                     $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                     $aResponse['data']      = 'Invalid Device number Or Device status OR Device Type.';
 
                     // Return Response to browser. This will exit the script.
                     $this->webResponse($sformat, $aResponse);
-                    
                 }
             } // END : if($iActiveMode == 2)
             else
@@ -298,10 +287,6 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             $iCntValves     =   strlen($sValves); // Count of Valve Devices.
                             
-                            /*$aResult['response']   = 1;
-                            $aResult['status']     = $sValves;
-                            $aResult['count']      = $iCntValves;*/
-                            
                             $aResponse['code']      = 1;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = $sValves;
@@ -311,7 +296,6 @@
                         } // END : Checked if Valve Devices are available
                         else
                         {
-                            //$aResult['msg'] = "Valve devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Valve devices not available.';
@@ -326,9 +310,7 @@
                         {
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             $iCntRelays     =   strlen($sRelays); // Count of Relay Devices.
-                            //$aResult['response'] = 1;
-                            //$aResult['status']   = $sRelays;
-                            //$aResult['count']    = $iCntRelays;
+                            
                             $aResponse['code']      = 1;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = $sRelays;
@@ -337,7 +319,6 @@
                         }
                         else
                         {
-                            //$aResult['msg'] = "Relay devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Relay devices not available.';
@@ -352,9 +333,7 @@
                         {
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             $iCntPowercenter=   strlen($sPowercenter); // Count of Power Center Devices.
-                            //$aResult['response'] = 1;
-                            //$aResult['status']     = $sPowercenter;
-                            //$aResult['count']   = $iCntPowercenter;
+                            
                             $aResponse['code']      = 1;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = $sPowercenter;
@@ -363,7 +342,6 @@
                         }
                         else
                         {    
-                            //$aResult['msg'] = "Power Center devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Power Center devices not available.';
@@ -453,8 +431,6 @@
                             $sValves        =   $sResponse['valves']; // Valve Devices.
                             if(isset($sValves[$sDeviceNo]) && $sValves[$sDeviceNo] != '')
                             {    
-                                //$aResult['response']  = 1;
-                                //$aResult['status']     = $sValves[$sDeviceNo];
                                 $aResponse['code']      = 1;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = $sValves[$sDeviceNo];
@@ -463,7 +439,6 @@
                             }
                             else
                             {
-                                //$aResult['msg']     = 'Device Number is not Valid'; 
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Device Number is not Valid';
@@ -473,7 +448,6 @@
                         } // END : Checked if Valve Devices are available
                         else
                         {
-                            //$aResult['msg'] = "Valve devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Valve devices not available.';
@@ -488,8 +462,6 @@
                             $sRelays        =   $sResponse['relay'];  // Relay Devices.
                             if(isset($sRelays[$sDeviceNo]) && $sRelays[$sDeviceNo] != '')
                             {    
-                                //$aResult['response']  = 1;
-                                //$aResult['status']     = $sRelays[$sDeviceNo];
                                 $aResponse['code']      = 1;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = $sRelays[$sDeviceNo];
@@ -498,7 +470,6 @@
                             }
                             else
                             {
-                                //$aResult['msg']     = 'Device Number is not Valid';
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Device Number is not Valid';
@@ -508,7 +479,6 @@
                         }
                         else
                         {
-                            //$aResult['msg'] = "Relay devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Relay devices not available.';
@@ -523,8 +493,6 @@
                             $sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
                             if(isset($sPowercenter[$sDeviceNo]) && $sPowercenter[$sDeviceNo] != '')
                             {    
-                                //$aResult['response']  = 1;
-                                //$aResult['status']     = $sPowercenter[$sDeviceNo];
                                 $aResponse['code']      = 1;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = $sPowercenter[$sDeviceNo];
@@ -533,7 +501,6 @@
                             }
                             else
                             {
-                                //$aResult['msg']     = 'Device Number is not Valid';
                                 $aResponse['code']      = 5;
                                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                                 $aResponse['data']      = 'Device Number is not Valid';
@@ -543,7 +510,6 @@
                         }
                         else
                         {
-                            //$aResult['msg'] = "Power Center devices not available.";
                             $aResponse['code']      = 5;
                             $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                             $aResponse['data']      = 'Power Center devices not available.';
@@ -554,8 +520,6 @@
                 } // if($sDevice != '')  END : If device type is not empty and Valid Device number is there. 
                 else
                 {
-                    //$aResult['msg'] = "Invalid Device Type or Device Number.";
-                    //$aResult['msg'] = "Power Center devices not available.";
                     $aResponse['code']      = 5;
                     $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                     $aResponse['data']      = 'Invalid Device Type or Device Number.';
@@ -566,7 +530,6 @@
             } // END : If Mode is Manual.
             else
             {
-                //$aResult['msg'] = "Power Center devices not available.";
                 $aResponse['code']      = 5;
                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                 $aResponse['data']      = 'Invalid mode to perform this operation.';
@@ -659,6 +622,6 @@
         
     } //END : Class Service
     
-    /* End of file service.php */
-    /* Location: ./application/controllers/service.php */
+    /* End of file web.php */
+    /* Location: ./application/controllers/web.php */
 ?>
