@@ -72,6 +72,61 @@ class Dashboard extends CI_Controller {
         $this->output->set_header("Pragma: no-cache");
         redirect('home', 'refresh');
     }
+    
+    public function install()
+    {
+        $aViewParameter['page']         =   'home';
+        $aViewParameter['sucess']       =   '0';
+        $aViewParameter['err_sucess']   =   '0';
+        
+        $sPage  =   $this->uri->segment('3'); 
+
+        $this->load->model('home_model');
+
+       
+        
+            $aViewParameter['page']         =   'setting';
+            
+            if($this->input->post('command') == 'Save Setting')
+            {
+                $iMode  =   $this->input->post('relay_mode');
+                $this->load->model('home_model');
+                
+                $sIP    =   $this->input->post('relay_ip_address');
+                $sPort  =   $this->input->post('relay_port_no');
+
+                if($sIP == '')
+                {
+                    if(IP_ADDRESS){
+                        $sIP = IP_ADDRESS;
+                    }
+                }
+                
+                //Check for Port Number constant
+                if($sPort == '')
+                {   
+                    if(PORT_NO){
+                        $sPort = PORT_NO;
+                    }
+                }
+
+                if($sIP == '' || $sPort == '')
+                {
+                    $aViewParameter['err_sucess']    =   '1';
+                }
+                else
+                {
+                
+                    $this->home_model->updateSetting($sIP,$sPort);
+                    $aViewParameter['sucess']    =   '1';
+                }
+        }
+            
+        list($aViewParameter['sIP'],$aViewParameter['sPort']) = $this->home_model->getSettings();
+
+        $this->load->view('Install',$aViewParameter);
+        
+    }
 
     
     
