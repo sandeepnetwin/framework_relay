@@ -17,7 +17,7 @@
 |
 */
 //$config['base_url'] = '';
-$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/CodeIgniter-pool-spa/';
+$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/relay_framework/';
 
 define('HTTP_CSS_PATH', $config['base_url'].'assets/css/');
 define('HTTP_IMAGES_PATH', $config['base_url'].'assets/images/');
