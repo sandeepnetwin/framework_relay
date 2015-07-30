@@ -3,9 +3,9 @@ $this->load->view('Header');
 $this->load->model('home_model');
 $sDeviceFullName = '';
 if($sDevice == 'R')
-  $sDeviceFullName = 'Relay';
+  $sDeviceFullName = '24V AC Relay';
 if($sDevice == 'P')
-  $sDeviceFullName = 'Power Center';
+  $sDeviceFullName = '12V DC Power Center Relay';
 if($sDevice == 'V')
   $sDeviceFullName = 'Valve';
 if($sDevice == 'PS')
@@ -36,7 +36,7 @@ if($sDevice == 'PS')
           <div class="col-lg-12">
             <div class="panel panel-primary">
               <div class="panel-heading">
-                <h3 class="panel-title">Relays List</h3>
+                <h3 class="panel-title">24V AC Relay List</h3>
               </div>
               <div class="table-responsive">
               <table class="table table-hover tablesorter">
@@ -130,7 +130,7 @@ if($sDevice == 'PS')
           <div class="col-lg-12">
             <div class="panel panel-primary">
               <div class="panel-heading">
-                <h3 class="panel-title">Power Center List</h3>
+                <h3 class="panel-title">12V DC Power Center Relays List</h3>
               </div>
               <div class="table-responsive">
               <table class="table table-hover tablesorter">
@@ -245,8 +245,7 @@ if($sDevice == 'PS')
                             $j=0;
                             for ($i=0;$i < $valve_count; $i++)
                             {
-                                if($j != 0 )
-                                    $j++;
+                                $j = $i *2;
                                 
                                 $iValvesVal = $sValves[$i];
                                 $iValvesNewValSb1 = 1;
@@ -273,7 +272,7 @@ if($sDevice == 'PS')
                                 $aPositionName =  $this->home_model->getPositionName($i,$sDevice);
                         ?>
                               <tr>
-                                  <td>Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ++$j;?>)<br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
+                                  <td>Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ($j+1);?>)<br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
                                 
                                 <td>
                                     <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
@@ -344,7 +343,9 @@ if($sDevice == 'PS')
                                </td>
                                
                               </tr>
-                        <?php } ?>
+                        <?php 
+                            
+                        } ?>
                       </tbody>
               </table>
             </div>
