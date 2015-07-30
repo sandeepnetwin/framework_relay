@@ -221,10 +221,10 @@ if($sDevice == 'PS')
 
         <?php if($sDevice == 'V') { // Valve Start ?>
         <link href="<?php echo site_url('assets/switchy/switchy.css'); ?>" rel="stylesheet" />
-<link href="<?php echo site_url('assets/switchy/bootstrap.min.css'); ?>" rel="stylesheet" />
-<script type="text/javascript" src="<?php echo site_url('assets/switchy/switchy.js'); ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.event.drag.js'); ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.animate-color.js'); ?>"></script>
+        <!--<link href="<?php echo site_url('assets/switchy/bootstrap.min.css'); ?>" rel="stylesheet" />-->
+        <script type="text/javascript" src="<?php echo site_url('assets/switchy/switchy.js'); ?>"></script>
+        <script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.event.drag.js'); ?>"></script>
+        <script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.animate-color.js'); ?>"></script>
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="panel panel-primary">
@@ -236,7 +236,6 @@ if($sDevice == 'PS')
                         <thead>
                           <tr>
                             <th class="header">Valve <i class="fa fa-sort"></i></th>
-                            <th class="header">Valve Name <i class="fa fa-sort"></i></th>
                             <th class="header">&nbsp;</th>
                           </tr>
                         </thead>
@@ -271,28 +270,20 @@ if($sDevice == 'PS')
                                 $aPositionName =  $this->home_model->getPositionName($i,$sDevice);
                         ?>
                               <tr>
-                              <td>Valve <?php echo $i;?></td>
-                                <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
-                                <td>
-                                <!--<div class="toggle-light" style="width:100px;">
-                                <div>
-                                 <div class="toggleV1<?php //echo $i;?>"></div>
-                                </div>
-                                </div>
-                                <span id="loading_valve_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span>
-                                -->
+                              <td>Valve <?php echo $i;?><br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
                                 
-                                    <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
-                                    <div class="span2" style="margin-left:0px;">
+                                <td>
+                                    <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
+                                    <div class="span2" style="margin-left:5px; margin-right:5px; float: left;" >
                                     <select id='switch-me-<?php echo $i;?>'>
                                     <option value='1' <?php if($iValvesVal == '1') { echo 'selected="selected"';} ?>>Spa</option>
                                     <option value='0' <?php if($iValvesVal == '0' || $iValvesVal == '') { echo 'selected="selected"';} ?>></option>
                                     <option value='2' <?php if($iValvesVal == '2') { echo 'selected="selected"';} ?>>Pool</option>
                                     </select>
-                                    <div class="valve-<?php echo $i?>" value="0" id="off-<?php echo $i;?>" style="color: red;font-weight: bold;width: 0; margin-left: 56px; margin-top: 2px; cursor: pointer;">
+                                    <div class="valve-<?php echo $i?>" value="0" id="off-<?php echo $i;?>" style="color: red;font-weight: bold;width: 0; margin-left: 40px; margin-top: 2px; cursor: pointer;">
                                         OFF
 </div>                              </div>
-                                    <div class="span1 valve-<?php echo $i?>" value="2" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer;"><?php if($aPositionName[1] == ''){ echo 'Pool';} else { echo $aPositionName[1];} ?></div>
+                                    <div class="span1 valve-<?php echo $i?>" value="2" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[1] == ''){ echo 'Pool';} else { echo $aPositionName[1];} ?></div>
                                   <script type="text/javascript">
                                   $(function()
                                   {
