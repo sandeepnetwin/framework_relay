@@ -1,5 +1,10 @@
 <?php
-
+    /**
+    * @Programmer: Dhiraj S.
+    * @Created: 13 July 2015
+    * @Modified: 
+    * @Description: Home Controller for dashboard and device details.
+    **/
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
@@ -41,8 +46,7 @@ class Home extends CI_Controller
         $this->load->view('Home',$aViewParameter);
 
     }
-  
-
+    
     public function setting()
     {
         $aViewParameter['page']         =   'home';
@@ -204,9 +208,9 @@ class Home extends CI_Controller
         }
         if($sDevice == 'V')
         {
-            //echo $sStatus;
             $sNewResp = replace_return($sValves, $sStatus, $sName );
-            onoff_rlb_valve($sNewResp);
+            //onoff_rlb_valve($sNewResp);
+            
         }
         if($sDevice == 'PS')
         {
@@ -278,6 +282,48 @@ class Home extends CI_Controller
 
         $this->load->view('DeviceName',$aViewParameter); 
     }
+    
+    public function positionName() //START : Function to save position names for Valve 
+    {
+       
+        $aViewParameter['page']      =   'home';
+        $aViewParameter['sucess']    =   '0';
+        $sDeviceID  =   base64_decode($this->uri->segment('3')); //Get Device ID to which position names will be saved.
+        $sDevice    =   base64_decode($this->uri->segment('4')); //Get Device Type
+
+        if($sDeviceID == '') //START : Check if Device id is blank then redirect to the device list page  
+        {
+            $sDeviceID  =   base64_decode($this->input->post('sDeviceID'));
+            if($sDeviceID == '')
+                if($sDevice != '')
+                redirect(site_url('home/setting/'.$sDevice));
+        } //END : Check if Device id is blank then redirect to the device list page  
+
+        if($sDevice == '') //START : Check if Device type is blank then redirect to home page
+        {
+            $sDevice  =   base64_decode($this->input->post('sDevice'));
+            if($sDevice == '')
+                redirect(site_url('home'));
+        } //END : Check if Device type is blank then redirect to home page
+
+        $aViewParameter['sDeviceID']    =   $sDeviceID;
+        $aViewParameter['sDevice']      =   $sDevice;
+
+        $this->load->model('home_model');
+
+        if($this->input->post('command') == 'Save') // START: Save position names in DB for device.
+        {
+            $sPositionName1 = $this->input->post('sPositionName1');
+            $sPositionName2 = $this->input->post('sPositionName2');
+            $this->home_model->savePositionName($sDeviceID,$sDevice,$sPositionName1,$sPositionName2);
+
+            $aViewParameter['sucess']    =   '1';
+        } // END : Save position names in DB for device.
+
+        //Get Existing saved position names for Device
+        list($aViewParameter['sPositionName1'],$aViewParameter['sPositionName2'])      =   $this->home_model->getPositionName($sDeviceID,$sDevice);
+        $this->load->view('PositionName',$aViewParameter); 
+    } //END : Function to save position names for Valve
 
     public function setPrograms()
     {
@@ -414,10 +460,8 @@ class Home extends CI_Controller
          
         $this->load->view('Status',$aViewParameter);
     }
-
-    
-    
-}
+        
+}//END : Class Home
 
 /* End of file home.php */
 /* Location: ./application/controllers/home.php */

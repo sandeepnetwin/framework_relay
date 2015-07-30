@@ -429,6 +429,48 @@ class Home_model extends CI_Model
             $this->db->insert('rlb_pump_device', $data);
         }    
    }
+   
+   public function savePositionName($sDeviceID,$sDevice,$sPositionName1,$sPositionName2)
+   {
+        $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+        
+        $aPositions = array('position1'=>$sPositionName1,'position2'=>$sPositionName2);
+        
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+                $sSqlUpdate =   "UPDATE rlb_device SET device_position='".serialize($aPositions)."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+                $this->db->query($sSqlUpdate);
+            }
+        }
+        else
+        {
+            $sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,device_position,last_updated_date) VALUES('".$sDeviceID."','".$sDevice."','".serialize($aPositions)."','".date('Y-m-d H:i:s')."')";
+            $this->db->query($sSqlInsert);
+        }
+   }
+   
+   public function getPositionName($sDeviceID,$sDevice)
+    {
+        $aPositionName = array('','');
+
+        $sSql   =   "SELECT device_id,device_position FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+                $aTemp = unserialize($aRow->device_position);
+                $aPositionName[0] = $aTemp['position1'];
+                $aPositionName[1] = $aTemp['position2'];
+            }
+        }
+
+        return $aPositionName;
+    }
 }
 
 /* End of file home_model.php */
