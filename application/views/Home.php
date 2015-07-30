@@ -71,7 +71,7 @@ $this->load->view('Header');
                   </div>
                   <div class="col-xs-6 text-right">
                     <p class="announcement-heading"><?php echo $relay_count;?></p>
-                    <p class="announcement-text">Relay</p>
+                    <p class="announcement-text">24V AC Relay<br>&nbsp;</p>
                   </div>
                 </div>
               </div>
@@ -99,7 +99,7 @@ $this->load->view('Header');
                   </div>
                   <div class="col-xs-6 text-right">
                     <p class="announcement-heading"><?php echo $valve_count;?></p>
-                    <p class="announcement-text">Valve</p>
+                    <p class="announcement-text">Valve<br>&nbsp;</p>
                   </div>
                 </div>
               </div>
@@ -127,7 +127,7 @@ $this->load->view('Header');
                   </div>
                   <div class="col-xs-6 text-right">
                     <p class="announcement-heading"><?php echo $power_count;?></p>
-                    <p class="announcement-text">Power Center</p>
+                    <p class="announcement-text">12V DC Power Center Relay</p>
                   </div>
                 </div>
               </div>
