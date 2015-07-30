@@ -242,9 +242,12 @@ if($sDevice == 'PS')
                         <tbody>
                         <?php
                             //START : Valve Device 
-                            //$valve_count = 1;
+                            $j=0;
                             for ($i=0;$i < $valve_count; $i++)
                             {
+                                if($j != 0 )
+                                    $j++;
+                                
                                 $iValvesVal = $sValves[$i];
                                 $iValvesNewValSb1 = 1;
                                 $iValvesNewValSb2 = 2 ;
@@ -270,7 +273,7 @@ if($sDevice == 'PS')
                                 $aPositionName =  $this->home_model->getPositionName($i,$sDevice);
                         ?>
                               <tr>
-                              <td>Valve <?php echo $i;?><br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
+                                  <td>Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ++$j;?>)<br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
                                 
                                 <td>
                                     <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
