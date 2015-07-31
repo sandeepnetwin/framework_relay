@@ -231,12 +231,12 @@ if($sDevice == 'PS')
                       <div class="panel-heading">
                         <h3 class="panel-title">Valve List</h3>
                       </div>
+                      
                       <div class="table-responsive">
                       <table class="table table-hover tablesorter">
                         <thead>
                           <tr>
                             <th class="header">Valve <i class="fa fa-sort"></i></th>
-                            <th class="header">&nbsp;</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -272,9 +272,10 @@ if($sDevice == 'PS')
                                 $aPositionName =  $this->home_model->getPositionName($i,$sDevice);
                         ?>
                               <tr>
-                                  <td>Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ($j+1);?>)<br /><br /><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a></td>
-                                
                                 <td>
+                                    <div class="col-lg-3">Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ($j+1);?>)<br /><br /></div>
+                                    <div class="col-lg-3"><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a><br /><br /></div>
+                                    <div class="col-lg-3">                                    
                                     <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
                                     <div class="span2" style="margin-left:5px; margin-right:5px; float: left;" >
                                     <select id='switch-me-<?php echo $i;?>'>
@@ -340,9 +341,11 @@ if($sDevice == 'PS')
                                        });
                                     });
                                </script>
-                               </td>
                                
-                              </tr>
+                                    </div>
+                                </td>
+                               
+                            </tr>
                         <?php 
                             
                         } ?>
@@ -350,6 +353,7 @@ if($sDevice == 'PS')
               </table>
             </div>
             </div>
+           
           </div>
         </div><!-- /.row -->
         <?php } ?> <!-- END : Valve Device -->  
