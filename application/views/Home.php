@@ -51,7 +51,7 @@ $this->load->view('Header');
 
               <div class="panel-heading">
                 <div class="row">
-                  <div class="col-xs-6 customClass" style="width:100%; height: 308px; text-align: center;">
+                  <div class="col-xs-6 customClass" style="width:100%; height: 326px; text-align: center;">
                     <p><a href="<?php echo site_url('analog/changeMode');?>" style="color:#8A6D3B;">Modes</a></p>
                     <p><a href="javascript:void(0);" style="color:#8A6D3B;">Pool Lights</a></p>
                     <p><a href="javascript:void(0);" style="color:#8A6D3B;">Spa Equipment</a></p>
