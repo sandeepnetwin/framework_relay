@@ -69,6 +69,10 @@ CREATE TABLE IF NOT EXISTS `rlb_device` (
   `device_number` int(10) NOT NULL,
   `device_name` varchar(150) NOT NULL,
   `device_type` varchar(100) NOT NULL,
+  `device_position` text,
+  `device_total_time` varchar(100) NOT NULL,
+  `device_start_time` varchar(100) NOT NULL,
+  `device_end_time` varchar(100) NOT NULL,
   `last_updated_date` datetime NOT NULL,
   PRIMARY KEY (`device_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;

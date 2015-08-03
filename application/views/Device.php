@@ -139,7 +139,12 @@ if($sDevice == 'PS')
                             <strong style="color:#428BCA">-</strong>
                             <?php } ?>
                         </td>
-                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a></td>
+                        <td><?php if($iRelayVal != '' && $iRelayVal !='.') { ?>
+                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a>
+                            <?php } else { ?>
+                                <strong style="color:#428BCA">-</strong>
+                            <?php } ?>
+                        </td>        
                       </tr>
                 <?php } ?>
                 
