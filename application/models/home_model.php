@@ -471,6 +471,95 @@ class Home_model extends CI_Model
 
         return $aPositionName;
     }
+    
+    public function saveDeviceTime($sDeviceID,$sDevice,$sDeviceTime) //START : Function to Save/UPDATE Device Time
+    {
+        //Check if device already present in the table.
+        $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0) //START: If device is already present in table.
+        {
+            foreach($query->result() as $aRow)
+            {
+                //Update the Time.
+                $sSqlUpdate =   "UPDATE rlb_device SET device_total_time='".$sDeviceTime."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+                $this->db->query($sSqlUpdate);
+            }
+        }//END: If device is already present in table.
+        else //START: If device is not present in table.
+        {
+            //Insert Device with time.
+            $sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,device_total_time,last_updated_date) VALUES('".$sDeviceID."','".$sDevice."','".$sDeviceTime."','".date('Y-m-d H:i:s')."')";
+            $this->db->query($sSqlInsert);
+        }
+    }//END : Function to Save/UPDATE Device Time
+
+    public function getDeviceTime($sDeviceID,$sDevice) //START : Function to get Device Time
+    {
+        $sDeviceTime = '';
+        
+        //Get saved time for the device.
+        $sSql   =   "SELECT device_id,device_total_time FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+                $sDeviceTime = $aRow->device_total_time;
+            }
+        }
+
+        return $sDeviceTime;
+    } //End : Function to get Device Time
+    
+    public function updateDeviceRunTime($sDeviceID,$sDevice,$sStatus) //START: Function to update START Time and End Time Of Device
+    {
+        $sDeviceTime =$this->getDeviceTime($sDeviceID, $sDevice);
+        
+        if($sDeviceTime != '') // START : If user added the Time for Device.
+        {
+            $sDeviceStart =   date("H:i:s", time()); // Current Time as Start Time
+            $aStartTime   =   explode(":",$sDeviceStart);
+            
+            //End Time Calculated using Start Time and Time of Device.
+            $sDeviceEnd   =   mktime(($aStartTime[0]+ 0),($aStartTime[1]+$sDeviceTime),($aStartTime[2]+0),0,0,0);
+            $sDeviceEnd   =   date("H:i:s", $sDeviceEnd);
+
+            if($sStatus == '0') // IF Device is OFF
+            {
+                $data = array('device_start_time'  => '',
+                            'device_end_time'    => ''
+                            );
+            }
+            else // IF Device is ON
+            {
+                $data = array('device_start_time'  => $sDeviceStart,
+                            'device_end_time'    => $sDeviceEnd
+                            );
+            }
+
+            $this->db->where('device_number', $sDeviceID);
+            $this->db->where('device_type', $sDevice);
+            $this->db->update('rlb_device', $data);
+        }// END : If user added the Time for Device.
+    }//END: Function to update START Time and End Time Of Device
+    
+    public function getAllDeviceTimeDetails()
+    {
+        $this->db->where('device_type', 'R');
+        $this->db->where('device_total_time !=', '');
+        
+        $query = $this->db->get('rlb_device');
+
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+
+        return '';
+    }
 }
 
 /* End of file home_model.php */

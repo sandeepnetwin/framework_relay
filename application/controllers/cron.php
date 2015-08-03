@@ -46,7 +46,7 @@ class Cron extends CI_Controller
             { 
                 $sResponse =   get_rlb_status();
                 $aAP       =   array($sResponse['AP0'],$sResponse['AP1'],$sResponse['AP2'],$sResponse['AP3']);
-                $aAP         =   array(0,1,0,1);
+                //$aAP       =   array(0,1,0,1);
 
                 $sValves        =   $sResponse['valves'];
                 $sRelays        =   $sResponse['relay'];
@@ -65,8 +65,11 @@ class Cron extends CI_Controller
                         {
                             if($aDevice[1] == 'R')
                             {
-                                $sNewResp = replace_return($sRelays, $aAP[$i], $aDevice[0] );
-                                onoff_rlb_relay($sNewResp);
+                                if($sRelays[$aDevice[0]] != '' && $sRelays[$aDevice[0]] != '.')
+                                {
+                                    $sNewResp = replace_return($sRelays, $aAP[$i], $aDevice[0] );
+                                    onoff_rlb_relay($sNewResp);
+                                }
                                 //exex('rlb m 0 2 1');
                             }
                             if($aDevice[1] == 'P')
@@ -76,14 +79,17 @@ class Cron extends CI_Controller
                             }
                             if($aDevice[1] == 'V')
                             {
-                                $sStatusChnage = $aResultDirection[$i];
-                                    
-                                if($aAP[$i] == '0')
-                                $sNewResp = replace_return($sValves, $aAP[$i], $aDevice[0] );
-                                else if($aAP[$i] == '1')
-                                $sNewResp = replace_return($sValves, $sStatusChnage, $aDevice[0] ); 
+                                if($sValves[$aDevice[0]] != '' && $sValves[$aDevice[0]] != '.')
+                                {
+                                    $sStatusChnage = $aResultDirection[$i];
 
-                                onoff_rlb_valve($sNewResp);
+                                    if($aAP[$i] == '0')
+                                    $sNewResp = replace_return($sValves, $aAP[$i], $aDevice[0] );
+                                    else if($aAP[$i] == '1')
+                                    $sNewResp = replace_return($sValves, $sStatusChnage, $aDevice[0] ); 
+
+                                    onoff_rlb_valve($sNewResp);
+                                }
                             }
                         }
                     }
@@ -150,10 +156,11 @@ class Cron extends CI_Controller
                     $sDays = str_replace('7','0', $sProgramDays);
                     $aDays = explode(',',$sProgramDays);
                 }
-
-                if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
+                if($sRelays[$sRelayName] != '' && $sRelays[$sRelayName] != '.')
                 {
-                    $aAbsoluteDetails       = array('absolute_s'  => $sProgramAbsStart,
+                    if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
+                    {
+                        $aAbsoluteDetails       = array('absolute_s'  => $sProgramAbsStart,
                                                         'absolute_e'  => $sProgramAbsEnd,
                                                         'absolute_t'  => $sProgramAbsTotal,
                                                         'absolute_ar' => $sProgramAbsAlreadyRun,
@@ -161,63 +168,100 @@ class Cron extends CI_Controller
                                                         'absolute_st' => $sProgramAbsRun
                                                         ); 
 
-                    if($sProgramAbs == '1' && $iMode == 1)
-                    {
-                        if($sProgramActive == 0)
-                            $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
-                        
-                        if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
+                        if($sProgramAbs == '1' && $iMode == 1)
                         {
-                            $iRelayStatus = 1;
-                            $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
-                            onoff_rlb_relay($sRelayNewResp);
-                            $this->home_model->updateProgramStatus($iProgId, 1);
-                        }
-                        else if($sTime >= $sProgramAbsEnd && $sProgramActive == 1)
-                        {
-                            $iRelayStatus = 0;
-                            $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
-                            onoff_rlb_relay($sRelayNewResp);
-                            $this->home_model->updateProgramStatus($iProgId, 0);
-                            $this->home_model->updateAbsProgramRun($iProgId, '1');
-                        }
-                    }
-                    else if($sProgramAbs == '1' && $iMode == 2)
-                    {
-                        if($sProgramActive == 1)
-                        {
-                            $iRelayStatus = 0;
-                            $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
-                            onoff_rlb_relay($sRelayNewResp);
-                            $this->home_model->updateProgramStatus($iProgId, 0);
-                            $this->home_model->updateAlreadyRunTime($iProgId, $aAbsoluteDetails);
-                        }
-                    }
-                    else
-                    {
-                        //on relay
-                        if($sTime >= $sProgramStart && $sTime < $sProgramEnd && $sProgramActive == 0)
-                        {
-                            if($iMode == 1)
+                            if($sProgramActive == 0)
+                                $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
+
+                            if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
                             {
                                 $iRelayStatus = 1;
                                 $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
                                 onoff_rlb_relay($sRelayNewResp);
                                 $this->home_model->updateProgramStatus($iProgId, 1);
                             }
-                        }//off relay
-                        else if($sTime >= $sProgramEnd && $sProgramActive == 1)
-                        {
-                            $iRelayStatus = 0;
-                            $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
-                            onoff_rlb_relay($sRelayNewResp);
-                            $this->home_model->updateProgramStatus($iProgId, 0);
+                            else if($sTime >= $sProgramAbsEnd && $sProgramActive == 1)
+                            {
+                                $iRelayStatus = 0;
+                                $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
+                                onoff_rlb_relay($sRelayNewResp);
+                                $this->home_model->updateProgramStatus($iProgId, 0);
+                                $this->home_model->updateAbsProgramRun($iProgId, '1');
+                            }
                         }
-                    } 
-               }
+                        else if($sProgramAbs == '1' && $iMode == 2)
+                        {
+                            if($sProgramActive == 1)
+                            {
+                                $iRelayStatus = 0;
+                                $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
+                                onoff_rlb_relay($sRelayNewResp);
+                                $this->home_model->updateProgramStatus($iProgId, 0);
+                                $this->home_model->updateAlreadyRunTime($iProgId, $aAbsoluteDetails);
+                            }
+                        }
+                        else
+                        {
+                            //on relay
+                            if($sTime >= $sProgramStart && $sTime < $sProgramEnd && $sProgramActive == 0)
+                            {
+                                if($iMode == 1)
+                                {
+                                    $iRelayStatus = 1;
+                                    $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
+                                    onoff_rlb_relay($sRelayNewResp);
+                                    $this->home_model->updateProgramStatus($iProgId, 1);
+                                }
+                            }//off relay
+                            else if($sTime >= $sProgramEnd && $sProgramActive == 1)
+                            {
+                                $iRelayStatus = 0;
+                                $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
+                                onoff_rlb_relay($sRelayNewResp);
+                                $this->home_model->updateProgramStatus($iProgId, 0);
+                            }
+                        } 
+                    }
+                }
             }
         }
 
+    }
+    
+    public function checkDeviceManualTime() //START : Function to make the Device OFF if Time is set in Manual Mode.
+    {
+        $this->load->model('home_model');
+        //Get the current status from the Relay board.
+        $sResponse      =   get_rlb_status();
+        
+        $sRelays        =   $sResponse['relay'];
+        $sTime          =   $sResponse['time'];
+        
+        //Get Current Mode of the System.
+        $iMode          =   $this->home_model->getActiveMode();
+        //Get All device with Time 
+        $aAllTime       =   $this->home_model->getAllDeviceTimeDetails();
+        
+        //START : If atleast 1 device has Time and Mode is Manual.
+            if(is_array($aAllTime) && !empty($aAllTime) && $iMode == 2)
+            {
+                foreach($aAllTime as $aResultTime)
+                {
+                    $sDeviceName     = $aResultTime->device_number;
+                    $sDevice         = $aResultTime->device_type;
+                    $sDeviceEnd      = $aResultTime->device_end_time;
+
+                    if($sTime >= $sDeviceEnd)//If Device End time is passed then switch OFF the DEVICE.
+                    {
+                        $iRelayStatus = 0;
+                        $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sDeviceName );
+                        onoff_rlb_relay($sRelayNewResp);
+                        //Update the start time and end time of the Device.
+                        $this->home_model->updateDeviceRunTime($sDeviceName, $sDevice, $iRelayStatus);
+                    }
+                }
+            }
+        //END : If atleast 1 device has Time and Mode is Manual.
     }
 }
 

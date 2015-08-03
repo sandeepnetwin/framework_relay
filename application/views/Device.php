@@ -47,6 +47,7 @@ if($sDevice == 'PS')
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
+                    <th class="header">Time</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -69,16 +70,27 @@ if($sDevice == 'PS')
                         $sRelayNameDb =  $this->home_model->getDeviceName($i,$sDevice);
                         if($sRelayNameDb == '')
                           $sRelayNameDb = 'Add Name';
+                        
+                        $sDeviceTime =  $this->home_model->getDeviceTime($i,$sDevice);
+                        if($sDeviceTime == '')
+                          $sDeviceTime = 'Add Time';
+                        else
+                          $sDeviceTime .= ' Minute';
                 ?>
                       <tr>
                         <td>Relay <?php echo $i;?></td>
                         <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
                         <td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
-                        <td><div class="toggle-light" style="width:100px;">
-                        <div>
-                         <div class="toggle<?php echo $i;?> <?php echo $sRelayVal;?>"></div>
-                        </div>
-                        </div>
+                        <td>
+                            <?php 
+                            if($iRelayVal != '' && $iRelayVal !='.') 
+                            {
+                            ?>
+                            <div class="toggle-light" style="width:100px;">
+                                <div>
+                                    <div class="toggle<?php echo $i;?> <?php echo $sRelayVal;?>"></div>
+                                </div>
+                            </div>
 
                        <script type="text/javascript">
                           var clickOff  = '';
@@ -113,8 +125,21 @@ if($sDevice == 'PS')
                              <?php } ?> 
                           });
                        </script>
+                       <?php } else { ?>
+                       <strong style="color:#FF0000">Output is assigned to Valve.</strong>
+                       <?php } ?>
                        </td>
-                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a></td>
+                        <td>
+                            <?php 
+                            if($iRelayVal != '' && $iRelayVal !='.') 
+                            {
+                            ?>
+                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>
+                            <?php } else { ?>
+                            <strong style="color:#428BCA">-</strong>
+                            <?php } ?>
+                        </td>
+                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a></td>
                       </tr>
                 <?php } ?>
                 
@@ -275,6 +300,7 @@ if($sDevice == 'PS')
                                 <td>
                                     <div class="col-lg-3">Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ($j+1);?>)<br /><br /></div>
                                     <div class="col-lg-3"><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a><br /><br /></div>
+                                    <?php if($iValvesVal != '' && $iValvesVal != '.') { ?>
                                     <div class="col-lg-3">                                    
                                     <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
                                     <div class="span2" style="margin-left:5px; margin-right:5px; float: left;" >
@@ -343,6 +369,9 @@ if($sDevice == 'PS')
                                </script>
                                
                                     </div>
+                                <?php } else { ?>
+                                    <strong style="color:#FF0000">Valve is not configured.</strong>
+                                <?php } ?>    
                                 </td>
                                
                             </tr>
