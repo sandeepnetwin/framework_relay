@@ -47,7 +47,7 @@ if($sDevice == 'PS')
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
-                    <th class="header">Time</th>
+                    <th class="header">Maximum run time</th>
                   </tr>
                 </thead>
                 <tbody>
