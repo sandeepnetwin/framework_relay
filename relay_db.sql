@@ -110,6 +110,29 @@ CREATE TABLE IF NOT EXISTS `rlb_powercenters` (
   PRIMARY KEY (`powercenter_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
+CREATE TABLE IF NOT EXISTS `rlb_program` (
+  `program_id` int(11) NOT NULL AUTO_INCREMENT,
+  `program_name` varchar(255) NOT NULL,
+  `device_number` varchar(8) NOT NULL,
+  `device_type` varchar(8) NOT NULL,
+  `program_type` int(2) NOT NULL COMMENT '1-Daily, 2-Weekly',
+  `program_days` varchar(255) NOT NULL COMMENT '0-All, 1-Mon, 2-Tue...7-Sun',
+  `start_time` varchar(255) NOT NULL,
+  `end_time` varchar(255) NOT NULL,
+  `program_created_date` datetime NOT NULL,
+  `program_modified_date` datetime NOT NULL,
+  `program_delete` int(1) NOT NULL DEFAULT '0',
+  `program_active` int(1) NOT NULL DEFAULT '0',
+  `program_absolute` enum('0','1') NOT NULL DEFAULT '0',
+  `program_absolute_start_time` varchar(100) DEFAULT NULL,
+  `program_absolute_end_time` varchar(100) DEFAULT NULL,
+  `program_absolute_total_time` varchar(100) DEFAULT NULL,
+  `program_absolute_run_time` varchar(100) DEFAULT NULL,
+  `program_absolute_start_date` date DEFAULT NULL,
+  `program_absolute_run` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`program_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 --
 -- Table structure for table `rlb_pump_device`
 --

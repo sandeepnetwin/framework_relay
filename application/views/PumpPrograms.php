@@ -34,7 +34,7 @@ if(empty($aEnd))
 
 $sSubmitButton  = 'Save';
 
-$sSubmitUrl = site_url('home/setPrograms/'.base64_encode($sDeviceID));
+$sSubmitUrl = site_url('home/setProgramsPump/'.base64_encode($sDeviceID));
 if($sProgramID != '')
 {
   $sSubmitUrl .= '/'.base64_encode($sProgramID).'/';
@@ -158,7 +158,7 @@ if($sProgramID != '')
                         <td width="89%"><input type="radio" <?php if($isAbsoluteProgram == '1') { echo 'checked="checked;"';}?> name="isAbsoluteProgram" id="isAbsoluteProgramYes" value="1" >&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="isAbsoluteProgram" id="isAbsoluteProgramNo" value="0" <?php if($isAbsoluteProgram == '0' || $isAbsoluteProgram == '') { echo 'checked="checked;"';}?> >&nbsp;No</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
-                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setPrograms/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/R/');?>">Back</a></td></tr>
+                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/PS/');?>">Back</a></td></tr>
                       
                     </table>
                     <div style="height:20px;">&nbsp;</div>
@@ -201,7 +201,7 @@ if($sProgramID != '')
                                      <td>'.$sProgramDays.'</td>
                                      <td>'.$aResult->start_time.'</td>
                                      <td>'.$aResult->end_time.'</td>
-                                     <td><a class="btn btn-primary btn-xs" href="'.site_url('home/setPrograms/'.base64_encode($sDeviceID).'/'.base64_encode($aResult->program_id)).'">EDIT</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" href="'.site_url('home/setPrograms/'.base64_encode($sDeviceID).'/'.base64_encode($aResult->program_id)).'/D/">DELETE</a></td> 
+                                     <td><a class="btn btn-primary btn-xs" href="'.site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/'.base64_encode($aResult->program_id)).'">EDIT</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" href="'.site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/'.base64_encode($aResult->program_id)).'/D/">DELETE</a></td> 
                                      </tr>';
                             }
                         }

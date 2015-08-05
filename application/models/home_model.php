@@ -145,7 +145,7 @@ class Home_model extends CI_Model
         return $arrSettingDetails;
     }
 
-    public function saveProgramDetails($aPost,$sDeviceID)
+    public function saveProgramDetails($aPost,$sDeviceID,$sDevice)
     {
         $sProgramName   =   $aPost['sProgramName'];
         $sProgramType   =   $aPost['sProgramType'];
@@ -157,8 +157,8 @@ class Home_model extends CI_Model
             $sProgramDays   =   implode(',',$sProgramDays);
         }
 
-        $sStartTime         =   $aPost['sStartTime'];
-        $sEndTime           =   $aPost['sEndTime'];
+        $sStartTime         =   $aPost['sStartTime'].':00';
+        $sEndTime           =   $aPost['sEndTime'].':00';
         $bAbsoluteProgram   =   $aPost['isAbsoluteProgram'];
 
         $time1      = new DateTime($sStartTime);
@@ -166,21 +166,22 @@ class Home_model extends CI_Model
         $interval   = $time2->diff($time1);
         $sTotalTime = $interval->format('%H:%I:%S');
 
-        $data = array('relay_prog_name' => $sProgramName, 
-                      'relay_number'    => $sDeviceID, 
-                      'relay_prog_type' => $sProgramType,
-                      'relay_prog_days' => $sProgramDays,
-                      'relay_start_time'=> $sStartTime,
-                      'relay_end_time'  => $sEndTime,
-                      'relay_prog_created_date'=> date('Y-m-d H:i:s'),
-                      'relay_prog_absolute' => $bAbsoluteProgram,
-                      'relay_prog_absolute_total_time'=>$sTotalTime
+        $data = array('program_name' 	=> $sProgramName, 
+                      'device_number'   => $sDeviceID,
+					  'device_type' 	=> $sDevice, 		
+                      'program_type' 	=> $sProgramType,
+                      'program_days' 	=> $sProgramDays,
+                      'start_time'		=> $sStartTime,
+                      'end_time'  		=> $sEndTime,
+                      'program_created_date'=> date('Y-m-d H:i:s'),
+                      'program_absolute'=> $bAbsoluteProgram,
+                      'program_absolute_total_time'=>$sTotalTime
                       );
-        $this->db->insert('rlb_relay_prog', $data);
+        $this->db->insert('rlb_program', $data);
 
     }
 
-    public function updateProgramDetails($aPost,$sProgramID,$sDeviceID)
+    public function updateProgramDetails($aPost,$sProgramID,$sDeviceID,$sDevice)
     {
         $sProgramName   =   $aPost['sProgramName'];
         $sProgramType   =   $aPost['sProgramType'];
@@ -202,35 +203,37 @@ class Home_model extends CI_Model
         $interval   = $time2->diff($time1);
         $sTotalTime = $interval->format('%H:%I:%S');
 
-        $data = array('relay_prog_name' => $sProgramName, 
-                      'relay_number'    => $sDeviceID,    
-                      'relay_prog_type' => $sProgramType,
-                      'relay_prog_days' => $sProgramDays,
-                      'relay_start_time'=> $sStartTime,
-                      'relay_end_time'  => $sEndTime,
-                      'relay_prog_modified_date'=> date('Y-m-d H:i:s'),
-                      'relay_prog_absolute' => $bAbsoluteProgram,
-                      'relay_prog_absolute_total_time'=>$sTotalTime,
-                      'relay_prog_absolute_start_time'=>$sAbsoluteStart,
-                      'relay_prog_absolute_end_time'=>$sAbsoluteEnd
+        $data = array('program_name' => $sProgramName, 
+                      'device_number'    => $sDeviceID,
+					  'device_type' 	=> $sDevice,					  
+                      'program_type' => $sProgramType,
+                      'program_days' => $sProgramDays,
+                      'start_time'=> $sStartTime,
+                      'end_time'  => $sEndTime,
+                      'program_modified_date'=> date('Y-m-d H:i:s'),
+                      'program_absolute' => $bAbsoluteProgram,
+                      'program_absolute_total_time'=>$sTotalTime,
+                      'program_absolute_start_time'=>$sAbsoluteStart,
+                      'program_absolute_end_time'=>$sAbsoluteEnd
                       );
-        $this->db->where('relay_prog_id', $sProgramID);
-        $this->db->update('rlb_relay_prog', $data);
+        $this->db->where('program_id', $sProgramID);
+        $this->db->update('rlb_program', $data);
     }
 
     public function deleteProgramDetails($sProgramID)
     {
-        $data = array('relay_prog_delete' => '1');
-        $this->db->where('relay_prog_id', $sProgramID);
-        $this->db->update('rlb_relay_prog', $data);   
+        $data = array('program_delete' => '1');
+        $this->db->where('program_id', $sProgramID);
+        $this->db->update('rlb_program', $data);   
     }
 
-    function getProgramDetailsForDevice($sDeviceID)
+    function getProgramDetailsForDevice($sDeviceID,$sDevice)
     {
 
-        $this->db->where('relay_number',$sDeviceID);
-        $this->db->where('relay_prog_delete','0');
-        $query = $this->db->get('rlb_relay_prog');
+        $this->db->where('device_number',$sDeviceID);
+		$this->db->where('device_type',$sDevice);
+        $this->db->where('program_delete','0');
+        $query = $this->db->get('rlb_program');
 
         if($query->num_rows() > 0)
         {
@@ -243,8 +246,8 @@ class Home_model extends CI_Model
     public function getProgramDetails($sProgramID)
     {
 
-        $this->db->where('relay_prog_id',$sProgramID);
-        $query = $this->db->get('rlb_relay_prog');
+        $this->db->where('program_id',$sProgramID);
+        $query = $this->db->get('rlb_program');
 
         if($query->num_rows() > 0)
         {
@@ -256,9 +259,9 @@ class Home_model extends CI_Model
 
     public function getAllProgramsDetails()
     {
-        $this->db->where('relay_prog_delete','0');
+        $this->db->where('program_delete','0');
         //$this->db->where('relay_prog_id','7');
-        $query = $this->db->get('rlb_relay_prog');
+        $query = $this->db->get('rlb_program');
 
         if($query->num_rows() > 0)
         {
@@ -272,9 +275,9 @@ class Home_model extends CI_Model
     {
         if($iProgId)
         {
-            $data = array('relay_prog_active' => $sStatus);
-            $this->db->where('relay_prog_id', $iProgId);
-            $this->db->update('rlb_relay_prog', $data);
+            $data = array('program_active' => $sStatus);
+            $this->db->where('program_id', $iProgId);
+            $this->db->update('rlb_program', $data);
         }
     }
 
@@ -282,9 +285,9 @@ class Home_model extends CI_Model
     {
         if($iProgId)
         {
-            $data = array('relay_prog_absolute_run' => $sStatus);
-            $this->db->where('relay_prog_id', $iProgId);
-            $this->db->update('rlb_relay_prog', $data);
+            $data = array('program_absolute_run' => $sStatus);
+            $this->db->where('program_id', $iProgId);
+            $this->db->update('rlb_program', $data);
         }
     }
 
@@ -305,37 +308,37 @@ class Home_model extends CI_Model
             $sProgramAbsEnd   =   mktime(($aStartTime[0]+$aTotalTime[0]),($aStartTime[1]+$aTotalTime[1]),($aStartTime[2]+$aTotalTime[2]),0,0,0);
             $sAbsoluteEnd     =   date("H:i:s", $sProgramAbsEnd);
 
-            $data = array('relay_prog_absolute_start_time'  => $sProgramAbsStart,
-                          'relay_prog_absolute_end_time'    => $sAbsoluteEnd,
-                          'relay_prog_absolute_run_time'    => '',
-                          'relay_prog_absolute_start_date'  => date('Y-m-d'),
-                          'relay_prog_absolute_run'         => '0'
+            $data = array('program_absolute_start_time'  => $sProgramAbsStart,
+                          'program_absolute_end_time'    => $sAbsoluteEnd,
+                          'program_absolute_run_time'    => '',
+                          'program_absolute_start_date'  => date('Y-m-d'),
+                          'program_absolute_run'         => '0'
                           );
 
-            $this->db->where('relay_prog_id', $iProgId);
-            $this->db->update('rlb_relay_prog', $data);
+            $this->db->where('program_id', $iProgId);
+            $this->db->update('rlb_program', $data);
         }
         else if(strtotime($sProgramAbsStartDay) == strtotime(date('Y-m-d')))
         {
 
             if($sProgramAbsAlreadyRun != '')
             {
-                $aAlreadyRunTime     =   explode(":",$sProgramAbsAlreadyRun);
-                $aTotalTime          =   explode(":",$sProgramAbsTotal);
-                $sProgramAbsStart    =   date("H:i:s", time());
-                $aStartTime       =   explode(":",$sProgramAbsStart);
-                $sProgramAbsEnd   =   mktime(($aStartTime[0]+$aAlreadyRunTime[0]),($aStartTime[1]+$aAlreadyRunTime[1]),($aStartTime[2]+$aAlreadyRunTime[2]),0,0,0);
-                $sAbsoluteEnd     =   date("H:i:s", $sProgramAbsEnd);
+                $aAlreadyRunTime    =   explode(":",$sProgramAbsAlreadyRun);
+                $aTotalTime         =   explode(":",$sProgramAbsTotal);
+                $sProgramAbsStart   =   date("H:i:s", time());
+                $aStartTime       	=   explode(":",$sProgramAbsStart);
+                $sProgramAbsEnd   	=   mktime(($aStartTime[0]+$aAlreadyRunTime[0]),($aStartTime[1]+$aAlreadyRunTime[1]),($aStartTime[2]+$aAlreadyRunTime[2]),0,0,0);
+                $sAbsoluteEnd     	=   date("H:i:s", $sProgramAbsEnd);
 
-                $data = array(  'relay_prog_absolute_start_time'  => $sProgramAbsStart,
-                                'relay_prog_absolute_end_time'    => $sAbsoluteEnd,
-                                'relay_prog_absolute_run_time'    => '',
-                                'relay_prog_absolute_start_date'  => date('Y-m-d'),
-                                'relay_prog_absolute_run'         => $sProgramAbsRunStatus
+                $data = array(  'program_absolute_start_time'  => $sProgramAbsStart,
+                                'program_absolute_end_time'    => $sAbsoluteEnd,
+                                'program_absolute_run_time'    => '',
+                                'program_absolute_start_date'  => date('Y-m-d'),
+                                'program_absolute_run'         => $sProgramAbsRunStatus
                               );
 
-                $this->db->where('relay_prog_id', $iProgId);
-                $this->db->update('rlb_relay_prog', $data);
+                $this->db->where('program_id', $iProgId);
+                $this->db->update('rlb_program', $data);
             }
         }
     }
@@ -359,16 +362,16 @@ class Home_model extends CI_Model
         $time2      = new DateTime($sProgramAbsTotal);
         $interval   = $time2->diff($time1);
         $sTotalTime = $interval->format('%H:%I:%S');
-
-        $data = array('relay_prog_absolute_start_time'  => '',
-                      'relay_prog_absolute_end_time'    => '',
-                      'relay_prog_absolute_run_time'    => $sTotalTime,
-                      'relay_prog_absolute_start_date'  => date('Y-m-d'),
-                      'relay_prog_absolute_run'         => $sProgramAbsRunStatus
+		
+		$data = array('program_absolute_start_time'  => '',
+                      'program_absolute_end_time'    => '',
+                      'program_absolute_run_time'    => $sTotalTime,
+                      'program_absolute_start_date'  => date('Y-m-d'),
+                      'program_absolute_run'         => $sProgramAbsRunStatus
                       );
 
-        $this->db->where('relay_prog_id', $iProgId);
-        $this->db->update('rlb_relay_prog', $data);
+        $this->db->where('program_id', $iProgId);
+        $this->db->update('rlb_program', $data);
     }
 
    public function getPumpDetails($sDeviceID)
@@ -387,13 +390,17 @@ class Home_model extends CI_Model
 
    public function savePumpDetails($aPost,$sDeviceID)
    {
-        $sPumpClosure   =   $aPost['sPumpClosure'];
+        $sPumpClosure   =   '';
         $sPumpType      =   $aPost['sPumpType'];
         $sPumpSpeed     =   '';
         $sPumpFlow      =   '';
+		
 
         if($sPumpType == '2')
+		{
             $sPumpSpeed     =   $aPost['sPumpSpeed'];
+			$sPumpClosure   = 	$aPost['sPumpClosure'];
+		}
         if($sPumpType == '3')
             $sPumpFlow      =   $aPost['sPumpFlow'];
         

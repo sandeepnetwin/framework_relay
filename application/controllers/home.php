@@ -40,12 +40,16 @@ class Home extends CI_Controller
         
         //Pump device Status
         $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
-        
+        // Temperature Sensor Device 
+		$sTemprature    =   array($sResponse['temp_sensor_1'],$sResponse['temp_sensor_2'],$sResponse['temp_sensor_3'],$sResponse['temp_sensor_4'],$sResponse['temp_sensor_5']);
+			
         //START : Parameter for View
             $aViewParameter['relay_count']  =   strlen($sRelays);
             $aViewParameter['valve_count']  =   strlen($sValves);
             $aViewParameter['power_count']  =   strlen($sPowercenter);
-            $aViewParameter['pump_count']   =   count($sPump);
+			
+            $aViewParameter['pump_count']   		=   count($sPump);
+			$aViewParameter['temprature_count']   	=   count($sTemprature);
             $aViewParameter['time']         =   $sTime;
         //END : Parameter for View
             
@@ -180,6 +184,8 @@ class Home extends CI_Controller
             
             // Pump Device Status
             $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+			// Temperature Sensor Device 
+			$sTemprature    =   array($sResponse['temp_sensor_1'],$sResponse['temp_sensor_2'],$sResponse['temp_sensor_3'],$sResponse['temp_sensor_4'],$sResponse['temp_sensor_5']);
 
             //START : Parameter for View
                 $aViewParameter['relay_count']      =   strlen($sRelays);
@@ -187,11 +193,13 @@ class Home extends CI_Controller
                 $aViewParameter['power_count']      =   strlen($sPowercenter);
                 $aViewParameter['time']             =   $sTime;
                 $aViewParameter['pump_count']       =   count($sPump);
+				$aViewParameter['temprature_count']       =   count($sTemprature);
 
                 $aViewParameter['sRelays']          =   $sRelays; 
                 $aViewParameter['sPowercenter']     =   $sPowercenter;
                 $aViewParameter['sValves']          =   $sValves;
                 $aViewParameter['sPump']            =   $sPump;
+				$aViewParameter['sTemprature']      =   $sTemprature;
 
                 $aViewParameter['sDevice']          =   $sPage;
             //END : Parameter for View
@@ -406,7 +414,86 @@ class Home extends CI_Controller
         //Position Name Save View
         $this->load->view('PositionName',$aViewParameter); 
     } //END : Function to save position names for Valve
+	
+	public function setProgramsPump() // START : Function to save/update/delete the Programs to run relay in Auto mode.
+    {
+        $aViewParameter              =   array(); // Array for passing parameter to view.
+        $aViewParameter['page']      =   'home';
+        $aViewParameter['sucess']    =   '0';
+        
+        //Get Values From URL.
+        $sDeviceID      =   base64_decode($this->uri->segment('3')); // Get Device ID
+        $sProgramID     =   base64_decode($this->uri->segment('4')); // Get Program ID 
+        $sProgramDelete =   $this->uri->segment('5');// Get value for delete
 
+        $this->load->model('home_model');
+
+        if($sDeviceID == '') //START : Check if Device id is blank then redirect to the device list page
+        {
+            $sDeviceID  =   base64_decode($this->input->post('sDeviceID'));
+            if($sDeviceID == '') // IF Device ID not present in POST redirect to the Device List
+                redirect(site_url('home/setting/R'));
+        }
+       
+        //Parameter for View
+        $aViewParameter['sDeviceID']    =   $sDeviceID;
+        
+        if($this->input->post('command') == 'Save') // START : Save program details.
+        {
+            if($this->input->post('sRelayNumber') != '')
+                $sDeviceID   =  $this->input->post('sRelayNumber');
+
+            $this->home_model->saveProgramDetails($this->input->post(),$sDeviceID,'PS');
+            $aViewParameter['sucess']    =   '1';
+        }// END : Save program details.
+
+        if($this->input->post('command') == 'Update') // START : Update program details.
+        {
+            if($sProgramID == '') //START : Check if Program id is blank then redirect
+            {
+                $sProgramID  =   base64_decode($this->input->post('sProgramID'));
+                if($sProgramID == '') // IF Program ID not present in POST redirect
+                    redirect(site_url('home/setProgramsPump/'.base64_encode($sDeviceID)));
+            }  
+
+            if($this->input->post('sRelayNumber') != '')
+                $sDeviceID   =  $this->input->post('sRelayNumber'); 
+
+            $this->home_model->updateProgramDetails($this->input->post(),$sProgramID,$sDeviceID,'PS');
+            redirect(site_url('home/setProgramsPump/'.base64_encode($sDeviceID)));
+        }// END : Update program details.
+
+        if($sProgramDelete != '' && $sProgramDelete == 'D') // START : Delete program details.
+        {
+            if($sProgramID == '')
+            {
+                $sProgramID  =   base64_decode($this->input->post('sProgramID'));
+                if($sProgramID == '')
+                    redirect(site_url('home/setProgramsPump/'.base64_encode($sDeviceID)));
+            }
+
+            $this->home_model->deleteProgramDetails($sProgramID);
+            redirect(site_url('home/setProgramsPump/'.base64_encode($sDeviceID)));
+        } // START : Delete program details.
+
+        // Get saved program details     
+        $aViewParameter['sProgramDetails'] = $this->home_model->getProgramDetailsForDevice($sDeviceID,'PS');
+
+        if($sProgramID != '') //If program exists the get program details.
+        {
+            $aViewParameter['sProgramID'] = $sProgramID;
+            $aViewParameter['sProgramDetailsEdit'] = $this->home_model->getProgramDetails($sProgramID);
+        }
+        else
+        {
+            $aViewParameter['sProgramID']          = ''; 
+            $aViewParameter['sProgramDetailsEdit'] = '';
+        }
+        
+        //Program View for Getting and Showing Programs
+        $this->load->view('PumpPrograms',$aViewParameter); 
+    } // END : Function to save/update/delete the Programs to run relay in Auto mode.
+	
     public function setPrograms() // START : Function to save/update/delete the Programs to run relay in Auto mode.
     {
         $aViewParameter              =   array(); // Array for passing parameter to view.
@@ -435,7 +522,7 @@ class Home extends CI_Controller
             if($this->input->post('sRelayNumber') != '')
                 $sDeviceID   =  $this->input->post('sRelayNumber');
 
-            $this->home_model->saveProgramDetails($this->input->post(),$sDeviceID);
+            $this->home_model->saveProgramDetails($this->input->post(),$sDeviceID,'R');
             $aViewParameter['sucess']    =   '1';
         }// END : Save program details.
 
@@ -451,7 +538,7 @@ class Home extends CI_Controller
             if($this->input->post('sRelayNumber') != '')
                 $sDeviceID   =  $this->input->post('sRelayNumber'); 
 
-            $this->home_model->updateProgramDetails($this->input->post(),$sProgramID,$sDeviceID);
+            $this->home_model->updateProgramDetails($this->input->post(),$sProgramID,$sDeviceID,'R');
             redirect(site_url('home/setPrograms/'.base64_encode($sDeviceID)));
         }// END : Update program details.
 
@@ -469,7 +556,7 @@ class Home extends CI_Controller
         } // START : Delete program details.
 
         // Get saved program details     
-        $aViewParameter['sProgramDetails'] = $this->home_model->getProgramDetailsForDevice($sDeviceID);
+        $aViewParameter['sProgramDetails'] = $this->home_model->getProgramDetailsForDevice($sDeviceID,'R');
 
         if($sProgramID != '') //If program exists the get program details.
         {

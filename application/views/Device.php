@@ -10,6 +10,8 @@ if($sDevice == 'V')
   $sDeviceFullName = 'Valve';
 if($sDevice == 'PS')
   $sDeviceFullName = 'Pump Sequencer';
+if($sDevice == 'T')
+  $sDeviceFullName = 'Temperature sensor';
 ?>
 <link href="<?php echo site_url('assets/jquery-toggles-master/css/toggles.css'); ?>" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo site_url('assets/jquery-toggles-master/css/themes/toggles-light.css'); ?>">
@@ -412,7 +414,7 @@ if($sDevice == 'PS')
                 <tbody>
                 <?php
                     
-                    //START : Relay Device 
+                    //START : Pump Device 
                     for ($i=0;$i < $pump_count; $i++)
                     {
                         $iPumpVal = $sPump[$i];
@@ -474,7 +476,9 @@ if($sDevice == 'PS')
                           });
                        </script>
                        </td>
-                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/pumpConfigure/'.base64_encode($i).'/');?>">Configure</a></td>
+                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/pumpConfigure/'.base64_encode($i).'/');?>">Configure</a>&nbsp;&nbsp;
+                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($i).'/');?>">Programs</a>
+                        </td>
                       </tr>
                 <?php } ?>
                 
@@ -485,6 +489,46 @@ if($sDevice == 'PS')
           </div>
         </div><!-- /.row -->
         <?php } ?> <!-- END : Pump Device -->
+		<?php if($sDevice == 'T') {  // START : Temperature sensor?>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Temperature sensor List</h3>
+              </div>
+              <div class="table-responsive">
+              <table class="table table-hover tablesorter">
+                <thead>
+                  <tr>
+                    <th class="header">Temperature sensor <i class="fa fa-sort"></i></th>
+                    <th class="header">Name <i class="fa fa-sort"></i></th>
+                  </tr>
+                </thead>
+                <tbody>
+                <?php
+                    
+                    //START : Temperature sensor
+                    for ($i=0;$i < $temprature_count; $i++)
+                    {
+                        $iTempratureVal = $sTemprature[$i];
+                        
+						$sTempratureNameDb =  $this->home_model->getDeviceName($i,$sDevice);
+                        if($sTempratureNameDb == '')
+                          $sTempratureNameDb = 'Add Name';
+                ?>
+                      <tr>
+                        <td>Temperature sensor <?php echo $i;?></td>
+                        <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sTempratureNameDb;?></a></td>
+                      </tr>
+                <?php } ?>
+                
+                </tbody>
+              </table>
+            </div>
+            </div>
+          </div>
+        </div><!-- /.row -->
+        <?php } ?> <!-- END : Temperature sensor -->
       </div><!-- /#page-wrapper -->
 
 

@@ -60,7 +60,7 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
                   <form action="<?php echo $sSubmitUrl;?>" method="post">
                   <input type="hidden" name="sDeviceID" value="<?php echo base64_encode($sDeviceID);?>">
                     <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                      <tr>
+                      <tr id="trVSClosure" style="display:<?php if($sPumpType =='2' || $sPumpType == '') { echo ''; } else { echo 'none';} ?>;">
                         <td width="10%"><strong>Pump Closure:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%">
@@ -148,22 +148,26 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
     {
       $("#sPumpFlow").attr('required','required');
       $("input:radio[name='sPumpSpeed']").removeAttr('required');
+	  $("input:radio[name='sPumpClosure']").removeAttr('required');
 
       $("#trVF").show();
       $("#trVFSpace").show();
       
       $("#trVS").hide();
       $("#trVSSpace").hide();
+	  $("#trVSClosure").hide();
     }
     else if(chkVal == '2')
     {
       $("input:radio[name='sPumpSpeed']").attr('required','required');
+	  $("input:radio[name='sPumpClosure']").attr('required','required');
       $("#sPumpFlow").removeAttr('required');
       $("#trVF").hide();
       $("#trVFSpace").hide();
       
       $("#trVS").show(); 
       $("#trVSSpace").show();
+	  $("#trVSClosure").show();
     }
   });
 </script>
