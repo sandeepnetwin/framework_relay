@@ -35,7 +35,7 @@ $aDesc      = array('Record identifier','Sequence number that runs from 000 ... 
               </div>
               <div class="panel-body">
                 <div id="morris-chart-area">
-                <p><?php echo $response; ?></p>
+                <p style="word-wrap: break-word;"><?php echo $response; ?></p>
                 </div>            
               </div>
             </div>
@@ -52,9 +52,9 @@ $aDesc      = array('Record identifier','Sequence number that runs from 000 ... 
                   <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th style="width:15%;" class="header">Field</th>
-                      <th style="width:15%;" class="header">Name</th>
-                      <th style="width:20%;" class="header">Status</th>
+                      <th class="header">Field</th>
+                      <th class="header">Name</th>
+                      <th class="header">Status</th>
                       <th class="header">Description</th>
                     </tr>
                   </thead>
@@ -74,7 +74,7 @@ $aDesc      = array('Record identifier','Sequence number that runs from 000 ... 
                           if($aDesc[$i] == 'HEX')
                           {
                               $sDesc  = '<strong>Hex error status :</strong><br>
-                                        <table class="table table-hover">
+                                        <table class="table table-hover" style="width: 80%;">
                                           <thead>
                                             <tr>
                                               <th class="header">Bit</th>
@@ -129,13 +129,28 @@ $aDesc      = array('Record identifier','Sequence number that runs from 000 ... 
                           }  
                           else
                             $sDesc =   $aDesc[$i];
-
+						
+						if($aName[$i] == 'ERR')	
+						{
+							echo '<tr>
+                                <td>'.$i.'</td>
+                                <td>'.$aName[$i].'</td>
+                                <td colspan="2">'.$sRes.'</td>
+                                </tr>';
+							
+							echo '<tr>
+                                <td colspan="4">'.$sDesc.'</td>
+                                </tr>'; 							
+						}
+						else
+						{
                           echo '<tr>
                                 <td>'.$i.'</td>
                                 <td>'.$aName[$i].'</td>
-                                <td>'.$sRes.'</td>
-                                <td>'.$sDesc.'</td>
+                                <td><div id="morris-chart-area"><p style="word-wrap: break-word;">'.$sRes.'</p></div></td>
+                                <td><p style="word-wrap: break-word;">'.$sDesc.'</p></td>
                                 </tr>';
+						}
                       }
                   ?>
                  
