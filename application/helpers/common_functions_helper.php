@@ -49,6 +49,7 @@
 			die("Could not send data: [$iErrorcode] $sErrormsg \n");
 		}
 		
+                //echo '<br>'.
 		//Now receive reply from server and print it
 		if(socket_recv ( $sSock , $sReply , 2045 , MSG_WAITALL ) === FALSE)
 		{
@@ -57,20 +58,28 @@
 			 
 			die("Could not receive data: [$iErrorcode] $sErrormsg \n");
 		}*/
+                
+               // $buffer = socket_read($sSock,255);
+                //echo $buffer;
+               //
+                //$buffer = socket_read($sSock,255,PHP_NORMAL_READ);
+                //echo $buffer;
+                //die('HERE');
+                
 		
-		 $fp = @ fsockopen("udp://$sServer", $iPort, $iErrorcode, $sErrormsg,3);
+		$fp =  fsockopen("udp://$sServer", $iPort, $iErrorcode, $sErrormsg,3);
 		if (!$fp) {
 			die("Could not send data: [$iErrorcode] $sErrormsg \n");
 		} else {
+                        
 			fwrite($fp, "$sInput");
 			$sReply = fread($fp, 1024);
 			fclose($fp);
-		} 
-		
-		//echo '<pre>'; print_r($sReply); die;
-		//Check for invalid response.
+		}
+                
+                //Check for invalid response.
 		$iCommaCount = substr_count($sReply, ",");
-		if($iCommaCount < 10 || stripos($sReply, '?') !== FALSE){
+		if(stripos($sReply, '?') !== FALSE){
 			die("Invalid response: $sReply \n");
 		}
 		
@@ -145,8 +154,8 @@
 	function get_rlb_status(){
 		$aReturn = array();
 		$sUrl = 's';
-		$sResponse = get_from_rlb($sUrl);
-		
+		//$sResponse = get_from_rlb($sUrl);
+		$sResponse	=	'S,054,0,1,22:08:00,0,14,00000...,..........000000,00000000,0,0,1816,2373,0,86.6F,,,,,,0.00,0000,0.00,0,0,0';
 		$aResponse = explode(',',$sResponse);
 		
 		$aReturn['response'] = $sResponse;
