@@ -168,7 +168,7 @@ if($sProgramID != '')
                     <thead>
                       <tr>
                         <th class="header">Program Name <i class="fa fa-sort"></i></th>
-                        <th class="header">Relay Number <i class="fa fa-sort"></i></th>
+                        <th class="header">Pump Number <i class="fa fa-sort"></i></th>
                         <th class="header">Program Type <i class="fa fa-sort"></i></th>
                         <th class="header">Program Days <i class="fa fa-sort"></i></th>
                         <th class="header">Start Time <i class="fa fa-sort"></i></th>
