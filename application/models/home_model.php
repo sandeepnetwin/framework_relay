@@ -553,7 +553,7 @@ class Home_model extends CI_Model
         }// END : If user added the Time for Device.
     }//END: Function to update START Time and End Time Of Device
     
-    public function getAllDeviceTimeDetails()
+    public function getAllDeviceTimeDetails() //START : Function to get the Max Run Time for device.
     {
         $this->db->where('device_type', 'R');
         $this->db->where('device_total_time !=', '');
@@ -566,7 +566,16 @@ class Home_model extends CI_Model
         }
 
         return '';
-    }
+    }//START : Function to get the Max Run Time for device.
+	
+	
+	public function getProgramCount($sDeviceNum,$sDevice)//START : Function to get the count of programs for device.
+	{
+		return $this->db
+				->where('device_number', $sDeviceNum)
+				->where('device_type', $sDevice)
+				->count_all_results('rlb_program');
+	}//END : Function to get the count of programs for device.
 }
 
 /* End of file home_model.php */

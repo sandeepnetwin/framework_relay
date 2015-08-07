@@ -52,12 +52,12 @@ if($sPort == '')
                         <td width="89%"><input type="text" class="form-control" placeholder="Enter port no" name="relay_port_no" value="<?php echo $sPort;?>" id="relay_port_no"></td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
-                      <tr>
+                      <!--<tr>
                         <td width="10%"><strong>MODE:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%"><?php echo $sAllModes;?></td>
                       </tr>
-                      <tr><td colspan="3">&nbsp;</td></tr>
+                      <tr><td colspan="3">&nbsp;</td></tr>-->
                       <tr><td colspan="3"><input type="submit" name="command" value="Save Setting" class="btn btn-success" onclick="return checkModeSelected();"></td></tr>
                       
                     </table>

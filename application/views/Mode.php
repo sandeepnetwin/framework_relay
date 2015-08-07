@@ -112,6 +112,32 @@ $this->load->view('Header');
                           </a>
                         </div>
                       </div>
+					  <div class="col-lg-4">
+                        <div class="panel panel-success">
+                          <div class="panel-heading" style="height:91px;">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <i class="fa <?php if($iMode == '4') { echo 'fa-check'; } ?> fa-5x"></i>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                <p class="announcement-heading" style="font-size: 25px;">Emergency Stop</p>
+                              </div>
+                            </div>
+                          </div>
+                          <a href="javascript:void(0);" onclick="submitForm('3');">
+                            <div class="panel-footer announcement-bottom">
+                              <div class="row">
+                                <div class="col-xs-6">
+                                  Switch Emergency Stop
+                                </div>
+                                <div class="col-xs-6 text-right">
+                                  <i class="fa fa-arrow-circle-right"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
                      </div><!-- /.row -->
                   </form>
                 </div>

@@ -45,7 +45,7 @@ if($sDevice == 'T')
                 <thead>
                   <tr>
                     <th class="header">Relay <i class="fa fa-sort"></i></th>
-                    <th class="header">Relay Name <i class="fa fa-sort"></i></th>
+                    <th class="header" width="20px;">Relay Name <i class="fa fa-sort"></i></th>
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
@@ -54,7 +54,7 @@ if($sDevice == 'T')
                 </thead>
                 <tbody>
                 <?php
-                    
+                    $j=0;
                     //START : Relay Device 
                     for ($i=0;$i < $relay_count; $i++)
                     {
@@ -78,8 +78,11 @@ if($sDevice == 'T')
                           $sDeviceTime = 'Add Time';
                         else
                           $sDeviceTime .= ' Minute';
-                ?>
-                      <tr>
+					  
+						$iRelayProgramCount = $this->home_model->getProgramCount($i,$sDevice);
+				?>
+						
+                      <tr <?php if($j>=1){ echo 'class="displayMore"';}?>>
                         <td>Relay <?php echo $i;?></td>
                         <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
                         <td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
@@ -128,7 +131,7 @@ if($sDevice == 'T')
                           });
                        </script>
                        <?php } else { ?>
-                       <strong style="color:#FF0000">Output is assigned to Valve.</strong>
+                       <strong style="color:#FF0000">Output is Assigned to Valve.</strong>
                        <?php } ?>
                        </td>
                         <td>
@@ -136,7 +139,7 @@ if($sDevice == 'T')
                             if($iRelayVal != '' && $iRelayVal !='.') 
                             {
                             ?>
-                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>
+                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>&nbsp&nbsp<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>" style="width: 90px;"><?php echo $iRelayProgramCount;?><?php if($iRelayProgramCount == 1 || $iRelayProgramCount == 0){ echo ' Program';}else{ echo ' Programs';}?></a>
                             <?php } else { ?>
                             <strong style="color:#428BCA">-</strong>
                             <?php } ?>
@@ -148,8 +151,32 @@ if($sDevice == 'T')
                             <?php } ?>
                         </td>        
                       </tr>
-                <?php } ?>
-                
+                <?php
+					if($j==($relay_count-1))
+					{
+						echo '<tr>
+								<th class="header more" colspan="6" style="text-align: center; color:#428BCA; cursor:pointer;">More +</th>
+							  </tr>';
+					}
+					$j++;
+				} ?>
+                <script type="text/javascript">
+				$(document).ready(function() {
+					$(".displayMore").hide();
+					$(".more").click(function() {
+						var txt	=	$(this).html();
+						if(txt == 'More +')
+							txt = 'More -';
+						else
+							txt = 'More +';
+						
+						$(".displayMore").toggle('slow',function() {	
+							$(".more").html(txt);
+						});
+						
+					});
+				});
+				</script>
                 </tbody>
               </table>
             </div>

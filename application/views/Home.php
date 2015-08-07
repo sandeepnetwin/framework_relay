@@ -34,7 +34,7 @@ $this->load->view('Header');
           </div>
         </div><!-- /.row -->
         <div class="row">
-          <div class="col-lg-3">
+		  <!--<div class="col-lg-3">
             <a href="javascript:void(0);">
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
@@ -46,7 +46,7 @@ $this->load->view('Header');
                     </div>
                   </div>
                 </div>
-              </a>
+              </a> 
             <div class="panel panel-warning">
 
               <div class="panel-heading">
@@ -54,16 +54,57 @@ $this->load->view('Header');
                   <div class="col-xs-6 customClass" style="width:100%; height: 522px; text-align: center;">
                     <p><a href="<?php echo site_url('analog/changeMode');?>" style="color:#8A6D3B;">Modes</a></p>
                     <p><a href="javascript:void(0);" style="color:#8A6D3B;">Pool Lights</a></p>
-                    <p><a href="javascript:void(0);" style="color:#8A6D3B;">Spa Equipment</a></p>
+                    <p><a href="javascript:void(0);" style="color:#8A6D3B;">Spa Devices</a></p>
                     <p><a href="javascript:void(0);" style="color:#8A6D3B;">Pool Device</a></p>
                   </div>
                </div>
               </div>
+            </div>			
+          </div> -->
+		
+		<div class="col-lg-3">
+			<div class="panel panel-info">
+              <div class="panel-heading" style="background-color: #f5f5f5;">
+                <div class="row">
+                  <div class="col-xs-6 customClass" style="width:100%; height: 543px; text-align: center;">
+				  <span>Links : </span>
+                    <div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
+						<div class="row">
+							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
+							<a href="<?php echo site_url('analog/changeMode');?>">Modes</a>
+							</div>
+						</div>
+					</div>
+					<div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
+						<div class="row">
+							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
+							<a href="javascript:void(0);">Pool Lights</a>
+							</div>
+						</div>
+					</div>
+					<div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
+						<div class="row">
+							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
+							<a href="javascript:void(0);">Spa Devices</a>
+							</div>
+						</div>
+					</div>
+					<div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
+						<div class="row">
+							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
+							<a href="javascript:void(0);">Pool Device</a>
+							</div>
+						</div>
+					</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div> 
+		</div>	
 
           <div class="col-lg-3">
-            <div class="panel panel-success">
+			<a href="<?php echo site_url('home/setting/R/');?>">
+            <div class="panel panel-info">
               <div class="panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
@@ -75,22 +116,24 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/R/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
-                      Switch Relay ON/OFF
+                      Switch ON/OFF
                     </div>
                     <div class="col-xs-6 text-right">
                       <i class="fa fa-arrow-circle-right"></i>
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
           </div>
 
           <div class="col-lg-3">
+		  <a href="<?php echo site_url('home/setting/V/');?>">
             <div class="panel panel-info">
               <div class="panel-heading">
                 <div class="row">
@@ -103,23 +146,25 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/V/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
-                     Switch Valve ON/OFF
+                     Switch ON/OFF
                     </div>
                     <div class="col-xs-6 text-right">
                       <i class="fa fa-arrow-circle-right"></i>
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
           </div>
 
           <div class="col-lg-3">
-            <div class="panel panel-warning">
+		  <a href="<?php echo site_url('home/setting/P/');?>">
+            <div class="panel panel-info">
               <div class="panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
@@ -131,23 +176,25 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/P/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
-                      Switch Power Center ON/OFF
+                      Switch ON/OFF
                     </div>
                     <div class="col-xs-6 text-right">
                       <i class="fa fa-arrow-circle-right"></i>
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
           </div>
 
         <div class="col-lg-3">
-            <div class="panel panel-success">
+		<a href="<?php echo site_url('home/setting/PS/');?>">
+            <div class="panel panel-info">
               <div class="panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
@@ -159,22 +206,26 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/PS/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
-                      Switch Pumps ON/OFF
+                      Switch ON/OFF
+					  <br />
+					  <br />
                     </div>
                     <div class="col-xs-6 text-right">
                       <i class="fa fa-arrow-circle-right"></i>
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
         </div>
 		
 		<div class="col-lg-3">
+		<a href="<?php echo site_url('home/setting/T/');?>">
             <div class="panel panel-info">
               <div class="panel-heading">
                 <div class="row">
@@ -187,7 +238,7 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/T/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
@@ -198,11 +249,13 @@ $this->load->view('Header');
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
         </div>
 
           <div class="col-lg-3">
+		  <a href="<?php echo site_url('home/setting/');?>">
             <div class="panel panel-danger">
               <div class="panel-heading">
                 <div class="row">
@@ -215,22 +268,26 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('home/setting/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
-                      Add/Edit IP, PORT and Mode
+                      Settings
+					  <br />
+					  <br />
                     </div>
                     <div class="col-xs-6 text-right">
                       <i class="fa fa-arrow-circle-right"></i>
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
           </div> 
 
           <div class="col-lg-3">
+		  <a href="<?php echo site_url('analog/');?>">
             <div class="panel panel-danger">
               <div class="panel-heading">
                 <div class="row">
@@ -243,7 +300,7 @@ $this->load->view('Header');
                   </div>
                 </div>
               </div>
-              <a href="<?php echo site_url('analog/');?>">
+              
                 <div class="panel-footer announcement-bottom">
                   <div class="row">
                     <div class="col-xs-6">
@@ -254,9 +311,11 @@ $this->load->view('Header');
                     </div>
                   </div>
                 </div>
-              </a>
+              
             </div>
+			</a>
           </div> 
+		  
         </div><!-- /.row -->
       </div><!-- /#page-wrapper -->
 <script type="text/javascript">

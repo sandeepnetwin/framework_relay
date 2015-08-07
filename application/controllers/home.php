@@ -110,7 +110,7 @@ class Home extends CI_Controller
                     //Save IP and PORT
                     $this->home_model->updateSetting($sIP,$sPort);
                     
-                    //Save Mode
+                    /*//Save Mode
                     $this->home_model->updateMode($iMode);
                     
                     //Get the status response of devices from relay board.
@@ -142,9 +142,10 @@ class Home extends CI_Controller
                         }
 
                     } //END : IF mode is not Manual then switch all devices OFF. if($iMode == 3 || $iMode == 1)
+					*/
                     
                     $aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
-                 } // END : else for if($sIP == '' || $sPort == '')
+                } // END : else for if($sIP == '' || $sPort == '')
              } // END : IF Setting details are posted. if($this->input->post('command') == 'Save Setting') 
             
             //START : Create Mode select Box to show on setting page. 
@@ -165,7 +166,7 @@ class Home extends CI_Controller
             //Get saved IP and PORT 
             list($aViewParameter['sIP'],$aViewParameter['sPort']) = $this->home_model->getSettings();
             
-            //View Setting
+			//View Setting
             $this->load->view('Setting',$aViewParameter);
         } // END : If no device type then show setting page. if($sPage == '')
         else //START : If device type is available then device page.
