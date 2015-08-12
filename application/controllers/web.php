@@ -76,7 +76,7 @@
             $this->load->model('home_model');
             $iActiveMode =  $this->home_model->getActiveMode();
                         
-            if($iActiveMode == 2) // START : If Mode is Manual.
+            //if($iActiveMode == 2) // START : If Mode is Manual.
             {
                 if($sDeviceNo != '' && in_array($iDeviceStatus, $aDeviceStatus) && $sDevice != '') 
                 {
@@ -166,7 +166,7 @@
                                         
                     if($sDevice == 'V') // START : If Device is Power Center.
                     {
-                        if($sValves != '') // START : Check if Valve devices are available.
+						if($sValves != '') // START : Check if Valve devices are available.
                         {
                             $iValveCount    = strlen($sValves); // Count of Power Center Devices.
                             if( $sDeviceNo > ($iValveCount-1) || $sDeviceNo < 0)
@@ -214,7 +214,7 @@
                     $this->webResponse($sformat, $aResponse);
                 }
             } // END : if($iActiveMode == 2)
-            else
+            /*else
             {
                 $aResponse['code']      = 5;
                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
@@ -222,7 +222,7 @@
 
                 // Return Response to browser. This will exit the script.
                 $this->webResponse($sformat, $aResponse);
-            }
+            }*/
             //$aResult['msg'] = "Invalid mode to perform this operation.";
         } //END : function changeDeviceStatus()
         
@@ -275,7 +275,7 @@
             $this->load->model('home_model');
             $iActiveMode =  $this->home_model->getActiveMode();
             
-             if($iActiveMode == 2) // START : If Mode is Manual.
+            //if($iActiveMode == 2) // START : If Mode is Manual.
             {
                 if($sDevice != '') // START : If device type is not empty
                 {
@@ -361,7 +361,7 @@
                     $this->webResponse($sformat, $aResponse);
                 }
             } // END : If Mode is Manual.
-            else
+            /*else
             {
                 $aResponse['code']      = 5;
                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
@@ -369,7 +369,7 @@
 
                 // Return Response to browser. This will exit the script.
                 $this->webResponse($sformat, $aResponse);
-            }
+            }*/
             
          } // END : getDeviceStatus()
          
@@ -419,7 +419,7 @@
             $this->load->model('home_model');
             $iActiveMode =  $this->home_model->getActiveMode();
             
-             if($iActiveMode == 2) // START : If Mode is Manual.
+            //if($iActiveMode == 2) // START : If Mode is Manual.
             {
                 if($sDevice != '' && $sDeviceNo != '') // START : If device type is not empty and Valid Device number is there.
                 {
@@ -528,14 +528,14 @@
                     
                 }
             } // END : If Mode is Manual.
-            else
+            /*else
             {
                 $aResponse['code']      = 5;
                 $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
                 $aResponse['data']      = 'Invalid mode to perform this operation.';
 
                 $this->webResponse($sformat, $aResponse);
-            }
+            }*/
             
          } // END : function getDeviceNumberStatus()
          
@@ -563,6 +563,170 @@
              }
              
          }
+         
+        public function getActiveMode() //START : Function to get the active mode for web service.
+         {
+            // Set default HTTP response of 'ok'
+            $aResponse              =   array();
+            $aResponse['code']      =   0;
+            $aResponse['status']    =   404;
+            $aResponse['data']      =   NULL;
+            $sformat                =   isset($_REQUEST['format']) ? $_REQUEST['format'] : '' ; // Get response Format (json,xml,html etc.)
+            $sAuth                  =   isset($_REQUEST['auth']) ? $_REQUEST['auth'] : '' ;// Check if Authentication is required.
+            $this->isAuthenticationRequired =   $sAuth;
+            
+            // Optionally require connections to be made via HTTPS
+            if( $this->isHTTPSRequired && $_SERVER['HTTPS'] != 'on' )
+            {
+                $aResponse['code']      = 2;
+                $aResponse['status']    = $aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $aApiResponseCode[ $aResponse['code'] ]['Message'];
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            
+            if($this->isAuthenticationRequired)
+            {
+                //START : Authorisation
+                $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
+                $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
+                // END : Authorisation
+            }
+             
+            $aResult            = array();
+            $aResult['msg']     = "";
+            $aResult['response']= 0;
+            $aResult['status']  = 0;
+            
+            
+            $this->load->model('home_model');
+            //Get the mode from Database.
+            $iActiveMode =  $this->home_model->getActiveMode();
+            
+            if($iActiveMode != '')
+            {
+                $aResponse['code']      = 1;
+                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $iActiveMode;
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            else
+            {
+                $aResponse['code']      = 5;
+                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = 'Invalid mode.';
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+         } //END : Function to get the active mode for web service.
+		 
+		 public function changeActiveMode() //START : Function to change the active mode for web service.
+         {
+            // Set default HTTP response of 'ok'
+            $aResponse              =   array();
+            $aResponse['code']      =   0;
+            $aResponse['status']    =   404;
+            $aResponse['data']      =   NULL;
+            $sformat                =   isset($_REQUEST['format']) ? $_REQUEST['format'] : '' ; // Get response Format (json,xml,html etc.)
+            $sAuth                  =   isset($_REQUEST['auth']) ? $_REQUEST['auth'] : '' ;// Check if Authentication is required.
+            $this->isAuthenticationRequired =   $sAuth;
+			
+			//INPUTS
+			$iMode	=	trim($_REQUEST['md']);
+            
+            // Optionally require connections to be made via HTTPS
+            if( $this->isHTTPSRequired && $_SERVER['HTTPS'] != 'on' )
+            {
+                $aResponse['code']      = 2;
+                $aResponse['status']    = $aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $aApiResponseCode[ $aResponse['code'] ]['Message'];
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            
+            if($this->isAuthenticationRequired)
+            {
+                //START : Authorisation
+                $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
+                $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
+                // END : Authorisation
+            }
+             
+            $aResult            = array();
+            $aResult['msg']     = "";
+            $aResult['response']= 0;
+            $aResult['status']  = 0;
+            
+            
+            $this->load->model('home_model');
+            //Get the mode from Database.
+            $iActiveMode =  $this->home_model->getActiveMode();
+            
+            if($iMode != '')
+            {
+				if($iMode != $iActiveMode)
+				{
+					$this->home_model->updateMode($iMode);
+
+					$sResponse      =   get_rlb_status();
+					$sValves        =   $sResponse['valves'];
+					$sRelays        =   $sResponse['relay'];
+					$sPowercenter   =   $sResponse['powercenter'];
+
+					if($iMode == 3 || $iMode == 1)
+					{ //1-auto, 2-manual, 3-timeout
+						//off all relays
+						if($sRelays != '')
+						{
+							$sRelayNewResp = str_replace('1','0',$sRelays);
+							//onoff_rlb_relay($sRelayNewResp);
+						}
+						
+						//off all valves
+						if($sValves != '')
+						{
+							$sValveNewResp = str_replace(array('1','2'), '0', $sValves);
+							//onoff_rlb_valve($sValveNewResp);  
+						}
+						
+						//off all power center
+						if($sPowercenter != '')
+						{
+							$sPowerNewResp = str_replace('1','0',$sPowercenter);  
+							//onoff_rlb_powercenter($sPowerNewResp); 
+						}
+
+					}
+					
+					$aResponse['code']      = 1;
+					$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+					$aResponse['data']      = $iMode;
+					// Return Response to browser. This will exit the script.
+					$this->webResponse($sformat, $aResponse);
+				}
+				else
+				{
+					$aResponse['code']      = 1;
+					$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+					$aResponse['data']      = 'Mode already activated!';
+					// Return Response to browser. This will exit the script.
+					$this->webResponse($sformat, $aResponse);
+				}
+            }
+            else
+            {
+                $aResponse['code']      = 5;
+                $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = 'Please enter Valid mode.';
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+         } //END : Function to get the active mode for web service.
          
          public function webResponse($sformat, $aApiResponse)
          {

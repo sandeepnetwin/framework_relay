@@ -16,7 +16,34 @@ if($sDevice == 'T')
 <link href="<?php echo site_url('assets/jquery-toggles-master/css/toggles.css'); ?>" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo site_url('assets/jquery-toggles-master/css/themes/toggles-light.css'); ?>">
 <script src="<?php echo site_url('assets/jquery-toggles-master/toggles.min.js'); ?>" type="text/javascript"></script> 
+<script type="text/javascript">
+	$(document).ready(function() {
+		$(".displayMore").hide();
+		$(".more").click(function() {
+			var txt	=	$(this).html();
+			if(txt == 'More +')
+				txt = 'More -';
+			else
+				txt = 'More +';
+			
+			$(".displayMore").toggle('slow',function() {	
+				$(".more").html(txt);
+			});
+			
+		});
+	});
+	function saveDevicePower(sDeviceID,sDevice,sPowerValue)
+	{
+		 $.ajax({
+			type: "POST",
+			url: "<?php echo site_url('home/saveDevicePower');?>", 
+			data: {sDeviceID:sDeviceID,sDevice:sDevice,sPowerValue:sPowerValue},
+			success: function(data) {
+			}
 
+		 });
+	}
+</script>
     <div id="page-wrapper">
 
         <div class="row">
@@ -50,6 +77,7 @@ if($sDevice == 'T')
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
                     <th class="header">Maximum run time</th>
+					<th class="header">Power</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -80,6 +108,7 @@ if($sDevice == 'T')
                           $sDeviceTime .= ' Minute';
 					  
 						$iRelayProgramCount = $this->home_model->getProgramCount($i,$sDevice);
+						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
 				?>
 						
                       <tr <?php if($j>=1){ echo 'class="displayMore"';}?>>
@@ -149,34 +178,24 @@ if($sDevice == 'T')
                             <?php } else { ?>
                                 <strong style="color:#428BCA">-</strong>
                             <?php } ?>
-                        </td>        
+                        </td>     
+						<td>
+						<?php if($iRelayVal != '' && $iRelayVal !='.') { ?>
+						<input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC
+						<?php } else { ?>
+                                <strong style="color:#428BCA">-</strong>
+                        <?php } ?>
+						</td>
                       </tr>
                 <?php
 					if($j==($relay_count-1))
 					{
 						echo '<tr>
-								<th class="header more" colspan="6" style="text-align: center; color:#428BCA; cursor:pointer;">More +</th>
+								<th class="header more" colspan="7" style="text-align: center; color:#428BCA; cursor:pointer;">More +</th>
 							  </tr>';
 					}
 					$j++;
 				} ?>
-                <script type="text/javascript">
-				$(document).ready(function() {
-					$(".displayMore").hide();
-					$(".more").click(function() {
-						var txt	=	$(this).html();
-						if(txt == 'More +')
-							txt = 'More -';
-						else
-							txt = 'More +';
-						
-						$(".displayMore").toggle('slow',function() {	
-							$(".more").html(txt);
-						});
-						
-					});
-				});
-				</script>
                 </tbody>
               </table>
             </div>
@@ -199,6 +218,7 @@ if($sDevice == 'T')
                     <th class="header">Power Center Name <i class="fa fa-sort"></i></th>
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
+					<th class="header">Power</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,6 +240,8 @@ if($sDevice == 'T')
                         $sPowerCenterNameDb =  $this->home_model->getDeviceName($i,$sDevice);
                         if($sPowerCenterNameDb == '')
                           $sPowerCenterNameDb = 'Add Name';
+						
+						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
                 ?>
                       <tr>
                       <td>Power Center<?php echo $i;?></td>
@@ -265,6 +287,7 @@ if($sDevice == 'T')
                           });
                        </script>
                        </td>
+					   <td><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</td>
                       </tr>
                 <?php } ?>
 
@@ -329,6 +352,7 @@ if($sDevice == 'T')
                                 if($sValvesNameDb == '')
                                   $sValvesNameDb = 'Add Name';
                                 $aPositionName =  $this->home_model->getPositionName($i,$sDevice);
+								$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
                         ?>
                               <tr>
                                 <td>
@@ -401,12 +425,12 @@ if($sDevice == 'T')
                                        });
                                     });
                                </script>
-                               
-                                    </div>
-                                <?php } else { ?>
+                               </div>
+							   <div class="col-lg-3"><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</div>
+							    <?php } else { ?>
                                     <strong style="color:#FF0000">Valve is not configured.</strong>
                                 <?php } ?>    
-                                </td>
+								</td>
                                
                             </tr>
                         <?php 
@@ -436,6 +460,7 @@ if($sDevice == 'T')
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
+					<th class="header">Power</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -458,6 +483,8 @@ if($sDevice == 'T')
                         $sPumpNameDb =  $this->home_model->getDeviceName($i,$sDevice);
                         if($sPumpNameDb == '')
                           $sPumpNameDb = 'Add Name';
+						
+						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
                 ?>
                       <tr>
                         <td>Pump Sequencer <?php echo $i;?></td>
@@ -506,6 +533,7 @@ if($sDevice == 'T')
                         <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/pumpConfigure/'.base64_encode($i).'/');?>">Configure</a>&nbsp;&nbsp;
                             <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($i).'/');?>">Programs</a>
                         </td>
+						<td><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</td>
                       </tr>
                 <?php } ?>
                 

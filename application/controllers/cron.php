@@ -131,22 +131,23 @@ class Cron extends CI_Controller
         {
             foreach($aAllProgram as $aResultProgram)
             {
-                $sRelayName     = $aResultProgram->relay_number;
-                $iProgId        = $aResultProgram->relay_prog_id;
-                $sProgramType   = $aResultProgram->relay_prog_type;
-                $sProgramStart  = $aResultProgram->relay_start_time;
-                $sProgramEnd    = $aResultProgram->relay_end_time;
-                $sProgramActive = $aResultProgram->relay_prog_active;
-                $sProgramDays   = $aResultProgram->relay_prog_days;
+                $sRelayName     = $aResultProgram->device_number;
+				$sDevice     	= $aResultProgram->device_type;
+                $iProgId        = $aResultProgram->program_id;
+                $sProgramType   = $aResultProgram->program_type;
+                $sProgramStart  = $aResultProgram->start_time;
+                $sProgramEnd    = $aResultProgram->end_time;
+                $sProgramActive = $aResultProgram->program_active;
+                $sProgramDays   = $aResultProgram->program_days;
                 
-                $sProgramAbs            = $aResultProgram->relay_prog_absolute;
-                $sProgramAbsStart       = $aResultProgram->relay_prog_absolute_start_time;
-                $sProgramAbsEnd         = $aResultProgram->relay_prog_absolute_end_time;
-                $sProgramAbsTotal       = $aResultProgram->relay_prog_absolute_total_time;
-                $sProgramAbsAlreadyRun  = $aResultProgram->relay_prog_absolute_run_time;
+                $sProgramAbs            = $aResultProgram->program_absolute;
+                $sProgramAbsStart       = $aResultProgram->program_absolute_start_time;
+                $sProgramAbsEnd         = $aResultProgram->program_absolute_end_time;
+                $sProgramAbsTotal       = $aResultProgram->program_absolute_total_time;
+                $sProgramAbsAlreadyRun  = $aResultProgram->program_absolute_run_time;
 
-                $sProgramAbsStartDay    = $aResultProgram->relay_prog_absolute_start_date;
-                $sProgramAbsRun         = $aResultProgram->relay_prog_absolute_run;
+                $sProgramAbsStartDay    = $aResultProgram->program_absolute_start_date;
+                $sProgramAbsRun         = $aResultProgram->program_absolute_run;
 
                 $sDays          =   '';
                 $aDays          =   array();
@@ -156,7 +157,7 @@ class Cron extends CI_Controller
                     $sDays = str_replace('7','0', $sProgramDays);
                     $aDays = explode(',',$sProgramDays);
                 }
-                if($sRelays[$sRelayName] != '' && $sRelays[$sRelayName] != '.')
+                if($sRelays[$sRelayName] != '' && $sRelays[$sRelayName] != '.' && $sDevice == 'R')
                 {
                     if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
@@ -255,9 +256,10 @@ class Cron extends CI_Controller
                     {
                         $iRelayStatus = 0;
                         $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sDeviceName );
-                        onoff_rlb_relay($sRelayNewResp);
+                        
                         //Update the start time and end time of the Device.
                         $this->home_model->updateDeviceRunTime($sDeviceName, $sDevice, $iRelayStatus);
+                        onoff_rlb_relay($sRelayNewResp);
                     }
                 }
             }

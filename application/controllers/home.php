@@ -52,9 +52,60 @@ class Home extends CI_Controller
 			$aViewParameter['temprature_count']   	=   count($sTemprature);
             $aViewParameter['time']         =   $sTime;
         //END : Parameter for View
-            
+		
+		//START: GET the active MODE details.
+			$aViewParameter['welcome_message'] = '';
+			$this->load->model('home_model');
+			$aModeDetails = $this->home_model->getActiveModeDetails();
+			
+			if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
+			{
+				$sTimeDiff = date_diff(date_create($aModeDetails['start_time']),date_create(date('Y-m-d H:i:s')));
+				
+				$strMessage = 'For';
+				if($sTimeDiff->y != 0)
+				{
+					if($sTimeDiff->y == 1)
+						$strMessage .= ' <strong>'.$sTimeDiff->y.' Year</strong> and';
+					else
+						$strMessage .= ' <strong>'.$sTimeDiff->y.' Years</strong> and';
+				}	
+				if($sTimeDiff->m != 0)
+				{
+					if($sTimeDiff->m == 1)
+						$strMessage .= ' <strong>'.$sTimeDiff->m.' Month</strong> and';
+					else
+						$strMessage .= ' <strong>'.$sTimeDiff->m.' Months</strong> and';
+				}
+				if($sTimeDiff->d != 0)
+				{
+					if($sTimeDiff->d == 1)
+						$strMessage .= ' <strong>'.$sTimeDiff->d.' Day</strong> and';
+					else
+						$strMessage .= ' <strong>'.$sTimeDiff->d.' Days</strong> and';
+				}
+				if($sTimeDiff->h != 0)
+				{
+					if($sTimeDiff->h == 1)
+						$strMessage .= ' <strong>'.$sTimeDiff->h.' Hour</strong> and';
+					else
+						$strMessage .= ' <strong>'.$sTimeDiff->h.' Hours</strong> and';
+				}
+				if($sTimeDiff->i == 0 || $sTimeDiff->i == 1)	
+					$strMessage .= ' <strong>1 minute</strong>,';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->i.' minutes</strong>,';
+				
+				$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
+				$aViewParameter['welcome_message'] = $strMessage;
+			}
+			
+		//END: GET the active MODE details.
+		
         //Home View
         $this->load->view('Home',$aViewParameter);
+		
+
 
     } //END : Function for dashboard
     
@@ -80,13 +131,17 @@ class Home extends CI_Controller
             if($this->input->post('command') == 'Save Setting') // START : IF Setting details are posted.
             {
                 // Get mode value from POST.
-                $iMode  =   $this->input->post('relay_mode'); 
+                //$iMode  =   $this->input->post('relay_mode'); 
                 $this->load->model('home_model');
                 
                 // Get IP and PORT value from POST.
                 $sIP    =   $this->input->post('relay_ip_address');
                 $sPort  =   $this->input->post('relay_port_no');
-                
+				
+				//Get whether to show temperature on Home page.
+				$sPoolTemp  =   $this->input->post('showPoolTemp');
+				$sSpaTemp  	=   $this->input->post('showSpaTemp');
+				
                 //Check for IP constant if IP is blank in POST
                 if($sIP == '')
                 {
@@ -144,8 +199,13 @@ class Home extends CI_Controller
                     } //END : IF mode is not Manual then switch all devices OFF. if($iMode == 3 || $iMode == 1)
 					*/
                     
-                    $aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
+                    
                 } // END : else for if($sIP == '' || $sPort == '')
+				
+				$aTemprature	=	array('Pool_Temp'=>$sPoolTemp,'Spa_Temp'=>$sSpaTemp);
+				$this->home_model->updateSettingTemp($aTemprature);
+				
+				$aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
              } // END : IF Setting details are posted. if($this->input->post('command') == 'Save Setting') 
             
             //START : Create Mode select Box to show on setting page. 
@@ -164,7 +224,7 @@ class Home extends CI_Controller
             //END : Create Mode select Box to show on setting page.
             
             //Get saved IP and PORT 
-            list($aViewParameter['sIP'],$aViewParameter['sPort']) = $this->home_model->getSettings();
+            list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
             
 			//View Setting
             $this->load->view('Setting',$aViewParameter);
@@ -538,7 +598,7 @@ class Home extends CI_Controller
 
             if($this->input->post('sRelayNumber') != '')
                 $sDeviceID   =  $this->input->post('sRelayNumber'); 
-
+			
             $this->home_model->updateProgramDetails($this->input->post(),$sProgramID,$sDeviceID,'R');
             redirect(site_url('home/setPrograms/'.base64_encode($sDeviceID)));
         }// END : Update program details.
@@ -570,6 +630,8 @@ class Home extends CI_Controller
             $aViewParameter['sProgramDetailsEdit'] = '';
         }
         
+		$aViewParameter['sDeviceTime'] =  $this->home_model->getDeviceTime($sDeviceID,'R');
+		
         //Program View for Getting and Showing Programs
         $this->load->view('Programs',$aViewParameter); 
     } // END : Function to save/update/delete the Programs to run relay in Auto mode.
@@ -646,7 +708,21 @@ class Home extends CI_Controller
         //Status view for showing relay board status.
         $this->load->view('Status',$aViewParameter);
     } //END : Server response page of relay board.
-        
+		
+	public function saveDevicePower()
+	{
+		//Get the input 
+		$sDeviceID   =  $this->input->post('sDeviceID');
+		$sDevice   	 =  $this->input->post('sDevice');
+		$sPowerValue =  $this->input->post('sPowerValue');
+		
+		if($sDeviceID != '' && $sDevice != '' && $sPowerValue != '')
+		{
+			$this->load->model('home_model');
+			$this->home_model->saveDevicePower($sDeviceID,$sDevice,$sPowerValue);
+		}
+	}	
+    
 }//END : Class Home
 
 /* End of file home.php */

@@ -81,11 +81,13 @@ class Analog extends CI_Controller
         $aViewParameter['page']         =   'home';
 
         $this->load->model('home_model');
-
+		$iActiveMode	= $this->home_model->getActiveMode();
+		
         if($this->input->post('iMode') != '')
         {
             $iMode = $this->input->post('iMode');
-            $this->home_model->updateMode($iMode);
+			if($iActiveMode != $iMode)
+				$this->home_model->updateMode($iMode);
 
             $sResponse      =   get_rlb_status();
             $sValves        =   $sResponse['valves'];

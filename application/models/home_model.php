@@ -16,7 +16,7 @@ class Home_model extends CI_Model
         $sSql       =   "SELECT * FROM rlb_setting";
         $query      =   $this->db->query($sSql);
        
-        $aSettings  =   array(0=>'',1=>'');
+        $aSettings  =   array(0=>'',1=>'',2=>'');
 
         if ($query->num_rows() > 0)
         {
@@ -24,6 +24,7 @@ class Home_model extends CI_Model
             {    
                 $aSettings[0]   = $aRow->ip_address;
                 $aSettings[1]   = $aRow->port_no;  
+				$aSettings[2]   = unserialize($aRow->extra);
             }
         }
 
@@ -57,13 +58,32 @@ class Home_model extends CI_Model
 
         return '';
     }
+	
+	public function getActiveModeDetails()//START : Function to get the active mode Details.
+    {
+		$aModeDetails	=	array();
+        $sSql   	=   "SELECT mode_id,mode_name,start_time FROM rlb_modes WHERE mode_status = '1'";
+        $query  	=   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $rowResult)
+            {
+                $aModeDetails['mode_id']	=	$rowResult->mode_id;	
+				$aModeDetails['mode_name']	=	$rowResult->mode_name;
+				$aModeDetails['start_time']	=	$rowResult->start_time;
+            }
+        }
+
+        return $aModeDetails;
+    }//END : Function to get the active mode Details.
 
     public function updateMode($imode)
     {
-        $data = array('mode_status' => '0');
+        $data = array('mode_status' => '0','start_time'=>'00-00-00 00:00:00');
         $this->db->update('rlb_modes', $data);
 
-        $data = array('mode_status' => '1');
+        $data = array('mode_status' => '1','start_time'=>date('Y-m-d H:i:s'));
         $this->db->where('mode_id',$imode);
         $this->db->update('rlb_modes', $data);
     }
@@ -89,8 +109,29 @@ class Home_model extends CI_Model
             $this->db->insert('rlb_setting', $data);
         }
     }
+	
+	public function updateSettingTemp($aTemprature)
+    {
+        $sSql   =   "SELECT * FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
 
-    public function saveDeviceName($sDeviceID,$sDevice,$sDeviceName)
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {    
+                $data = array('extra' => serialize($aTemprature) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+            $data = array('extra' => serialize($aTemprature) );
+            $this->db->insert('rlb_setting', $data);
+        }
+    }
+	
+	public function saveDeviceName($sDeviceID,$sDevice,$sDeviceName)
     {
 
         $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
@@ -576,6 +617,48 @@ class Home_model extends CI_Model
 				->where('device_type', $sDevice)
 				->count_all_results('rlb_program');
 	}//END : Function to get the count of programs for device.
+	
+	public function saveDevicePower($sDeviceID,$sDevice,$sPowerValue) //START : Function to Save/UPDATE Device Time
+    {
+        //Check if device already present in the table.
+        $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0) //START: If device is already present in table.
+        {
+            foreach($query->result() as $aRow)
+            {
+                //Update the Time.
+                $sSqlUpdate =   "UPDATE rlb_device SET device_power_type='".$sPowerValue."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+                $this->db->query($sSqlUpdate);
+            }
+        }//END: If device is already present in table.
+        else //START: If device is not present in table.
+        {
+            //Insert Device with time.
+            $sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,device_power_type,last_updated_date) VALUES('".$sDeviceID."','".$sDevice."','".$sPowerValue."','".date('Y-m-d H:i:s')."')";
+            $this->db->query($sSqlInsert);
+        }
+    }//END : Function to Save/UPDATE Device Time
+
+    public function getDevicePower($sDeviceID,$sDevice) //START : Function to get Device Time
+    {
+        $sDevicePower = '';
+        
+        //Get saved time for the device.
+        $sSql   =   "SELECT device_id,device_power_type FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+                $sDevicePower = $aRow->device_power_type;
+            }
+        }
+
+        return $sDevicePower;
+    } //End : Function to get Device Time
 }
 
 /* End of file home_model.php */

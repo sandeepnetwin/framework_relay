@@ -52,12 +52,18 @@ if($sPort == '')
                         <td width="89%"><input type="text" class="form-control" placeholder="Enter port no" name="relay_port_no" value="<?php echo $sPort;?>" id="relay_port_no"></td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
-                      <!--<tr>
-                        <td width="10%"><strong>MODE:</strong></td>
+                      <tr>
+                        <td width="10%"><strong>Display Desired Pool Temp on Home Page:</strong></td>
                         <td width="1%">&nbsp;</td>
-                        <td width="89%"><?php echo $sAllModes;?></td>
+                        <td width="89%"><input type="radio" name="showPoolTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="showPoolTemp" value="0" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '0') { echo 'checked="checked";';}?> checked="checked">&nbsp;No</td>
                       </tr>
-                      <tr><td colspan="3">&nbsp;</td></tr>-->
+                      <tr><td colspan="3">&nbsp;</td></tr>
+					  <tr>
+                        <td width="10%"><strong>Display Desired Spa Temp on home page</strong></td>
+                        <td width="1%">&nbsp;</td>
+                        <td width="89%"><input type="radio" name="showSpaTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="showSpaTemp" value="0" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '0')) { echo 'checked="checked";';}?> checked="checked">&nbsp;No</td>
+                      </tr>
+                      <tr><td colspan="3">&nbsp;</td></tr>
                       <tr><td colspan="3"><input type="submit" name="command" value="Save Setting" class="btn btn-success" onclick="return checkModeSelected();"></td></tr>
                       
                     </table>
