@@ -77,7 +77,7 @@ if($sDevice == 'T')
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
                     <th class="header">Maximum run time</th>
-					<th class="header">Power</th>
+					
                   </tr>
                 </thead>
                 <tbody>
@@ -179,13 +179,7 @@ if($sDevice == 'T')
                                 <strong style="color:#428BCA">-</strong>
                             <?php } ?>
                         </td>     
-						<td>
-						<?php if($iRelayVal != '' && $iRelayVal !='.') { ?>
-						<input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC
-						<?php } else { ?>
-                                <strong style="color:#428BCA">-</strong>
-                        <?php } ?>
-						</td>
+						
                       </tr>
                 <?php
 					if($j==($relay_count-1))
@@ -218,7 +212,7 @@ if($sDevice == 'T')
                     <th class="header">Power Center Name <i class="fa fa-sort"></i></th>
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
-					<th class="header">Power</th>
+					
                   </tr>
                 </thead>
                 <tbody>
@@ -287,7 +281,7 @@ if($sDevice == 'T')
                           });
                        </script>
                        </td>
-					   <td><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</td>
+					   
                       </tr>
                 <?php } ?>
 
@@ -426,7 +420,6 @@ if($sDevice == 'T')
                                     });
                                </script>
                                </div>
-							   <div class="col-lg-3"><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</div>
 							    <?php } else { ?>
                                     <strong style="color:#FF0000">Valve is not configured.</strong>
                                 <?php } ?>    
