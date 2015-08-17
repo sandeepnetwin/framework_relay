@@ -87,7 +87,62 @@ class Home_model extends CI_Model
         $this->db->where('mode_id',$imode);
         $this->db->update('rlb_modes', $data);
     }
+	
+	//START : Function to SAVE/UPDATE manual Mode Time.
+	public function updateManualModeTime($sTime)
+	{
+		$data = array('timer_total' => $sTime);
+        $this->db->where('mode_id',2);
+        $this->db->update('rlb_modes', $data);
+	}//END : Function to SAVE/UPDATE manual Mode Time.
+	
+	//START : Function To get the Manual Mode Time
+	public function getManualModeTime()
+	{
+		$sTime	=	'';
+		$sSql   =   "SELECT timer_total FROM rlb_modes WHERE mode_id=2";
+        $query  =   $this->db->query($sSql);
 
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+				$sTime = $aRow->timer_total;
+			}
+		}
+		
+		return $sTime;
+	}//END : Function To get the Manual Mode Time
+	
+	//START : Function to update the Manual Timer Start and End Time
+	public function updateManualModeTimer($sProgramAbsStart,$sAbsoluteEnd)
+	{
+		$data = array('timer_start'=> $sProgramAbsStart,'timer_end'=>$sAbsoluteEnd);
+        $this->db->where('mode_id',2);
+        $this->db->update('rlb_modes', $data);
+	}//END : Function to update the Manual Timer Start and End Time
+	
+	//START : Function to get the Manual Mode Timer START and END Time.
+	public function getManualModeTimer()
+	{
+		$aTime	=	array();
+		
+		$sSql   =   "SELECT timer_start,timer_end FROM rlb_modes WHERE mode_id=2";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {    
+                $aTime['START']	=	$aRow->timer_start;
+				$aTime['END']	=	$aRow->timer_end;
+            }
+        }
+		
+		return $aTime;
+		
+	}//END : Function to get the Manual Mode Timer START and END Time.
+	
     public function updateSetting($sIP, $sPort)
     {
         

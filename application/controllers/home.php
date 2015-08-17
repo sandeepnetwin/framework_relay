@@ -60,7 +60,7 @@ class Home extends CI_Controller
 			
 			//Get Extra Details
 			list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
-			
+						
 			if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
 			{
 				$sTimeDiff = date_diff(date_create($aModeDetails['start_time']),date_create(date('Y-m-d H:i:s')));
@@ -101,23 +101,40 @@ class Home extends CI_Controller
 				
 				$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
 				
+				$sExtra = '';
+				
 				if($extra['Pool_Temp'] == '1' && isset($extra['Pool_Temp']))
 				{
 					if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '' && $sResponse[$extra['Pool_Temp_Address']] != '')
 					{
 						$strMessage.=' <strong>Pool temperature is '.$sResponse[$extra['Pool_Temp_Address']].'.</strong>';
+						
+						$sExtra .='Pool : '.$sResponse[$extra['Pool_Temp_Address']];
 					}
+					else
+						$sExtra .='Pool : 0F';
 				}
+				else
+						$sExtra .='Pool : 0F';
 				if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
 				{
 					if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
 					{
 						$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
+						$sExtra .='<br>Spa : '.$sResponse[$extra['Spa_Temp_Address']];
 					}
+					else
+						$sExtra .='<br>Spa : 0F';
 				}
+				else
+						$sExtra .='<br>Spa : 0F';
+					
+				$aViewParameter['sTemperature'] = $sExtra;
 				
 				$aViewParameter['welcome_message'] = $strMessage;
 			}
+			
+			
 			
 		//END: GET the active MODE details.
 		
@@ -170,6 +187,9 @@ class Home extends CI_Controller
 				if($sSpaTemp == '1')
 				$sSpaTempAddress	=   $this->input->post('selSpaTemp');
 			
+				//Get Manual Mode Minutes
+				$sManualModeTime   =   $this->input->post('manualMinutes');
+			
 				
                 //Check for IP constant if IP is blank in POST
                 if($sIP == '')
@@ -193,46 +213,14 @@ class Home extends CI_Controller
                 {
                     //Save IP and PORT
                     $this->home_model->updateSetting($sIP,$sPort);
-                    
-                    /*//Save Mode
-                    $this->home_model->updateMode($iMode);
-                    
-                    //Get the status response of devices from relay board.
-                    $sResponse      =   get_rlb_status();
-                    
-                    $sValves        =   $sResponse['valves']; // Valve Device Status
-                    $sRelays        =   $sResponse['relay'];  // Relay Device Status
-                    $sPowercenter   =   $sResponse['powercenter']; // Power center Device Status
-                    
-                    //1-auto, 2-manual, 3-timeout
-                    if($iMode == 3 || $iMode == 1) //START : IF mode is not Manual then switch all devices OFF.
-                    { 
-                        if($sRelays != '') //off all relays
-                        {
-                            $sRelayNewResp = str_replace('1','0',$sRelays);
-                            onoff_rlb_relay($sRelayNewResp);
-                        }
-                        
-                        if($sValves != '') //off all valves
-                        {
-                            $sValveNewResp = str_replace(array('1','2'), '0', $sValves);
-                            onoff_rlb_valve($sValveNewResp);  
-                        }
-                        
-                        if($sPowercenter != '') //off all power center
-                        {
-                            $sPowerNewResp = str_replace('1','0',$sPowercenter);  
-                            onoff_rlb_powercenter($sPowerNewResp); 
-                        }
-
-                    } //END : IF mode is not Manual then switch all devices OFF. if($iMode == 3 || $iMode == 1)
-					*/
-                    
-                    
                 } // END : else for if($sIP == '' || $sPort == '')
 				
+				//Save the Temperature related Details.
 				$aTemprature	=	array('Pool_Temp'=>$sPoolTemp,'Pool_Temp_Address'=>$sPoolTempAddress,'Spa_Temp'=>$sSpaTemp,'Spa_Temp_Address'=>$sSpaTempAddress);
 				$this->home_model->updateSettingTemp($aTemprature);
+				
+				//Save Manual Mode Time.
+				$this->home_model->updateManualModeTime($sManualModeTime);
 				
 				$aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
              } // END : IF Setting details are posted. if($this->input->post('command') == 'Save Setting') 
@@ -258,6 +246,8 @@ class Home extends CI_Controller
 			$sResponse      =   get_rlb_status();
 			
 			$aViewParameter['aTemprature'] = array('TS0'=>$sResponse['TS0'],'TS1'=>$sResponse['TS1'],'TS2'=>$sResponse['TS2'],'TS3'=>$sResponse['TS3'],'TS4'=>$sResponse['TS4'],'TS5'=>$sResponse['TS5']); 
+			
+			$aViewParameter['manualMinutes'] = $this->home_model->getManualModeTime();
 			
 			//View Setting
             $this->load->view('Setting',$aViewParameter);

@@ -82,20 +82,40 @@ class Analog extends CI_Controller
 
         $this->load->model('home_model');
 		$iActiveMode	= $this->home_model->getActiveMode();
+		$sManualTime	= $this->home_model->getManualModeTime();
 		
         if($this->input->post('iMode') != '')
         {
             $iMode = $this->input->post('iMode');
 			if($iActiveMode != $iMode)
+			{
 				$this->home_model->updateMode($iMode);
-
-            $sResponse      =   get_rlb_status();
-            $sValves        =   $sResponse['valves'];
-            $sRelays        =   $sResponse['relay'];
-            $sPowercenter   =   $sResponse['powercenter'];
+				if($sManualTime != '')
+				{
+					if($iMode == 2)
+					{
+						$sProgramAbsStart =   date("H:i:s", time());
+						$aStartTime       =   explode(":",$sProgramAbsStart);
+						$sProgramAbsEnd   =   mktime(($aStartTime[0]),($aStartTime[1]+$sManualTime),($aStartTime[2]),0,0,0);
+						$sAbsoluteEnd     =   date("H:i:s", $sProgramAbsEnd);
+						$this->home_model->updateManualModeTimer($sProgramAbsStart,$sAbsoluteEnd);
+					}
+					else
+					{
+						$this->home_model->updateManualModeTimer('','');
+					}	
+				}
+			}
+			
 
             if($iMode == 3 || $iMode == 1)
             { //1-auto, 2-manual, 3-timeout
+		
+				$sResponse      =   get_rlb_status();
+				$sValves        =   $sResponse['valves'];
+				$sRelays        =   $sResponse['relay'];
+				$sPowercenter   =   $sResponse['powercenter'];
+				
                 //off all relays
                 if($sRelays != '')
                 {
@@ -115,7 +135,7 @@ class Analog extends CI_Controller
                 {
                     $sPowerNewResp = str_replace('1','0',$sPowercenter);  
                     onoff_rlb_powercenter($sPowerNewResp); 
-                }
+                } 
 
             }
              $aViewParameter['sucess']    =   '1';

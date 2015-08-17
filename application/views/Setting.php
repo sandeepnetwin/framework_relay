@@ -116,6 +116,13 @@ if($sPort == '')
 						</div>
 						</td>
                       </tr>
+					  <tr><td colspan="3">&nbsp;</td></tr>
+					  <tr>
+                        <td width="10%"><strong>Enter Manual Mode Timing: </strong></td>
+                        <td width="1%">&nbsp;</td>
+                        <td width="89%"><input type="text" name="manualMinutes" id="manualMinutes" value="<?php echo $manualMinutes;?>">(In Minutes)
+						</td>
+                      </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
                       <tr><td colspan="3"><input type="submit" name="command" value="Save Setting" class="btn btn-success" onclick="return checkModeSelected();"></td></tr>
                       
@@ -155,7 +162,9 @@ $(document).ready(function (){
 });
   function checkModeSelected()
   {
-    var sRelayMode = $("#relay_mode").val();
+    var sRelayMode 		= 	$("#relay_mode").val();
+	var manualMinutes	=	$("#manualMinutes").val();
+	
     if(sRelayMode == '0')
     {
       $("#relay_mode").css('border','1px solid #B40404');
@@ -165,8 +174,25 @@ $(document).ready(function (){
     else
     {
       $("#relay_mode").css('border','');
-      return true;
     }
+	
+	if(manualMinutes != '')
+	{
+		if(isNaN(manualMinutes))
+		{
+			$("#manualMinutes").css('border','1px solid #B40404');
+			alert("Please enter valid minutes!")
+			return false;
+		}
+		else
+		{
+			$("#manualMinutes").css('border','');
+			
+		}
+	}
+	
+	return true;
+	
 
   }
   

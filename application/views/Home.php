@@ -209,7 +209,7 @@ $this->load->view('Header');
                   </div>
                   <div class="col-xs-6 text-right">
                     <p class="announcement-heading"><?php echo $pump_count;?></p>
-                    <p class="announcement-text">Pumps</p>
+                    <p class="announcement-text">Pumps<br><br></p>
                   </div>
                 </div>
               </div>
@@ -240,8 +240,12 @@ $this->load->view('Header');
                     <i class="fa fa-check fa-5x"></i>
                   </div>
                   <div class="col-xs-6 text-right">
-                    <p class="announcement-heading"><?php echo $temprature_count;?></p>
-                    <p class="announcement-text">Temperature</p>
+                    <p class="announcement-heading" style="font-size:20px;">
+					<?php 
+						echo $sTemperature;
+					?>
+					</p>
+                    <p class="announcement-text">Temperature<br>Sensors</p>
                   </div>
                 </div>
               </div>
@@ -271,7 +275,7 @@ $this->load->view('Header');
                   </div>
                   <div class="col-xs-6 text-right">
                     <p class="announcement-heading">&nbsp;</p>
-                    <p class="announcement-text">Setting</p>
+                    <p class="announcement-text">Setting<br><br></p>
                   </div>
                 </div>
               </div>

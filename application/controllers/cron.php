@@ -244,27 +244,76 @@ class Cron extends CI_Controller
         $aAllTime       =   $this->home_model->getAllDeviceTimeDetails();
         
         //START : If atleast 1 device has Time and Mode is Manual.
-            if(is_array($aAllTime) && !empty($aAllTime) && $iMode == 2)
-            {
-                foreach($aAllTime as $aResultTime)
-                {
-                    $sDeviceName     = $aResultTime->device_number;
-                    $sDevice         = $aResultTime->device_type;
-                    $sDeviceEnd      = $aResultTime->device_end_time;
+		if(is_array($aAllTime) && !empty($aAllTime) && $iMode == 2)
+		{
+			foreach($aAllTime as $aResultTime)
+			{
+				$sDeviceName     = $aResultTime->device_number;
+				$sDevice         = $aResultTime->device_type;
+				$sDeviceEnd      = $aResultTime->device_end_time;
 
-                    if($sTime >= $sDeviceEnd)//If Device End time is passed then switch OFF the DEVICE.
-                    {
-                        $iRelayStatus = 0;
-                        $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sDeviceName );
-                        
-                        //Update the start time and end time of the Device.
-                        $this->home_model->updateDeviceRunTime($sDeviceName, $sDevice, $iRelayStatus);
-                        onoff_rlb_relay($sRelayNewResp);
-                    }
-                }
-            }
+				if($sTime >= $sDeviceEnd)//If Device End time is passed then switch OFF the DEVICE.
+				{
+					$iRelayStatus = 0;
+					$sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sDeviceName );
+					
+					//Update the start time and end time of the Device.
+					$this->home_model->updateDeviceRunTime($sDeviceName, $sDevice, $iRelayStatus);
+					onoff_rlb_relay($sRelayNewResp);
+				}
+			}
+		}
         //END : If atleast 1 device has Time and Mode is Manual.
     }
+	
+	public function changeManualTimeMode() //START : Function to Manual Mode to auto after specified Time.
+    {
+        $this->load->model('home_model');
+        
+		//Get the timer start and end time.
+        $aTimer			=	$this->home_model->getManualModeTimer();
+		
+        //Get Current Mode of the System.
+        $iActiveMode          =   $this->home_model->getActiveMode();
+		$iMode = '1';
+		if($aTimer['END'] != '')
+		{
+			if($sTime >= $aTimer['END'])//If Device End time is passed then switch OFF the DEVICE.
+			{
+				if($iActiveMode != $iMode)
+				{
+					$this->home_model->updateMode($iMode);
+					
+					//Get the current status from the Relay board.
+					$sResponse      =   get_rlb_status();
+					$sValves        =   $sResponse['valves'];
+					$sRelays        =   $sResponse['relay'];
+					$sPowercenter   =   $sResponse['powercenter'];
+					
+					//off all relays
+					if($sRelays != '')
+					{
+						$sRelayNewResp = str_replace('1','0',$sRelays);
+						onoff_rlb_relay($sRelayNewResp);
+					}
+					
+					//off all valves
+					if($sValves != '')
+					{
+						$sValveNewResp = str_replace(array('1','2'), '0', $sValves);
+						onoff_rlb_valve($sValveNewResp);  
+					}
+					
+					//off all power center
+					if($sPowercenter != '')
+					{
+						$sPowerNewResp = str_replace('1','0',$sPowercenter);  
+						onoff_rlb_powercenter($sPowerNewResp); 
+					} 
+				}
+			}
+		}	
+    }//END : Function to Manual Mode to auto after specified Time.
 }
 
 ?>
