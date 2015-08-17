@@ -1,6 +1,8 @@
 <?php
 $this->load->view('Header');
   
+  //echo date('Y-m-d H:i:s');
+  
   if($relay_count == '')
     $relay_count = 0;
   if($valve_count == '')
@@ -12,88 +14,15 @@ $this->load->view('Header');
   if($time != '')
   $aTime  = explode(':',$time);
 ?>
-<style type="text/css">
-  .customClass p 
-  {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  @font-face {
-    font-family: 'BebasNeueRegular';
-    src: url('<?php echo site_url('assets/font/BebasNeue-webfont.eot');?>');
-    src: url('<?php echo site_url('assets/font/BebasNeue-webfont.eot?#iefix');?>') format('embedded-opentype'),
-         url('<?php echo site_url('assets/font/BebasNeue-webfont.woff');?>') format('woff'),
-         url('<?php echo site_url('assets/font/BebasNeue-webfont.ttf');?>') format('truetype'),
-         url('<?php echo site_url('assets/font/BebasNeue-webfont.svg#BebasNeueRegular');?>') format('svg');
-    font-weight: normal;
-    font-style: normal;
 
-	}
-
-	#Date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; font-size:16px; text-align:right; text-shadow:0 0 5px #00c6ff; }
-
-	#point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite;}
-	
-	.ulClock {list-style:none; text-align:center; }
-    .liClock { display:inline; font-size:1em; text-align:center; font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; text-shadow:0 0 5px #00c6ff; }
-
-	@-webkit-keyframes mymove 
-	{
-	0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
-	50% {opacity:0; text-shadow:none; }
-	100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
-	}
-
-
-	@-moz-keyframes mymove 
-	{
-	0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
-	50% {opacity:0; text-shadow:none; }
-	100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
-	}
-</style>
-<script type="text/javascript">
-$(document).ready(function() {
-// Create two variable with the names of the months and days in an array
-var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; 
-var dayNames= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-
-// Create a newDate() object
-var newDate = new Date();
-// Extract the current date from Date object
-newDate.setDate(newDate.getDate());
-// Output the day, date, month and year    
-$('#Date').html(dayNames[newDate.getDay()] + " " + newDate.getDate() + ' ' + monthNames[newDate.getMonth()] + ' ' + newDate.getFullYear());
-
-setInterval( function() {
-	// Create a newDate() object and extract the seconds of the current time on the visitor's
-	var seconds = new Date().getSeconds();
-	// Add a leading zero to seconds value
-	$("#sec").html(( seconds < 10 ? "0" : "" ) + seconds);
-	},1000);
-	
-setInterval( function() {
-	// Create a newDate() object and extract the minutes of the current time on the visitor's
-	var minutes = new Date().getMinutes();
-	// Add a leading zero to the minutes value
-	$("#min").html(( minutes < 10 ? "0" : "" ) + minutes);
-    },1000);
-	
-setInterval( function() {
-	// Create a newDate() object and extract the hours of the current time on the visitor's
-	var hours = new Date().getHours();
-	// Add a leading zero to the hours value
-	$("#hours").html(( hours < 10 ? "0" : "" ) + hours);
-    }, 1000);
-	
-}); 
-</script>
     <div id="page-wrapper">
 
         <div class="row">
           <div class="col-lg-12">
-			<?php //if(!empty($aTime)){ ?><!--<span style="float:right;"><?php //echo $aTime[0];?>:<?php //echo $aTime[1];?>:<small><?php //echo $aTime[2];?></small></span>--><?php //} ?>	
-			<h1>Dashboard <span style="float:right;"><div id="Date"></div>
+			
+			<h1>Dashboard 
+			<?php if(!empty($aTime)){ ?><span style="float:right;"><?php echo $aTime[0];?>:<?php echo $aTime[1];?>:<small><?php echo $aTime[2];?></small></span><?php } ?>	
+			<!--<span style="float:right;"><div id="Date"></div>
 			
 			<ul class="ulClock">
 				<li id="hours" class="liClock"> </li>
@@ -101,7 +30,7 @@ setInterval( function() {
 				<li id="min" class="liClock"> </li>
 				<li id="point" class="liClock">:</li>
 				<li id="sec" class="liClock"> </li>
-			</ul></span></h1>
+			</ul><div id="countdowntimer"><span id="future_date"><span></div></span>--></h1>
             <ol class="breadcrumb">
               <li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
             </ol>
