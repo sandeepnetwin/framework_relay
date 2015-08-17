@@ -7,9 +7,10 @@ if($sIP == '')
 if($sPort == '')
   $sPort =  PORT_NO; 
 
+
+
 ?>
     <div id="page-wrapper">
-
         <div class="row">
           <div class="col-lg-12">
             <ol class="breadcrumb">
@@ -55,13 +56,65 @@ if($sPort == '')
                       <tr>
                         <td width="10%"><strong>Display Desired Pool Temp on Home Page:</strong></td>
                         <td width="1%">&nbsp;</td>
-                        <td width="89%"><input type="radio" name="showPoolTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="showPoolTemp" value="0" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '0') { echo 'checked="checked";';}?> checked="checked">&nbsp;No</td>
+                        <td width="89%"><input type="radio" name="showPoolTemp" value="0" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '0') { echo 'checked="checked";';}?> checked="checked">&nbsp;No&nbsp;&nbsp;<input type="radio" name="showPoolTemp" value="1" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '1') { echo 'checked="checked";';}?>>&nbsp;Yes
+						<div id="poolTempID" style="display:<?php if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '') { echo ''; } else {echo 'none';}?>">
+						<strong>Select :</strong> <select name="selPoolTemp" id="selPoolTemp">
+						<?php
+								foreach($aTemprature as $key=>$temprature)
+								{
+									$strTemp	=	'';
+									if($temprature != '')
+									{
+										$strTemp = '( '.$temprature.' )';
+									}
+									
+									$strSelect	=	'';
+									if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '')
+									{
+										if($extra['Pool_Temp_Address'] == $key)
+										{
+											$strSelect	=	'selected="selected"';
+										}
+									}
+									
+									echo '<option value="'.$key.'" '.$strSelect.'>'.$key.' '.$strTemp.'</option>';
+								}
+
+						?>
+						</div>
+						</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
 					  <tr>
                         <td width="10%"><strong>Display Desired Spa Temp on home page</strong></td>
                         <td width="1%">&nbsp;</td>
-                        <td width="89%"><input type="radio" name="showSpaTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="showSpaTemp" value="0" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '0')) { echo 'checked="checked";';}?> checked="checked">&nbsp;No</td>
+                        <td width="89%"><input type="radio" name="showSpaTemp" value="0" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '0')) { echo 'checked="checked";';}?> checked="checked">&nbsp;No&nbsp;&nbsp;<input type="radio" name="showSpaTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes
+						<div id="spaTempID" style="display:<?php if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '') { echo ''; } else {echo 'none';}?>">
+						<strong>Select :</strong> <select name="selSpaTemp" id="selSpaTemp">
+						<?php
+								foreach($aTemprature as $key=>$temprature)
+								{
+									$strTemp	=	'';
+									if($temprature != '')
+									{
+										$strTemp = '( '.$temprature.' )';
+									}
+									
+									$strSelect	=	'';
+									if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
+									{
+										if($extra['Spa_Temp_Address'] == $key)
+										{
+											$strSelect	=	'selected="selected"';
+										}
+									}	
+									
+									echo '<option value="'.$key.'" '.$strSelect.'>'.$key.' '.$strTemp.'</option>';
+								}
+
+						?>
+						</div>
+						</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
                       <tr><td colspan="3"><input type="submit" name="command" value="Save Setting" class="btn btn-success" onclick="return checkModeSelected();"></td></tr>
@@ -75,6 +128,31 @@ if($sPort == '')
         </div><!-- /.row -->
       </div><!-- /#page-wrapper -->
 <script type="text/javascript">
+$(document).ready(function (){
+	$("input[name='showPoolTemp']").click(function(){
+		var checkedVal =	$(this).val();
+		if(checkedVal == '1')
+		{
+			$("#poolTempID").show();
+		}
+		else
+		{
+			$("#poolTempID").hide();
+		}
+	});
+	
+	$("input[name='showSpaTemp']").click(function(){
+		var checkedVal =	$(this).val();
+		if(checkedVal == '1')
+		{
+			$("#spaTempID").show();
+		}
+		else
+		{
+			$("#spaTempID").hide();
+		}
+	});	
+});
   function checkModeSelected()
   {
     var sRelayMode = $("#relay_mode").val();
@@ -91,6 +169,8 @@ if($sPort == '')
     }
 
   }
+  
+  
 </script>
 <hr>
 <?php

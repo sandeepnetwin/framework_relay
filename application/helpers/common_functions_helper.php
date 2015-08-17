@@ -154,8 +154,8 @@
 	function get_rlb_status(){
 		$aReturn = array();
 		$sUrl = 's';
-		//$sResponse = get_from_rlb($sUrl);
-		$sResponse	=	'S,054,0,1,22:08:00,0,14,00000...,..........000000,00000000,0,0,1816,2373,0,86.6F,,,,,,0.00,0000,0.00,0,0,0';
+		$sResponse = get_from_rlb($sUrl);
+		//$sResponse	=	'S,054,0,1,22:08:00,0,14,00000...,..........000000,00000000,0,0,1816,2373,0,86.6F,,,,,,0.00,0000,0.00,0,0,0';
 		$aResponse = explode(',',$sResponse);
 		
 		$aReturn['response'] = $sResponse;
@@ -165,12 +165,12 @@
 		$aReturn['relay'] = $aResponse['8'];
 		$aReturn['powercenter'] = $aResponse['9'];
 		
-		$aReturn['controller_temp'] = $aResponse['15'];
-		$aReturn['temp_sensor_1'] = $aResponse['16'];
-		$aReturn['temp_sensor_2'] = $aResponse['17'];
-		$aReturn['temp_sensor_3'] = $aResponse['18'];
-		$aReturn['temp_sensor_4'] = $aResponse['19'];
-		$aReturn['temp_sensor_5'] = $aResponse['20'];
+		$aReturn['TS0'] = $aResponse['15'];
+		$aReturn['TS1'] = $aResponse['16'];
+		$aReturn['TS2'] = $aResponse['17'];
+		$aReturn['TS3'] = $aResponse['18'];
+		$aReturn['TS4'] = $aResponse['19'];
+		$aReturn['TS5'] = $aResponse['20'];
 
 		$aReturn['AP0'] = $aResponse['10'];
 		$aReturn['AP1'] = $aResponse['11'];
@@ -225,8 +225,6 @@
 		return $sResponse;
 	}
 
-	
-	
 	function switch_arrays($aOrig, $aNew){
 		$aReturn = array();
 		foreach($aNew as $vNew){

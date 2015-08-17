@@ -41,7 +41,7 @@ class Home extends CI_Controller
         //Pump device Status
         $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
         // Temperature Sensor Device 
-		$sTemprature    =   array($sResponse['temp_sensor_1'],$sResponse['temp_sensor_2'],$sResponse['temp_sensor_3'],$sResponse['temp_sensor_4'],$sResponse['temp_sensor_5']);
+		$sTemprature    =   array($sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
 			
         //START : Parameter for View
             $aViewParameter['relay_count']  =   strlen($sRelays);
@@ -57,6 +57,9 @@ class Home extends CI_Controller
 			$aViewParameter['welcome_message'] = '';
 			$this->load->model('home_model');
 			$aModeDetails = $this->home_model->getActiveModeDetails();
+			
+			//Get Extra Details
+			list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
 			
 			if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
 			{
@@ -97,6 +100,22 @@ class Home extends CI_Controller
 					$strMessage .= ' <strong>'.$sTimeDiff->i.' minutes</strong>,';
 				
 				$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
+				
+				if($extra['Pool_Temp'] == '1' && isset($extra['Pool_Temp']))
+				{
+					if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '' && $sResponse[$extra['Pool_Temp_Address']] != '')
+					{
+						$strMessage.=' <strong>Pool temperature is '.$sResponse[$extra['Pool_Temp_Address']].'.</strong>';
+					}
+				}
+				if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
+				{
+					if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
+					{
+						$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
+					}
+				}
+				
 				$aViewParameter['welcome_message'] = $strMessage;
 			}
 			
@@ -141,6 +160,16 @@ class Home extends CI_Controller
 				//Get whether to show temperature on Home page.
 				$sPoolTemp  =   $this->input->post('showPoolTemp');
 				$sSpaTemp  	=   $this->input->post('showSpaTemp');
+				
+				//Get the temperature address
+				$sPoolTempAddress	=	'';
+				$sSpaTempAddress	=	'';
+				
+				if($sPoolTemp == '1')
+				$sPoolTempAddress   =   $this->input->post('selPoolTemp');
+				if($sSpaTemp == '1')
+				$sSpaTempAddress	=   $this->input->post('selSpaTemp');
+			
 				
                 //Check for IP constant if IP is blank in POST
                 if($sIP == '')
@@ -202,7 +231,7 @@ class Home extends CI_Controller
                     
                 } // END : else for if($sIP == '' || $sPort == '')
 				
-				$aTemprature	=	array('Pool_Temp'=>$sPoolTemp,'Spa_Temp'=>$sSpaTemp);
+				$aTemprature	=	array('Pool_Temp'=>$sPoolTemp,'Pool_Temp_Address'=>$sPoolTempAddress,'Spa_Temp'=>$sSpaTemp,'Spa_Temp_Address'=>$sSpaTempAddress);
 				$this->home_model->updateSettingTemp($aTemprature);
 				
 				$aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
@@ -226,6 +255,10 @@ class Home extends CI_Controller
             //Get saved IP and PORT 
             list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
             
+			$sResponse      =   get_rlb_status();
+			
+			$aViewParameter['aTemprature'] = array('TS0'=>$sResponse['TS0'],'TS1'=>$sResponse['TS1'],'TS2'=>$sResponse['TS2'],'TS3'=>$sResponse['TS3'],'TS4'=>$sResponse['TS4'],'TS5'=>$sResponse['TS5']); 
+			
 			//View Setting
             $this->load->view('Setting',$aViewParameter);
         } // END : If no device type then show setting page. if($sPage == '')
@@ -246,7 +279,7 @@ class Home extends CI_Controller
             // Pump Device Status
             $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
 			// Temperature Sensor Device 
-			$sTemprature    =   array($sResponse['temp_sensor_1'],$sResponse['temp_sensor_2'],$sResponse['temp_sensor_3'],$sResponse['temp_sensor_4'],$sResponse['temp_sensor_5']);
+			$sTemprature    =   array($sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
 
             //START : Parameter for View
                 $aViewParameter['relay_count']      =   strlen($sRelays);
