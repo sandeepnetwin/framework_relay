@@ -269,6 +269,7 @@ if($sProgramID != '')
 		else
 			sDays = 'ALL';
 		
+		var checkTime	=	0;
 		//Check if selected time already exists.
 		$.ajax({
 			type: "POST",
@@ -278,10 +279,14 @@ if($sProgramID != '')
 				if(data == '1')
 				{
 					alert('Selected time is already assigned to existing Program!');
-					return false;
+					//return false;
+					checkTime = 1;
 				}
 			}
 		});
+		
+		if(checkTime == 1)
+			return false;
 		
 		//alert(hh + ":" + mm + ":" + ss);
 		return true;
