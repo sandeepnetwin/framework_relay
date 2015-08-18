@@ -158,7 +158,7 @@ if($sProgramID != '')
                         <td width="89%"><input type="radio" <?php if($isAbsoluteProgram == '1') { echo 'checked="checked;"';}?> name="isAbsoluteProgram" id="isAbsoluteProgramYes" value="1" >&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="isAbsoluteProgram" id="isAbsoluteProgramNo" value="0" <?php if($isAbsoluteProgram == '0' || $isAbsoluteProgram == '') { echo 'checked="checked;"';}?> >&nbsp;No</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
-                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success" onclick="return checkMaxRunTime();">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/PS/');?>">Back</a></td></tr>
+                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success" onclick="return checkMaxRunTime();">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/PS/');?>">Back</a>&nbsp;&nbsp;<span id="loadingImg" style="display:none;"><img src="<?php echo site_url('assets/images/loading.gif');?>" alt="Loading...." width="32" height="32"></span></td></tr>
                       
                     </table>
                     <div style="height:20px;">&nbsp;</div>
@@ -251,6 +251,7 @@ if($sProgramID != '')
   });
   function checkMaxRunTime()
   {
+		$("#loadingImg").show();
 		var first		=	$("#timepicker_start").val();
 		var seconddate	=	$("#timepicker_end").val();
 	
@@ -278,9 +279,11 @@ if($sProgramID != '')
 			success: function(data) {
 				if(data == '1')
 				{
+					$("#loadingImg").hide();
 					alert('Selected time is already assigned to existing Program!');
 					//return false;
 					checkTime = 1;
+					
 				}
 			}
 		});
