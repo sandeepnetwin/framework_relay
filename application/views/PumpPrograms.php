@@ -158,7 +158,7 @@ if($sProgramID != '')
                         <td width="89%"><input type="radio" <?php if($isAbsoluteProgram == '1') { echo 'checked="checked;"';}?> name="isAbsoluteProgram" id="isAbsoluteProgramYes" value="1" >&nbsp;Yes&nbsp;&nbsp;<input type="radio" name="isAbsoluteProgram" id="isAbsoluteProgramNo" value="0" <?php if($isAbsoluteProgram == '0' || $isAbsoluteProgram == '') { echo 'checked="checked;"';}?> >&nbsp;No</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
-                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/PS/');?>">Back</a></td></tr>
+                      <tr><td colspan="3"><input type="submit" name="command" value="<?php echo $sSubmitButton;?>" class="btn btn-success" onclick="return checkMaxRunTime();">&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($sDeviceID).'/');?>">Cancel</a>&nbsp;&nbsp;<a class="btn btn-primary btn-xs" style="padding: 7px;" href="<?php echo site_url('home/setting/PS/');?>">Back</a></td></tr>
                       
                     </table>
                     <div style="height:20px;">&nbsp;</div>
@@ -249,6 +249,43 @@ if($sProgramID != '')
       $("#tr_week_blank").hide(); 
     }
   });
+  function checkMaxRunTime()
+  {
+		var first		=	$("#timepicker_start").val();
+		var seconddate	=	$("#timepicker_end").val();
+	
+		var sProgramType	=	$("input[name='sProgramType']:checked").val();
+		
+		var sDays;
+		var names = [];
+		if(sProgramType == '2')
+		{
+			$("input[name='sProgramDays[]']:checked").each(function() {
+				names.push($(this).val());
+			});
+			
+			sDays = JSON.stringify(names);
+		}
+		else
+			sDays = 'ALL';
+		
+		//Check if selected time already exists.
+		$.ajax({
+			type: "POST",
+			url: "<?php echo site_url('home/checkProgramTimeAlreadyExist/');?>", 
+			data: {sDeviceID:'<?php echo $sDeviceID;?>',sDevice:'PS',sProgramType:sProgramType,sDays:(sDays),startTime:first,endTime:seconddate},
+			success: function(data) {
+				if(data == '1')
+				{
+					alert('Selected time is already assigned to existing Program!');
+					return false;
+				}
+			}
+		});
+		
+		//alert(hh + ":" + mm + ":" + ss);
+		return true;
+  }
 </script>
 <script type="text/javascript">
             $(document).ready(function() {

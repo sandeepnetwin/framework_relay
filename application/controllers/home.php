@@ -741,6 +741,90 @@ class Home extends CI_Controller
 			$this->home_model->saveDevicePower($sDeviceID,$sDevice,$sPowerValue);
 		}
 	}	
+	
+	//START : Function to check if there is program exists for the selected time.
+	public function checkProgramTimeAlreadyExist()
+	{
+		$sDeviceID   	=  $this->input->post('sDeviceID');
+		$sDevice   	 	=  $this->input->post('sDevice');
+		$sProgramType 	=  $this->input->post('sProgramType');
+		if($sProgramType == '2')
+			$sDays			=  json_decode($this->input->post('sDays'));
+	    else
+			$sDays			=  $this->input->post('sDays');
+		
+		$startTime		=  $this->input->post('startTime').':00';	
+		$endTime		=  $this->input->post('endTime').':00';		
+		
+		$this->load->model('home_model');
+		$sProgramDetails	=	$this->home_model->getProgramDetailsForDevice($sDeviceID,$sDevice);
+		$alreadyExists		=	0;
+		if(is_array($sProgramDetails) && !empty($sProgramDetails))
+		{
+			$cntDevicePrograms  = count($sProgramDetails);
+			$aAllDays           = array( 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday');
+			foreach($sProgramDetails as $aResult)
+			{
+				if($sProgramType == '1')
+				{
+					if($startTime >= $aResult->start_time && $startTime <= $aResult->end_time)
+					{
+						$alreadyExists = 1;
+						break;
+					}
+					else if($endTime >= $aResult->start_time && $endTime <= $aResult->end_time)
+					{
+						$alreadyExists = 1;
+						break;
+					}
+					else if($startTime < $aResult->start_time && $endTime > $aResult->end_time)
+					{
+						$alreadyExists = 1;
+						break;
+					}
+				}
+				else if($sProgramType == '2')
+				{
+					$checkDaysExists	=	0;
+					$existDays = explode(',',$aResult->program_days);
+					if(!empty($sDays))
+					{
+						foreach($sDays as $days)
+						{
+							if(in_array($days,$existDays))
+							{
+								$checkDaysExists = 1;
+								break;
+							}
+						}
+						
+						if($checkDaysExists == 1)
+						{
+							if($startTime >= $aResult->start_time && $startTime <= $aResult->end_time)
+							{
+								$alreadyExists = 1;
+								break;
+							}
+							else if($endTime >= $aResult->start_time && $endTime <= $aResult->end_time)
+							{
+								$alreadyExists = 1;
+								break;
+							}
+							else if($startTime < $aResult->start_time && $endTime > $aResult->end_time)
+							{
+								$alreadyExists = 1;
+								break;
+							}
+						}
+					}
+					
+				}
+			}
+		}
+		
+		echo $alreadyExists;
+		
+	}//END : Function to check if there is program exists for the selected time.
     
 }//END : Class Home
 

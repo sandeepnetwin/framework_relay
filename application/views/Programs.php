@@ -281,6 +281,35 @@ if($sProgramID != '')
 			}
 		}
 		
+		var sProgramType	=	$("input[name='sProgramType']:checked").val();
+		
+		var sDays;
+		var names = [];
+		if(sProgramType == '2')
+		{
+			$("input[name='sProgramDays[]']:checked").each(function() {
+				names.push($(this).val());
+			});
+			
+			sDays = JSON.stringify(names);
+		}
+		else
+			sDays = 'ALL';
+		
+		//Check if selected time already exists.
+		$.ajax({
+			type: "POST",
+			url: "<?php echo site_url('home/checkProgramTimeAlreadyExist/');?>", 
+			data: {sDeviceID:'<?php echo $sDeviceID;?>',sDevice:'R',sProgramType:sProgramType,sDays:(sDays),startTime:first,endTime:seconddate},
+			success: function(data) {
+				if(data == '1')
+				{
+					alert('Selected time is already assigned to existing Program!');
+					return false;
+				}
+			}
+		});
+		
 		//alert(hh + ":" + mm + ":" + ss);
 		return true;
   }
