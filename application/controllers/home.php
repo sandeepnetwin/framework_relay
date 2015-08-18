@@ -41,7 +41,7 @@ class Home extends CI_Controller
         //Pump device Status
         $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
         // Temperature Sensor Device 
-		$sTemprature    =   array($sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+		$sTemprature    =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
 			
         //START : Parameter for View
             $aViewParameter['relay_count']  =   strlen($sRelays);
@@ -111,11 +111,9 @@ class Home extends CI_Controller
 						
 						$sExtra .='Pool : '.$sResponse[$extra['Pool_Temp_Address']];
 					}
-					else
-						$sExtra .='Pool : 0F';
+					
 				}
-				else
-						$sExtra .='Pool : 0F';
+				
 				if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
 				{
 					if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
@@ -123,11 +121,9 @@ class Home extends CI_Controller
 						$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
 						$sExtra .='<br>Spa : '.$sResponse[$extra['Spa_Temp_Address']];
 					}
-					else
-						$sExtra .='<br>Spa : 0F';
+					
 				}
-				else
-						$sExtra .='<br>Spa : 0F';
+				
 					
 				$aViewParameter['sTemperature'] = $sExtra;
 				
@@ -269,7 +265,7 @@ class Home extends CI_Controller
             // Pump Device Status
             $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
 			// Temperature Sensor Device 
-			$sTemprature    =   array($sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+			$sTemprature    =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
 
             //START : Parameter for View
                 $aViewParameter['relay_count']      =   strlen($sRelays);
@@ -277,7 +273,7 @@ class Home extends CI_Controller
                 $aViewParameter['power_count']      =   strlen($sPowercenter);
                 $aViewParameter['time']             =   $sTime;
                 $aViewParameter['pump_count']       =   count($sPump);
-				$aViewParameter['temprature_count']       =   count($sTemprature);
+				$aViewParameter['temprature_count'] =   count($sTemprature);
 
                 $aViewParameter['sRelays']          =   $sRelays; 
                 $aViewParameter['sPowercenter']     =   $sPowercenter;

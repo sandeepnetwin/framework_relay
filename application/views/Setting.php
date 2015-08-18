@@ -6,9 +6,6 @@ if($sIP == '')
 
 if($sPort == '')
   $sPort =  PORT_NO; 
-
-
-
 ?>
     <div id="page-wrapper">
         <div class="row">
@@ -42,9 +39,9 @@ if($sPort == '')
                   <form action="<?php echo site_url('home/setting');?>" method="post">
                     <table border="0" cellspacing="0" cellpadding="0" width="100%">
                       <tr>
-                        <td width="10%"><strong>IP ADDRESS:</strong></td>
+                        <td width="24%"><strong>IP ADDRESS:</strong></td>
                         <td width="1%">&nbsp;</td>
-                        <td width="89%"><input type="text" class="form-control" placeholder="Enter ip address" name="relay_ip_address" value="<?php echo $sIP;?>" id="relay_ip_address"></td>
+                        <td width="75%"><input type="text" class="form-control" placeholder="Enter ip address" name="relay_ip_address" value="<?php echo $sIP;?>" id="relay_ip_address"></td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
                       <tr>
@@ -58,7 +55,7 @@ if($sPort == '')
                         <td width="1%">&nbsp;</td>
                         <td width="89%"><input type="radio" name="showPoolTemp" value="0" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '0') { echo 'checked="checked";';}?> checked="checked">&nbsp;No&nbsp;&nbsp;<input type="radio" name="showPoolTemp" value="1" <?php if(isset($extra['Pool_Temp']) && $extra['Pool_Temp'] == '1') { echo 'checked="checked";';}?>>&nbsp;Yes
 						<div id="poolTempID" style="display:<?php if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '') { echo ''; } else {echo 'none';}?>">
-						<strong>Select :</strong> <select name="selPoolTemp" id="selPoolTemp">
+						<strong>Select :</strong> <select name="selPoolTemp" id="selPoolTemp" class="form-control" style="width: 180px;">
 						<?php
 								foreach($aTemprature as $key=>$temprature)
 								{
@@ -86,11 +83,11 @@ if($sPort == '')
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>
 					  <tr>
-                        <td width="10%"><strong>Display Desired Spa Temp on home page</strong></td>
+                        <td width="10%"><strong>Display Desired Spa Temp on home page:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%"><input type="radio" name="showSpaTemp" value="0" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '0')) { echo 'checked="checked";';}?> checked="checked">&nbsp;No&nbsp;&nbsp;<input type="radio" name="showSpaTemp" value="1" <?php if((isset($extra['Pool_Temp']) && $extra['Spa_Temp'] == '1')) { echo 'checked="checked";';}?>>&nbsp;Yes
 						<div id="spaTempID" style="display:<?php if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '') { echo ''; } else {echo 'none';}?>">
-						<strong>Select :</strong> <select name="selSpaTemp" id="selSpaTemp">
+						<strong>Select :</strong> <select name="selSpaTemp" id="selSpaTemp" class="form-control" style="width: 180px;">
 						<?php
 								foreach($aTemprature as $key=>$temprature)
 								{
@@ -118,9 +115,9 @@ if($sPort == '')
                       </tr>
 					  <tr><td colspan="3">&nbsp;</td></tr>
 					  <tr>
-                        <td width="10%"><strong>Enter Manual Mode Timing: </strong></td>
+                        <td width="10%"><strong>Maximum Manual Mode threshold expressed in minutes: </strong></td>
                         <td width="1%">&nbsp;</td>
-                        <td width="89%"><input type="text" name="manualMinutes" id="manualMinutes" value="<?php echo $manualMinutes;?>">(In Minutes)
+                        <td width="89%"><input type="text" name="manualMinutes" id="manualMinutes" value="<?php echo $manualMinutes;?>" class="form-control" style="width: 180px;"><strong style="color:#428BCA;">(The system will automatically change from Manual mode to auto mode after the threshold has been exceeded.)</strong>
 						</td>
                       </tr>
                       <tr><td colspan="3">&nbsp;</td></tr>

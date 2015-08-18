@@ -82,114 +82,148 @@ if($sDevice == 'T')
                 </thead>
                 <tbody>
                 <?php
-                    $j=0;
                     //START : Relay Device 
-                    for ($i=0;$i < $relay_count; $i++)
+					$j=0;
+					//START : First Show all Relays assigned to Valves.
+					for ($i=0;$i < $relay_count; $i++)
                     {
-                        $iRelayVal = $sRelays[$i];
-                        $iRelayNewValSb = 1;
-                        if($iRelayVal == 1)
-                        {
-                          $iRelayNewValSb = 0;
-                        }
-                        $sRelayVal = false;
-                        if($iRelayVal)
-                          $sRelayVal = true;
-                        //$sRelayNameDb = get_device_name(1, $i);
-
-                        $sRelayNameDb =  $this->home_model->getDeviceName($i,$sDevice);
-                        if($sRelayNameDb == '')
-                          $sRelayNameDb = 'Add Name';
-                        
-                        $sDeviceTime =  $this->home_model->getDeviceTime($i,$sDevice);
-                        if($sDeviceTime == '')
-                          $sDeviceTime = 'Add Time';
-                        else
-                          $sDeviceTime .= ' Minute';
-					  
-						$iRelayProgramCount = $this->home_model->getProgramCount($i,$sDevice);
-						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
-				?>
+						$iRelayVal = $sRelays[$i];
+						if($iRelayVal == '' || $iRelayVal =='.') 
+						{
+							$sRelayNameDb =  $this->home_model->getDeviceName($i,$sDevice);
+							if($sRelayNameDb == '')
+							  $sRelayNameDb = 'Add Name';
+					?>
 						
-                      <tr <?php if($j>=1){ echo 'class="displayMore"';}?>>
-                        <td>Relay <?php echo $i;?></td>
-                        <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
-                        <td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
-                        <td>
-                            <?php 
-                            if($iRelayVal != '' && $iRelayVal !='.') 
-                            {
-                            ?>
-                            <div class="toggle-light" style="width:100px;">
-                                <div>
-                                    <div class="toggle<?php echo $i;?> <?php echo $sRelayVal;?>"></div>
-                                </div>
-                            </div>
-
-                       <script type="text/javascript">
-                          var clickOff  = '';
-                          <?php if($iActiveMode != '2') { ?>
-                              $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>',drag: false, click: false});
-                          <?php } else { ?> 
-                              $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>'});
-                          <?php } ?>    
-                          
-                          $( ".toggle<?php echo $i;?>" ).find( ".toggle-off" ).css({'padding-left':'10px','font-weight':'bold','font-size':'16px','color':'#B40404'});
-                          $( ".toggle<?php echo $i;?>" ).find( ".toggle-on" ).css({'padding-left':'40px','font-weight':'bold','font-size':'16px'});
-                          $('.toggle<?php echo $i;?>').on('toggle', function (e, active) {
-                            var sStatus = '';
-                            if (active) {
-                                sStatus = 1;
-                            } else {
-                                sStatus = 0;
-                            }
-                            <?php if($iActiveMode == '2') { ?>
-                              $("#loading_relay_<?php echo $i;?>").css('visibility','visible');
-                             $.ajax({
-                                type: "POST",
-                                url: "<?php echo site_url('home/updateStatusOnOff');?>", 
-                                data: {sName:'<?php echo $i;?>',sStatus:sStatus,sDevice:'<?php echo $sDevice;?>'},
-                                success: function(data) {
-                                  $("#loading_relay_<?php echo $i;?>").css('visibility','hidden');
-                                }
-
-                             });
-                             <?php } else {  ?>
-                              alert('You can perform this operation in manual mode only.');
-                             <?php } ?> 
-                          });
-                       </script>
-                       <?php } else { ?>
-                       <strong style="color:#FF0000">Output is Assigned to Valve.</strong>
-                       <?php } ?>
-                       </td>
-                        <td>
-                            <?php 
-                            if($iRelayVal != '' && $iRelayVal !='.') 
-                            {
-                            ?>
-                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>&nbsp&nbsp<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>" style="width: 90px;"><?php echo $iRelayProgramCount;?><?php if($iRelayProgramCount == 1 || $iRelayProgramCount == 0){ echo ' Program';}else{ echo ' Programs';}?></a>
-                            <?php } else { ?>
-                            <strong style="color:#428BCA">-</strong>
-                            <?php } ?>
-                        </td>
-                        <td><?php if($iRelayVal != '' && $iRelayVal !='.') { ?>
-                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a>
-                            <?php } else { ?>
-                                <strong style="color:#428BCA">-</strong>
-                            <?php } ?>
-                        </td>     
-						
-                      </tr>
-                <?php
-					if($j==($relay_count-1))
+							<tr <?php if($j>=1){ echo 'class="displayMore"';}?>>
+							<td>Relay <?php echo $i;?></td>
+							<td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
+							<td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
+							<td>
+							<strong style="color:#FF0000">Output is Assigned to Valve.</strong>
+							</td>
+							<td><strong style="color:#428BCA">-</strong></td>
+							<td><strong style="color:#428BCA">-</strong></td>     
+						</tr>	
+						<?php 
+							$j++;
+						}
+					}
+					if($j > 0)
 					{
 						echo '<tr>
 								<th class="header more" colspan="7" style="text-align: center; color:#428BCA; cursor:pointer;">More +</th>
-							  </tr>';
+							 </tr>';
 					}
-					$j++;
-				} ?>
+					//END : First Show all Relays assigned to Valves.
+					
+                    for ($i=0;$i < $relay_count; $i++)
+                    {
+						$iRelayVal = $sRelays[$i];
+						if($iRelayVal != '' && $iRelayVal !='.') 
+                        {
+							
+							$iRelayNewValSb = 1;
+							if($iRelayVal == 1)
+							{
+							  $iRelayNewValSb = 0;
+							}
+							$sRelayVal = false;
+							if($iRelayVal)
+							  $sRelayVal = true;
+							//$sRelayNameDb = get_device_name(1, $i);
+
+							$sRelayNameDb =  $this->home_model->getDeviceName($i,$sDevice);
+							if($sRelayNameDb == '')
+							  $sRelayNameDb = 'Add Name';
+							
+							$sDeviceTime =  $this->home_model->getDeviceTime($i,$sDevice);
+							if($sDeviceTime == '')
+							  $sDeviceTime = 'Add Time';
+							else
+							  $sDeviceTime .= ' Minute';
+						  
+							$iRelayProgramCount = $this->home_model->getProgramCount($i,$sDevice);
+							$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
+						?>
+							<tr>
+							<td>Relay <?php echo $i;?></td>
+							<td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
+							<td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
+							<td>
+								<div class="toggle-light" style="width:100px;">
+									<div>
+										<div class="toggle<?php echo $i;?> <?php echo $sRelayVal;?>"></div>
+									</div>
+								</div>
+
+							<script type="text/javascript">
+							  var clickOff  = '';
+							  <?php if($iActiveMode != '2') { ?>
+								  $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>',drag: false, click: false});
+								  $('.toggle<?php echo $i;?>').click(function(){
+									var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+									if(bConfirm)
+									{
+										$("#loading_relay_<?php echo $i;?>").css('visibility','visible');
+										$.ajax({
+											type: "POST",
+											url: "<?php echo site_url('analog/changeMode');?>", 
+											data: {iMode:'2'},
+											success: function(data) {
+												$.ajax({
+													type: "POST",
+													url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+													data: {sName:'<?php echo $i;?>',sStatus:1,sDevice:'<?php echo $sDevice;?>'},
+													success: function(data) {
+													  $("#loading_relay_<?php echo $i;?>").css('visibility','hidden');
+													  location.reload();
+													}
+												});
+											}
+										});
+									}
+								  });
+							  <?php } else { ?> 
+								  $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>'});
+							  <?php } ?>    
+							  
+							  $( ".toggle<?php echo $i;?>" ).find( ".toggle-off" ).css({'padding-left':'10px','font-weight':'bold','font-size':'16px','color':'#B40404'});
+							  $( ".toggle<?php echo $i;?>" ).find( ".toggle-on" ).css({'padding-left':'40px','font-weight':'bold','font-size':'16px'});
+							  $('.toggle<?php echo $i;?>').on('toggle', function (e, active) {
+								var sStatus = '';
+								if (active) {
+									sStatus = 1;
+								} else {
+									sStatus = 0;
+								}
+								<?php if($iActiveMode == '2') { ?>
+								  $("#loading_relay_<?php echo $i;?>").css('visibility','visible');
+								 $.ajax({
+									type: "POST",
+									url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+									data: {sName:'<?php echo $i;?>',sStatus:sStatus,sDevice:'<?php echo $sDevice;?>'},
+									success: function(data) {
+									  $("#loading_relay_<?php echo $i;?>").css('visibility','hidden');
+									}
+
+								 });
+								 <?php } else {  ?>
+								  alert('You can perform this operation in manual mode only.');
+								 <?php } ?> 
+							  });
+						   </script>
+						   </td>
+							<td>
+								<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>&nbsp&nbsp<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>" style="width: 90px;"><?php echo $iRelayProgramCount;?><?php if($iRelayProgramCount == 1 || $iRelayProgramCount == 0){ echo ' Program';}else{ echo ' Programs';}?></a>
+							</td>
+							<td>
+							<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a>
+							</td>     
+							
+						  </tr>
+					<?php }
+					} ?>
                 </tbody>
               </table>
             </div>
@@ -250,6 +284,29 @@ if($sDevice == 'T')
                           var clickOff  = '';
                           <?php if($iActiveMode != '2') { ?>
                               $('.toggleP<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPowerCenterVal;?>',drag: false, click: false});
+							  $('.toggleP<?php echo $i;?>').click(function(){
+								var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+								if(bConfirm)
+								{
+									$("#loading_power_<?php echo $i;?>").css('visibility','visible');
+									$.ajax({
+										type: "POST",
+										url: "<?php echo site_url('analog/changeMode');?>", 
+										data: {iMode:'2'},
+										success: function(data) {
+											$.ajax({
+												type: "POST",
+												url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+												data: {sName:'<?php echo $i;?>',sStatus:1,sDevice:'<?php echo $sDevice;?>'},
+												success: function(data) {
+												  $("#loading_power_<?php echo $i;?>").css('visibility','hidden');
+												  location.reload();
+												}
+											});
+										}
+									});
+								}
+							  });
                           <?php } else { ?> 
                               $('.toggleP<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPowerCenterVal;?>'});
                           <?php } ?>    
@@ -296,6 +353,9 @@ if($sDevice == 'T')
         <?php } ?> <!-- END : Power Center Device -->
 
         <?php if($sDevice == 'V') { // Valve Start ?>
+		<script>
+		var iActiveMode = '<?php echo $iActiveMode;?>';
+		</script>
         <link href="<?php echo site_url('assets/switchy/switchy.css'); ?>" rel="stylesheet" />
         <!--<link href="<?php echo site_url('assets/switchy/bootstrap.min.css'); ?>" rel="stylesheet" />-->
         <script type="text/javascript" src="<?php echo site_url('assets/switchy/switchy.js'); ?>"></script>
@@ -368,55 +428,95 @@ if($sDevice == 'T')
                                   <script type="text/javascript">
                                   $(function()
                                   {
-                                    var bgColor = '#E8E8E8';
-                                    <?php if($iValvesVal == '1' || $iValvesVal == '2') { ?>
-                                            bgColor = '#45A31F';
-                                    <?php } else { ?>
-                                            bgColor = '#E8E8E8';
-                                    <?php } ?>
-                                    $('#switch-me-<?php echo $i;?>').switchy();
-                                    
-                                    $('.valve-<?php echo $i?>').on('click', function(event){
-                                        //event.preventDefault();
-                                        //return false;
-                                        $('#switch-me-<?php echo $i;?>').val($(this).attr('value')).change();
-                                    });
-                                    
-                                    $('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
-                                            backgroundColor: bgColor
-                                        });
-                                    
-                                    $('#switch-me-<?php echo $i;?>').on('change', function(event)
-                                    {
-                                        //event.preventDefault();
-                                        //return false;
-                                        // Animate Switchy Bar background color
-                                        var bgColor = '#E8E8E8';
+									  
+										var bgColor = '#E8E8E8';
+										<?php if($iValvesVal == '1' || $iValvesVal == '2') { ?>
+												bgColor = '#45A31F';
+										<?php } else { ?>
+												bgColor = '#E8E8E8';
+										<?php } ?>
+										
+										$('#switch-me-<?php echo $i;?>').switchy();
+										
+										$('.valve-<?php echo $i?>').on('click', function(event){
+											//event.preventDefault();
+											//return false;
+											$('#switch-me-<?php echo $i;?>').val($(this).attr('value')).change();
+										});
+										
+										$('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+												backgroundColor: bgColor
+											});
+										
+										$('#switch-me-<?php echo $i;?>').on('change', function(event)
+										{
+											if(iActiveMode != 2)
+											{
+												var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+												if(bConfirm)
+												{
+													$.ajax({
+														type: "POST",
+														url: "<?php echo site_url('analog/changeMode');?>", 
+														data: {iMode:'2'},
+														success: function(data) {
+														}
+													});
+													//event.preventDefault();
+													//return false;
+													// Animate Switchy Bar background color
+													var bgColor = '#E8E8E8';
 
-                                        if ($(this).val() == '1' || $(this).val() == '2')
-                                        {
-                                            bgColor = '#45A31F';
-                                        } 
-                                        $('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
-                                            backgroundColor: bgColor
-                                        });
-                                        
-                                        <?php if($iActiveMode == '2') { ?>
-                                            //$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
-                                            $.ajax({
-                                                type: "POST",
-                                                url: "<?php echo site_url('home/updateStatusOnOff');?>", 
-                                                data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
-                                                success: function(data) {
-                                                //$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
-                                                }
+													if ($(this).val() == '1' || $(this).val() == '2')
+													{
+														bgColor = '#45A31F';
+													} 
+													$('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+														backgroundColor: bgColor
+													});
+												
+													
+													//$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
+													$.ajax({
+														type: "POST",
+														url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+														data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
+														success: function(data) {
+														//$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
+														location.reload();
+														}
 
-                                            });
-                                            <?php } else {  ?>
-                                            alert('You can perform this operation in manual mode only.');
-                                            <?php } ?> 
-                                        
-                                       });
+													});
+												}
+											}
+											else											
+											{
+												//event.preventDefault();
+												//return false;
+												// Animate Switchy Bar background color
+												var bgColor = '#E8E8E8';
+
+												if ($(this).val() == '1' || $(this).val() == '2')
+												{
+													bgColor = '#45A31F';
+												} 
+												$('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+													backgroundColor: bgColor
+												});
+											
+												
+												//$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
+												$.ajax({
+													type: "POST",
+													url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+													data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
+													success: function(data) {
+													//$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
+													}
+
+												});
+											}
+										});
                                     });
                                </script>
                                </div>
@@ -493,6 +593,29 @@ if($sDevice == 'T')
                           var clickOff  = '';
                           <?php if($iActiveMode != '2') { ?>
                               $('.togglePump<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPumpVal;?>',drag: false, click: false});
+							  $('.togglePump<?php echo $i;?>').click(function(){
+								var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+								if(bConfirm)
+								{
+									$("#loading_pump_<?php echo $i;?>").css('visibility','visible');
+									$.ajax({
+										type: "POST",
+										url: "<?php echo site_url('analog/changeMode');?>", 
+										data: {iMode:'2'},
+										success: function(data) {
+											$.ajax({
+												type: "POST",
+												url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+												data: {sName:'<?php echo $i;?>',sStatus:1,sDevice:'<?php echo $sDevice;?>'},
+												success: function(data) {
+												  $("#loading_pump_<?php echo $i;?>").css('visibility','hidden');
+												  location.reload();
+												}
+											});
+										}
+									});
+								}
+							  });
                           <?php } else { ?> 
                               $('.togglePump<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPumpVal;?>'});
                           <?php } ?>    
@@ -549,6 +672,7 @@ if($sDevice == 'T')
                 <thead>
                   <tr>
                     <th class="header">Temperature sensor <i class="fa fa-sort"></i></th>
+					<th class="header">Temperature <i class="fa fa-sort"></i></th>
                     <th class="header">Name <i class="fa fa-sort"></i></th>
                   </tr>
                 </thead>
@@ -563,9 +687,13 @@ if($sDevice == 'T')
 						$sTempratureNameDb =  $this->home_model->getDeviceName($i,$sDevice);
                         if($sTempratureNameDb == '')
                           $sTempratureNameDb = 'Add Name';
+					  
+						if($iTempratureVal == '')
+							$iTempratureVal = '-';
                 ?>
                       <tr>
                         <td>Temperature sensor <?php echo $i;?></td>
+						<td><?php echo $iTempratureVal;?></td>
                         <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sTempratureNameDb;?></a></td>
                       </tr>
                 <?php } ?>

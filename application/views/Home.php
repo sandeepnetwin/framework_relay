@@ -14,7 +14,23 @@ $this->load->view('Header');
   if($time != '')
   $aTime  = explode(':',$time);
 ?>
-
+<style>
+.custom-panel-heading
+{
+	height : 132px !important;
+}
+</style>
+<?php 
+//echo date('Y-m-d H:i:s');
+//$today = getdate(); ?>
+<script>
+    /* var d = new Date(Date.UTC(<?php echo $today['year'].",".$today['mon'].",".$today['mday'].",".$today['hours'].",".$today['minutes'].",".$today['seconds']; ?>));
+    setInterval(function() {
+        d.setSeconds(d.getSeconds() + 1);
+        $('#timer').text((d.getHours() +':' + d.getMinutes() + ':' + d.getSeconds() ));
+    }, 1000); */
+</script> 
+<!--<label id="timer"></label>-->
     <div id="page-wrapper">
 
         <div class="row">
@@ -41,34 +57,6 @@ $this->load->view('Header');
           </div>
         </div><!-- /.row -->
         <div class="row">
-		  <!--<div class="col-lg-3">
-            <a href="javascript:void(0);">
-                <div class="panel-footer announcement-bottom">
-                  <div class="row">
-                    <div class="col-xs-6">
-                      Links : 
-                    </div>
-                    <div class="col-xs-6 text-right">
-                      <i class="fa fa-arrow-circle-right"></i>
-                    </div>
-                  </div>
-                </div>
-              </a> 
-            <div class="panel panel-warning">
-
-              <div class="panel-heading">
-                <div class="row">
-                  <div class="col-xs-6 customClass" style="width:100%; height: 522px; text-align: center;">
-                    <p><a href="<?php echo site_url('analog/changeMode');?>" style="color:#8A6D3B;">Modes</a></p>
-                    <p><a href="javascript:void(0);" style="color:#8A6D3B;">Pool Lights</a></p>
-                    <p><a href="javascript:void(0);" style="color:#8A6D3B;">Spa Devices</a></p>
-                    <p><a href="javascript:void(0);" style="color:#8A6D3B;">Pool Device</a></p>
-                  </div>
-               </div>
-              </div>
-            </div>			
-          </div> -->
-		
 		<div class="col-lg-3">
 			<div class="panel panel-info">
               <div class="panel-heading" style="background-color: #f5f5f5;">
@@ -85,7 +73,7 @@ $this->load->view('Header');
 					<div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
 						<div class="row">
 							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
-							<a href="javascript:void(0);">Pool Lights</a>
+							<a href="javascript:void(0);">Lights</a>
 							</div>
 						</div>
 					</div>
@@ -99,7 +87,7 @@ $this->load->view('Header');
 					<div class="panel-heading" style="background-color:#D9EDF7; border-radius: 20px; border:1px solid; margin-top:20px;">
 						<div class="row">
 							<div class="col-xs-6 customClass" style="width:100%; text-align: center; font-size: 24px; height: 60px; padding-top: 12px;">
-							<a href="javascript:void(0);">Pool Device</a>
+							<a href="javascript:void(0);">Pool Devices</a>
 							</div>
 						</div>
 					</div>
@@ -112,7 +100,7 @@ $this->load->view('Header');
           <div class="col-lg-3">
 			<a href="<?php echo site_url('home/setting/R/');?>">
             <div class="panel panel-info">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-check fa-5x"></i>
@@ -142,7 +130,7 @@ $this->load->view('Header');
           <div class="col-lg-3">
 		  <a href="<?php echo site_url('home/setting/V/');?>">
             <div class="panel panel-info">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-check fa-5x"></i>
@@ -172,7 +160,7 @@ $this->load->view('Header');
           <div class="col-lg-3">
 		  <a href="<?php echo site_url('home/setting/P/');?>">
             <div class="panel panel-info">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-check fa-5x"></i>
@@ -202,7 +190,7 @@ $this->load->view('Header');
         <div class="col-lg-3">
 		<a href="<?php echo site_url('home/setting/PS/');?>">
             <div class="panel panel-info">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-check fa-5x"></i>
@@ -234,7 +222,7 @@ $this->load->view('Header');
 		<div class="col-lg-3">
 		<a href="<?php echo site_url('home/setting/T/');?>">
             <div class="panel panel-info">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-check fa-5x"></i>
@@ -266,41 +254,9 @@ $this->load->view('Header');
         </div>
 
           <div class="col-lg-3">
-		  <a href="<?php echo site_url('home/setting/');?>">
-            <div class="panel panel-danger">
-              <div class="panel-heading">
-                <div class="row">
-                  <div class="col-xs-6">
-                    <i class="fa fa-tasks fa-5x"></i>
-                  </div>
-                  <div class="col-xs-6 text-right">
-                    <p class="announcement-heading">&nbsp;</p>
-                    <p class="announcement-text">Setting<br><br></p>
-                  </div>
-                </div>
-              </div>
-              
-                <div class="panel-footer announcement-bottom">
-                  <div class="row">
-                    <div class="col-xs-6">
-                      Settings
-					  <br />
-					  <br />
-                    </div>
-                    <div class="col-xs-6 text-right">
-                      <i class="fa fa-arrow-circle-right"></i>
-                    </div>
-                  </div>
-                </div>
-              
-            </div>
-			</a>
-          </div> 
-
-          <div class="col-lg-3">
 		  <a href="<?php echo site_url('analog/');?>">
             <div class="panel panel-danger">
-              <div class="panel-heading">
+              <div class="panel-heading custom-panel-heading">
                 <div class="row">
                   <div class="col-xs-6">
                     <i class="fa fa-tasks fa-5x"></i>

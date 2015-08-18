@@ -95,19 +95,22 @@
     },
 
     moveSliderTo: function(barGrid, nextOptionIndex, triggerChange){
-      var leftPosition = this.sliderPosition(barGrid, nextOptionIndex)
-      // move slider position
-      if (leftPosition != null){
-        this.$slider.animate({
-          left: leftPosition
-        }, "fast");
-      }
-      // update original select value
-      this.$options.removeAttr('selected');
-      this.$options.eq(nextOptionIndex).prop('selected', 'selected');
-      if (triggerChange == true)
-        this.$element.trigger('change');
-      this.lastSliderPosition = nextOptionIndex;
+		if(iActiveMode == 2)	
+		{	
+		  var leftPosition = this.sliderPosition(barGrid, nextOptionIndex)
+		  // move slider position
+		  if (leftPosition != null){
+			this.$slider.animate({
+			  left: leftPosition
+			}, "fast");
+		  }
+		  // update original select value
+		  this.$options.removeAttr('selected');
+		  this.$options.eq(nextOptionIndex).prop('selected', 'selected');
+		  if (triggerChange == true)
+			this.$element.trigger('change');
+		  this.lastSliderPosition = nextOptionIndex;
+		}	
     }
   }
 
