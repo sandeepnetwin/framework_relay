@@ -123,7 +123,7 @@ class Cron extends CI_Controller
 
         $iMode          =   $this->home_model->getActiveMode();
         //$iMode          =   $this->uri->segment('3');
-        //$sTime          =   date('H:i:s',time());
+        $sTime          =   date('H:i:s',time());
         $aAllProgram    =   $this->home_model->getAllProgramsDetails();
         
         // die;
@@ -272,7 +272,7 @@ class Cron extends CI_Controller
         
 		//Get the timer start and end time.
         $aTimer			=	$this->home_model->getManualModeTimer();
-		
+		$sTime			=	date('H:i:s',time());
         //Get Current Mode of the System.
         $iActiveMode          =   $this->home_model->getActiveMode();
 		$iMode = '1';
