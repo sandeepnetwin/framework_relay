@@ -670,6 +670,7 @@ class Home_model extends CI_Model
 		return $this->db
 				->where('device_number', $sDeviceNum)
 				->where('device_type', $sDevice)
+				->where('program_delete', '0')
 				->count_all_results('rlb_program');
 	}//END : Function to get the count of programs for device.
 	
