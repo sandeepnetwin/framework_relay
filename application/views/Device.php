@@ -632,7 +632,7 @@ if($sDevice == 'T')
 												data: {sName:'<?php echo $i;?>',sStatus:1,sDevice:'<?php echo $sDevice;?>'},
 												success: function(data) {
 												  $("#loading_pump_<?php echo $i;?>").css('visibility','hidden');
-												  //location.reload();
+												  location.reload();
 												}
 											});
 										}
