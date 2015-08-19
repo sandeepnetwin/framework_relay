@@ -472,9 +472,7 @@ class Home_model extends CI_Model
 
    public function getPumpDetails($sDeviceID)
    {
-       if($sDeviceID == '')
-           return '';
-       $query = $this->db->get_where('rlb_pump_device',array('pump_number'=>$sDeviceID));
+	   $query = $this->db->get_where('rlb_pump_device',array('pump_number'=>$sDeviceID));
 
        if($query->num_rows() > 0)
        {
