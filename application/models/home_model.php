@@ -483,22 +483,30 @@ class Home_model extends CI_Model
 
        return '';
    }
+   
 
    public function savePumpDetails($aPost,$sDeviceID)
    {
-        $sPumpClosure   =   '';
+        $sPumpClosure   = 	$aPost['sPumpClosure'];
         $sPumpType      =   $aPost['sPumpType'];
+		$sRelayNumber   =   $aPost['sRelayNumber'];
+		$sPumpSubType   =   '';
         $sPumpSpeed     =   '';
         $sPumpFlow      =   '';
 		
+		if($sPumpType == 'Emulator')
+		{
+			$sPumpSubType   =   $aPost['sPumpSubType'];
+		}
 
-        if($sPumpType == '2')
+        if($sPumpSubType == 'VS')
 		{
             $sPumpSpeed     =   $aPost['sPumpSpeed'];
-			$sPumpClosure   = 	$aPost['sPumpClosure'];
 		}
-        if($sPumpType == '3')
+        else if($sPumpSubType == 'VF')
+		{
             $sPumpFlow      =   $aPost['sPumpFlow'];
+		}
         
         $this->db->select('pump_id');
         $query = $this->db->get_where('rlb_pump_device', array('pump_number' => $sDeviceID));
@@ -509,9 +517,11 @@ class Home_model extends CI_Model
             {
                 $data = array('pump_number'         => $sDeviceID,
                               'pump_type'           => $sPumpType,
+							  'pump_sub_type'		=> $sPumpSubType,
                               'pump_speed'          => $sPumpSpeed,
                               'pump_flow'           => $sPumpFlow,
                               'pump_closure'        => $sPumpClosure,
+							  'relay_number'		=> $sRelayNumber,
                               'pump_modified_date'  => date('Y-m-d H:i:s')   
                               );
 
@@ -523,9 +533,11 @@ class Home_model extends CI_Model
         {
             $data = array('pump_number'         => $sDeviceID,
                           'pump_type'           => $sPumpType,
+						  'pump_sub_type'		=> $sPumpSubType,
                           'pump_speed'          => $sPumpSpeed,
                           'pump_flow'           => $sPumpFlow,
                           'pump_closure'        => $sPumpClosure,
+						  'relay_number'		=> $sRelayNumber,
                           'pump_modified_date'  => date('Y-m-d H:i:s')   
                           );
 

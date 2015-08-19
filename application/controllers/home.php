@@ -328,28 +328,73 @@ class Home extends CI_Controller
         }
         if($sDevice == 'PS') // If Device type is Pump
         {
-            $sNewResp = '';
+			$aPumpDetails = $this->home_model->getPumpDetails($sName);
+			//Variable Initialization to blank.
+			$sPumpNumber  	= '';
+			$sPumpType  	= '';
+			$sPumpSubType  	= '';
+			$sPumpSpeed  	= '';
+			$sPumpFlow 		= '';
+			$sPumpClosure   = '';
+			$sRelayNumber  	= '';
 
-            if($sStatus == '0')
-                $sNewResp =  $sName.' '.$sStatus;
-            else if($sStatus == '1')
-            {
-                //Get Pump Configuration details.
-                $aPumpDetails   =   $this->home_model->getPumpDetails($sName);
-                foreach($aPumpDetails as $aResultPumpDetails)
-                {
-                    $sType          =   '';
+			if(is_array($aPumpDetails) && !empty($aPumpDetails))
+			{
+			  foreach($aPumpDetails as $aResultEdit)
+			  { 
+				$sPumpNumber  = $aResultEdit->pump_number;
+				$sPumpType    = $aResultEdit->pump_type;
+				$sPumpSubType = $aResultEdit->pump_sub_type;
+				$sPumpSpeed   = $aResultEdit->pump_speed;
+				$sPumpFlow    = $aResultEdit->pump_flow;
+				$sPumpClosure = $aResultEdit->pump_closure;
+				$sRelayNumber = $aResultEdit->relay_number;
+			  }
+			}
+			
+			if($sPumpType != '')
+			{
+				if($sPumpType == '12' || $sPumpType == '24')
+				{
+					if($sPumpType == '24')
+					{
+						$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+						onoff_rlb_relay($sNewResp);
+						$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+					}
+					else if($sPumpType == '12')
+					{
+						$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+						onoff_rlb_powercenter($sNewResp);
+					}
+				}
+				else
+				{
+					$sNewResp = '';
 
-                    if($aResultPumpDetails->pump_type == '2')
-                        $sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_speed;
-                    elseif ($aResultPumpDetails->pump_type == '3')
-                        $sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_flow;
+					if($sStatus == '0')
+						$sNewResp =  $sName.' '.$sStatus;
+					else if($sStatus == '1')
+					{
+						//Get Pump Configuration details.
+						$aPumpDetails   =   $this->home_model->getPumpDetails($sName);
+						foreach($aPumpDetails as $aResultPumpDetails)
+						{
+							$sType          =   '';
 
-                    $sNewResp =  $sName.' '.$sType;    
-                }
-                
-            }    
-            onoff_rlb_pump($sNewResp);
+							if($aResultPumpDetails->pump_type == '2')
+								$sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_speed;
+							elseif ($aResultPumpDetails->pump_type == '3')
+								$sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_flow;
+
+							$sNewResp =  $sName.' '.$sType;    
+						}
+						
+					}
+					onoff_rlb_pump($sNewResp);
+				}
+			}				
+           
         }
         exit;
     } //END : Function to swich the particular device ON/OFF
@@ -675,14 +720,14 @@ class Home extends CI_Controller
         {
             if($this->input->post('sPumpNumber') != '')
                 $sDeviceID   =  $this->input->post('sPumpNumber');
-
+				
             $this->home_model->savePumpDetails($this->input->post(),$sDeviceID);
             $aViewParameter['sucess']    =   '1';
         }// END : Save pump configuration Details.
         
         //Parameter for View
         $aViewParameter['sDeviceID']    =   $sDeviceID;
-        $aViewParameter['sPumpDetails'] = $this->home_model->getPumpDetails($sDeviceID);
+        $aViewParameter['sPumpDetails'] = 	$this->home_model->getPumpDetails($sDeviceID);
         
         //Pump view for configuration of pumps
         $this->load->view('Pump',$aViewParameter); 

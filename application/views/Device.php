@@ -553,8 +553,7 @@ if($sDevice == 'T')
                     <th class="header">&nbsp;</th>
                     <th class="header">&nbsp;</th>
                     <th class="header">Action</th>
-					<th class="header">Power</th>
-                  </tr>
+				  </tr>
                 </thead>
                 <tbody>
                 <?php
@@ -563,21 +562,45 @@ if($sDevice == 'T')
                     for ($i=0;$i < $pump_count; $i++)
                     {
                         $iPumpVal = $sPump[$i];
-                        $iPumpNewValSb = 1;
+                        /* $iPumpNewValSb = 1;
                         if($iPumpVal == 1)
                         {
                           $iPumpNewValSb = 0;
                         }
                         $sPumpVal = false;
                         if($iPumpVal)
-                          $sPumpVal = true;
+                          $sPumpVal = true; */
                         //$sRelayNameDb = get_device_name(1, $i);
-
+					
                         $sPumpNameDb =  $this->home_model->getDeviceName($i,$sDevice);
                         if($sPumpNameDb == '')
                           $sPumpNameDb = 'Add Name';
 						
 						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
+						
+						//START : Getting assigned relay status from the Server.	
+						//Details of Pump
+						$aPumpDetails = $this->home_model->getPumpDetails($i);
+						if(is_array($aPumpDetails) && !empty($aPumpDetails))
+						{
+							foreach($aPumpDetails as $aResultEdit)
+							{
+								$sPumpType    = $aResultEdit->pump_type;//Pump Type
+								$sPumpRelay   = $aResultEdit->relay_number;//Assigned Relay Number
+								if($sPumpType == '12')
+								{
+									$iPumpVal = $sPowercenter[$sPumpRelay]; //Taken the status
+								}
+								else if($sPumpType == '24')
+								{
+									$iPumpVal = $sRelays[$sPumpRelay];//Taken the status
+								}
+							}
+						}	//END : Getting assigned relay status from the Server.
+						$sPumpVal = false;
+						if($iPumpVal)
+						  $sPumpVal = true;
+								
                 ?>
                       <tr>
                         <td>Pump Sequencer <?php echo $i;?></td>
@@ -609,7 +632,7 @@ if($sDevice == 'T')
 												data: {sName:'<?php echo $i;?>',sStatus:1,sDevice:'<?php echo $sDevice;?>'},
 												success: function(data) {
 												  $("#loading_pump_<?php echo $i;?>").css('visibility','hidden');
-												  location.reload();
+												  //location.reload();
 												}
 											});
 										}
@@ -649,8 +672,7 @@ if($sDevice == 'T')
                         <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/pumpConfigure/'.base64_encode($i).'/');?>">Configure</a>&nbsp;&nbsp;
                             <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($i).'/');?>">Programs</a>
                         </td>
-						<td><input type="radio" name="sPower_<?php echo $i;?>" value="1" id="sPower_<?php echo $i;?>_12VDC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '1') {echo 'checked="checked";';} ?> />&nbsp;12V DC&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="sPower_<?php echo $i;?>" value="0" id="sPower_<?php echo $i;?>_24VAC" onclick="saveDevicePower('<?php echo $i;?>','<?php echo $sDevice;?>',this.value);" <?php if($iPower == '0') {echo 'checked="checked";';} ?> />&nbsp;24V AC</td>
-                      </tr>
+					</tr>
                 <?php } ?>
                 
                 </tbody>
