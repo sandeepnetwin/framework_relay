@@ -19,26 +19,99 @@ $this->load->view('Header');
 {
 	height : 132px !important;
 }
+
+@font-face {
+    font-family: 'BebasNeueRegular';
+    src: url('<?php echo site_url('assets/font/BebasNeue-webfont.eot');?>');
+    src: url('<?php echo site_url('assets/font/BebasNeue-webfont.eot?#iefix');?>') format('embedded-opentype'),
+         url('<?php echo site_url('assets/font/BebasNeue-webfont.woff');?>') format('woff'),
+         url('<?php echo site_url('assets/font/BebasNeue-webfont.ttf');?>') format('truetype'),
+         url('<?php echo site_url('assets/font/BebasNeue-webfont.svg#BebasNeueRegular');?>') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+.clock {width:800px; margin:0 auto; padding:30px; border:1px solid #333; color:#fff; }
+
+#Date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; font-size:18px; text-align:center; text-shadow:0 0 5px #00c6ff; }
+
+.ulClock { margin:0 auto; padding:0px; list-style:none; text-align:center; }
+.ulClock > li { display:inline; font-size:1em; text-align:center; font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; text-shadow:0 0 5px #00c6ff; }
+
+#point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite; padding-left:2px; padding-right:2px; }
+
+@-webkit-keyframes mymove 
+{
+0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
+50% {opacity:0; text-shadow:none; }
+100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
+}
+
+
+@-moz-keyframes mymove 
+{
+0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
+50% {opacity:0; text-shadow:none; }
+100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
+}
+
 </style>
-<?php 
-//echo date('Y-m-d H:i:s');
-//$today = getdate(); ?>
-<script>
-    /* var d = new Date(Date.UTC(<?php echo $today['year'].",".$today['mon'].",".$today['mday'].",".$today['hours'].",".$today['minutes'].",".$today['seconds']; ?>));
-    setInterval(function() {
-        d.setSeconds(d.getSeconds() + 1);
-        $('#timer').text((d.getHours() +':' + d.getMinutes() + ':' + d.getSeconds() ));
+<script type="text/javascript">
+$(document).ready(function() {
+// Create two variable with the names of the months and days in an array
+var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]; 
+var dayNames= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+
+// Create a newDate() object
+var newDate = new Date();
+// Extract the current date from Date object
+newDate.setDate(newDate.getDate());
+// Output the day, date, month and year    
+$('#Date').html(dayNames[newDate.getDay()] + " " + newDate.getDate() + ' ' + monthNames[newDate.getMonth()] + ' ' + newDate.getFullYear());
+
+setInterval( function() {
+	$.getJSON('<?php echo site_url('home/getCurrentServerTime/');?>', function(json) {
+		//$("#clock1").html(json.time);
+		var sTime			=	json.time;
+		var aTimeDetails	=	sTime.split(':');
+		$("#hours").html(aTimeDetails[0]);
+		$("#min").html(aTimeDetails[1]);
+		$("#sec").html(aTimeDetails[2]);
+	});
+	},1000);
+setInterval( function() {
+	$.getJSON('<?php echo site_url('home/getModeTime/');?>', function(json) {
+		$("#welcomeMessage").html(json.message);
+	});
+	},60000);	
+	
+	
+/* setInterval( function() {
+	// Create a newDate() object and extract the minutes of the current time on the visitor's
+	var minutes = new Date().getMinutes();
+	// Add a leading zero to the minutes value
+	$("#min").html(( minutes < 10 ? "0" : "" ) + minutes);
+    },1000);
+	
+setInterval( function() {
+	// Create a newDate() object and extract the hours of the current time on the visitor's
+	var hours = new Date().getHours();
+	// Add a leading zero to the hours value
+	$("#hours").html(( hours < 10 ? "0" : "" ) + hours);
     }, 1000); */
-</script> 
-<!--<label id="timer"></label>-->
+	
+}); 
+</script>
+
     <div id="page-wrapper">
 
         <div class="row">
           <div class="col-lg-12">
 			
 			<h1>Dashboard 
-			<?php if(!empty($aTime)){ ?><span style="float:right;"><?php echo $aTime[0];?>:<?php echo $aTime[1];?>:<small><?php echo $aTime[2];?></small></span><?php } ?>	
-			<!--<span style="float:right;"><div id="Date"></div>
+			<?php //if(!empty($aTime)){ ?><!--<span style="float:right;"><?php //echo $aTime[0];?>:<?php //echo $aTime[1];?>:<small><?php //echo $aTime[2];?></small></span>--><?php //} ?>	
+			<span style="float:right;"><div id="Date"></div>
 			
 			<ul class="ulClock">
 				<li id="hours" class="liClock"> </li>
@@ -46,13 +119,13 @@ $this->load->view('Header');
 				<li id="min" class="liClock"> </li>
 				<li id="point" class="liClock">:</li>
 				<li id="sec" class="liClock"> </li>
-			</ul><div id="countdowntimer"><span id="future_date"><span></div></span>--></h1>
+			</ul><span id="clock1"></span></span></h1>
             <ol class="breadcrumb">
               <li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
             </ol>
             <div class="alert alert-success alert-dismissable">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-              <?php if($welcome_message == '' ){ echo 'Welcome to Crystal Properties!'; } else { echo $welcome_message;} ?> 
+              <span id="welcomeMessage"><?php if($welcome_message == '' ){ echo 'Welcome to Crystal Properties!'; } else { echo $welcome_message;} ?></span> 
             </div>
           </div>
         </div><!-- /.row -->

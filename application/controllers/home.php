@@ -825,6 +825,85 @@ class Home extends CI_Controller
 		echo $alreadyExists;
 		
 	}//END : Function to check if there is program exists for the selected time.
+	
+	function getCurrentServerTime()
+	{
+		$response = array('time' => date('H:i:s'));
+		header('Content-type: application/json');
+		echo json_encode($response);
+	}
+	
+	public function getModeTime()
+	{
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+		
+		$this->load->model('home_model');
+		$aModeDetails = $this->home_model->getActiveModeDetails();
+			
+		//Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
+					
+		if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
+		{
+			$sTimeDiff = date_diff(date_create($aModeDetails['start_time']),date_create(date('Y-m-d H:i:s')));
+			
+			$strMessage = 'For';
+			if($sTimeDiff->y != 0)
+			{
+				if($sTimeDiff->y == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->y.' Year</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->y.' Years</strong> and';
+			}	
+			if($sTimeDiff->m != 0)
+			{
+				if($sTimeDiff->m == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->m.' Month</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->m.' Months</strong> and';
+			}
+			if($sTimeDiff->d != 0)
+			{
+				if($sTimeDiff->d == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->d.' Day</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->d.' Days</strong> and';
+			}
+			if($sTimeDiff->h != 0)
+			{
+				if($sTimeDiff->h == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->h.' Hour</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->h.' Hours</strong> and';
+			}
+			if($sTimeDiff->i == 0 || $sTimeDiff->i == 1)	
+				$strMessage .= ' <strong>1 minute</strong>,';
+			else
+				$strMessage .= ' <strong>'.$sTimeDiff->i.' minutes</strong>,';
+			
+			$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
+			
+			if($extra['Pool_Temp'] == '1' && isset($extra['Pool_Temp']))
+			{
+				if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '' && $sResponse[$extra['Pool_Temp_Address']] != '')
+					$strMessage.=' <strong>Pool temperature is '.$sResponse[$extra['Pool_Temp_Address']].'.</strong>';
+			}
+			
+			if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
+			{
+				if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
+					$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
+			}
+		}
+		
+		$response = array('message' => $strMessage);
+		header('Content-type: application/json');		
+		
+		echo json_encode($response);
+			
+		//END: GET the active MODE details.
+	}
     
 }//END : Class Home
 
