@@ -120,8 +120,8 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
 							</select>
 						</td>
                       </tr>
-                      <tr id="trVSSpace" style="display:<?php if($sPumpSubType =='VS') { echo ''; } else { echo 'none';} ?>;"><td colspan="3">&nbsp;</td></tr>
-                      <tr id="trVS" style="display:<?php if($sPumpSubType =='VS') { echo ''; } else { echo 'none';} ?>;">
+                      <tr id="trVSSpace" style="display:<?php if($sPumpSubType =='VS' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;"><td colspan="3">&nbsp;</td></tr>
+                      <tr id="trVS" style="display:<?php if($sPumpSubType =='VS' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;">
                         <td width="10%"><strong>Pump Speed:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%">
@@ -144,8 +144,8 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
                             </div>
                         </td>
                       </tr>
-                      <tr id="trVFSpace" style="display:<?php if($sPumpSubType =='VF') { echo ''; } else { echo 'none';} ?>;"><td colspan="3">&nbsp;</td></tr>
-                      <tr id="trVF" style="display:<?php if($sPumpSubType =='VF') { echo ''; } else { echo 'none';} ?>;">
+                      <tr id="trVFSpace" style="display:<?php if($sPumpSubType =='VF' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;"><td colspan="3">&nbsp;</td></tr>
+                      <tr id="trVF" style="display:<?php if($sPumpSubType =='VF' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;">
                         <td width="10%"><strong>Pump Flow:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%"><input type="text" class="form-control" name="sPumpFlow" id="sPumpFlow" value="<?php echo $sPumpFlow;?>">
