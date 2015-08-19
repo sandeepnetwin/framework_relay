@@ -27,6 +27,8 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
 	$sRelayNumber = $aResultEdit->relay_number;
   }
 }
+
+
 ?>
 <style type="text/css">
 .rowCustom {
@@ -106,11 +108,10 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
 						<option value="Intellicom" <?php if($sPumpType == 'Intellicom'){echo 'selected="selected";';}?>>Intellicom for a Pentair VS or VF Pump</option>
 						<option value="Emulator" <?php if($sPumpType == 'Emulator'){echo 'selected="selected";';}?>>Emulator Pentair VS or VF Pump</option>
 						</select>
-						<!--<input type="radio" name="sPumpType" <?php if($sPumpType =='2' || $sPumpType == '') { echo 'checked="checked"'; } ?> value="2" id="sPumpTypeVS">&nbsp;VS Pump &nbsp;&nbsp;<input type="radio" name="sPumpType" <?php if($sPumpType =='3') { echo 'checked="checked"'; } ?> value="3" id="sPumpTypeVF">&nbsp;VF Pump-->
-                        </td>
+						</td>
                       </tr>
-					  <tr id="pumpSubTypeTrBlk" style="display:<?php if($sPumpType == 'Emulator') {echo '';} else {'none;';} ?>"><td colspan="3">&nbsp;</td></tr>
-					  <tr id="pumpSubTypeTr" style="display:<?php if($sPumpType == 'Emulator') {echo '';} else {'none;';} ?>;">
+					  <tr id="pumpSubTypeTrBlk" style="display:<?php if($sPumpType == 'Emulator'){echo '';}else{echo 'none;';} ?>"><td colspan="3">&nbsp;</td></tr>
+					  <tr id="pumpSubTypeTr" style="display:<?php if($sPumpType == 'Emulator'){echo '';}else{ echo'none;';} ?>;">
                         <td width="10%"><strong>Pump Sub Type:</strong></td>
                         <td width="1%">&nbsp;</td>
                         <td width="89%">
@@ -120,6 +121,7 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
 							</select>
 						</td>
                       </tr>
+					  
                       <tr id="trVSSpace" style="display:<?php if($sPumpSubType =='VS' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;"><td colspan="3">&nbsp;</td></tr>
                       <tr id="trVS" style="display:<?php if($sPumpSubType =='VS' && $sPumpType == 'Emulator') { echo ''; } else { echo 'none';} ?>;">
                         <td width="10%"><strong>Pump Speed:</strong></td>
@@ -127,19 +129,19 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
                         <td width="89%">
                             <div class="rowCustom">
                             <div class="colCustom" style="padding-left:0;">
-                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed0" value="0" <?php if($sPumpSpeed == '0') { echo 'checked=""checked';} ?> required><lable style="margin-left: 5px;">0</lable>
+                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed0" value="0" <?php if($sPumpSpeed == '0') { echo 'checked=""checked';} ?>><lable style="margin-left: 5px;">0</lable>
                            </div>
                             <div class="colCustom">
-                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed1" value="1" <?php if($sPumpSpeed == '1') { echo 'checked=""checked';} ?> required><lable style="margin-left: 5px;">1</lable>
+                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed1" value="1" <?php if($sPumpSpeed == '1') { echo 'checked=""checked';} ?>><lable style="margin-left: 5px;">1</lable>
                             </div>
                             <div class="colCustom">
-                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed2" value="2" <?php if($sPumpSpeed == '2') { echo 'checked=""checked';} ?> required><lable style="margin-left: 5px;">2</lable>
+                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed2" value="2" <?php if($sPumpSpeed == '2') { echo 'checked=""checked';} ?>><lable style="margin-left: 5px;">2</lable>
                             </div>
                             <div class="colCustom">
-                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed3" value="3" <?php if($sPumpSpeed == '3') { echo 'checked=""checked';} ?> required><lable style="margin-left: 5px;">3</lable>
+                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed3" value="3" <?php if($sPumpSpeed == '3') { echo 'checked=""checked';} ?>><lable style="margin-left: 5px;">3</lable>
                             </div>
                             <div class="colCustom">
-                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed4" value="4" <?php if($sPumpSpeed == '4') { echo 'checked=""checked';} ?> required><lable style="margin-left: 5px;">4</lable>
+                              <input type="radio" class="form-control" name="sPumpSpeed" id="sPumpSpeed4" value="4" <?php if($sPumpSpeed == '4') { echo 'checked=""checked';} ?>><lable style="margin-left: 5px;">4</lable>
                             </div>
                             </div>
                         </td>
@@ -201,8 +203,9 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
 	});
 	
 	$("#sPumpSubType").change(function() {
+		
     var sSelectedVal	=	$(this).val();
-    if(sSelectedVal == 'VF')
+    if(sSelectedVal == 'VF' && $("#sPumpType").val() == 'Emulator')
     {
       $("#sPumpFlow").attr('required','required');
       $("input:radio[name='sPumpSpeed']").removeAttr('required');
@@ -215,7 +218,7 @@ if(is_array($sPumpDetails) && !empty($sPumpDetails))
       $("#trVSSpace").hide();
 	  
     }
-    else if(sSelectedVal == 'VS')
+    else if(sSelectedVal == 'VS' && $("#sPumpType").val() == 'Emulator')
     {
       $("input:radio[name='sPumpSpeed']").attr('required','required');
 	  $("input:radio[name='sPumpClosure']").attr('required','required');

@@ -576,7 +576,7 @@ if($sDevice == 'T')
                         if($sPumpNameDb == '')
                           $sPumpNameDb = 'Add Name';
 						
-						$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
+						//$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
 						
 						//START : Getting assigned relay status from the Server.	
 						//Details of Pump
