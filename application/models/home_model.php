@@ -482,21 +482,51 @@ class Home_model extends CI_Model
        return '';
    }
    
+   public function getAllPumpDetails()
+   {
+	   $query = $this->db->get('rlb_pump_device');
+
+       if($query->num_rows() > 0)
+       {
+            return $query->result();
+       }
+
+       return '';
+   }
+   
 
    public function savePumpDetails($aPost,$sDeviceID)
    {
         $sPumpClosure   = 	$aPost['sPumpClosure'];
         $sPumpType      =   $aPost['sPumpType'];
 		$sRelayNumber   =   $aPost['sRelayNumber'];
+		$sPumpAddress   =   '';
 		$sPumpSubType   =   '';
         $sPumpSpeed     =   '';
         $sPumpFlow      =   '';
 		
-		if($sPumpType == 'Emulator')
+		if(preg_match('/Emulator/',$sPumpType))
 		{
 			$sPumpSubType   =   $aPost['sPumpSubType'];
 		}
-
+		
+		if(preg_match('/Intellicom/',$sPumpType))
+		{
+			$sPumpSubType   =   '';
+			$sPumpSpeed     =   $aPost['sPumpSpeedIn'];
+		}
+		
+		
+		if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType))
+		{
+			$sPumpAddress = $aPost['sPumpAddress'];
+		}
+		
+		if($sPumpType == 'Emulator' || $sPumpType == 'Intellicom')
+		{
+			$sRelayNumber = '';
+		}
+		
         if($sPumpSubType == 'VS')
 		{
             $sPumpSpeed     =   $aPost['sPumpSpeed'];
@@ -520,6 +550,7 @@ class Home_model extends CI_Model
                               'pump_flow'           => $sPumpFlow,
                               'pump_closure'        => $sPumpClosure,
 							  'relay_number'		=> $sRelayNumber,
+							  'pump_address'		=> $sPumpAddress,
                               'pump_modified_date'  => date('Y-m-d H:i:s')   
                               );
 
@@ -536,6 +567,7 @@ class Home_model extends CI_Model
                           'pump_flow'           => $sPumpFlow,
                           'pump_closure'        => $sPumpClosure,
 						  'relay_number'		=> $sRelayNumber,
+						  'pump_address'		=> $sPumpAddress,
                           'pump_modified_date'  => date('Y-m-d H:i:s')   
                           );
 
@@ -725,6 +757,32 @@ class Home_model extends CI_Model
 
         return $sDevicePower;
     } //End : Function to get Device Time
+	
+	public function getPumpDetailsExcept($sDeviceID)
+	{
+		$sSql   =   "SELECT pump_number,pump_address FROM rlb_pump_device WHERE pump_number != ".$sDeviceID;
+		$query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+
+        return '';
+	}
+	
+	public function getPumpDetailsFromRelayNumber($sDevice,$relayType)
+	{
+		$sSql   =   "SELECT pump_number FROM rlb_pump_device WHERE relay_number = '".$sDevice."' AND pump_type LIKE '%".$relayType."%'";
+		$query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+
+        return '';
+	}
 }
 
 /* End of file home_model.php */

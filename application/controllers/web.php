@@ -203,6 +203,153 @@
                             $this->webResponse($sformat, $aResponse);
                         }
                     } // END : if($sDevice == 'V')
+					
+					if($sDevice == 'PS')
+					{
+						if($aReturn['pump_seq_'.$sDeviceNo.'_st'] != '')
+						{		
+							$aPumpDetails = $this->home_model->getPumpDetails($sDeviceNo);
+							//Variable Initialization to blank.
+							$sPumpNumber  	= '';
+							$sPumpType  	= '';
+							$sPumpSubType  	= '';
+							$sPumpSpeed  	= '';
+							$sPumpFlow 		= '';
+							$sPumpClosure   = '';
+							$sRelayNumber  	= '';
+
+							if(is_array($aPumpDetails) && !empty($aPumpDetails))
+							{
+							  foreach($aPumpDetails as $aResultEdit)
+							  { 
+								$sPumpNumber  = $aResultEdit->pump_number;
+								$sPumpType    = $aResultEdit->pump_type;
+								$sPumpSubType = $aResultEdit->pump_sub_type;
+								$sPumpSpeed   = $aResultEdit->pump_speed;
+								$sPumpFlow    = $aResultEdit->pump_flow;
+								$sPumpClosure = $aResultEdit->pump_closure;
+								$sRelayNumber = $aResultEdit->relay_number;
+							  }
+							}
+							else
+							{
+								$aResponse['code']      = 5;
+								$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+								$aResponse['data']      = 'Pump devices not configured properly.';
+
+								// Return Response to browser. This will exit the script.
+								$this->webResponse($sformat, $aResponse);
+							}
+							
+							if($sPumpType != '')
+							{
+								if($sPumpType == '12' || $sPumpType == '24')
+								{
+									if($sPumpType == '24')
+									{
+										$sNewResp = replace_return($sRelays, $iDeviceStatus, $sRelayNumber );
+										onoff_rlb_relay($sNewResp);
+										$this->home_model->updateDeviceRunTime($sDeviceNo,$sDevice,$iDeviceStatus);
+									}
+									else if($sPumpType == '12')
+									{
+										$sNewResp = replace_return($sPowercenter, $iDeviceStatus, $sRelayNumber );
+										onoff_rlb_powercenter($sNewResp);
+									}
+									
+									$aResponse['code']      = 1;
+									$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+									$aResponse['data']      = 'Pump status changed successfully.';
+								}
+								else
+								{
+									if(preg_match('/Emulator/',$sPumpType))
+									{
+										$sNewResp = '';
+
+										if($iDeviceStatus == '0')
+											$sNewResp =  $sDeviceNo.' '.$iDeviceStatus;
+										else if($iDeviceStatus == '1')
+										{
+											$sType          =   '';
+											if($sPumpSubType == 'VS')
+												$sType  =   '2'.' '.$sPumpSpeed;
+											elseif ($sPumpSubType == 'VF')
+												$sType  =   '3'.' '.$sPumpFlow;
+
+											$sNewResp =  $sDeviceNo.' '.$sType;    
+										}
+										
+										onoff_rlb_pump($sNewResp);
+										
+										if($sPumpType == 'Emulator12')
+										{
+											$sNewResp12 = replace_return($sPowercenter, $iDeviceStatus, $sRelayNumber );
+											onoff_rlb_powercenter($sNewResp12);
+										}
+										if($sPumpType == 'Emulator24')
+										{
+											$sNewResp24 = replace_return($sRelays, $iDeviceStatus, $sRelayNumber );
+											onoff_rlb_relay($sNewResp24);
+											$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$iDeviceStatus);
+										}
+										$aResponse['code']      = 1;
+										$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+										$aResponse['data']      = 'Pump status changed successfully.';
+									}
+									else if(preg_match('/Intellicom/',$sPumpType))
+									{
+										$sNewResp = '';
+
+										if($iDeviceStatus == '0')
+											$sNewResp =  $sDeviceNo.' '.$iDeviceStatus;
+										else if($iDeviceStatus == '1')
+										{
+											$sType  =   '2'.' '.$sPumpSpeed;
+											$sNewResp =  $sDeviceNo.' '.$sType;    
+										}
+										
+										onoff_rlb_pump($sNewResp);
+										
+										if($sPumpType == 'Intellicom12')
+										{
+											$sNewResp12 = replace_return($sPowercenter, $iDeviceStatus, $sRelayNumber );
+											onoff_rlb_powercenter($sNewResp12);
+										}
+										if($sPumpType == 'Intellicom24')
+										{
+											$sNewResp24 = replace_return($sRelays, $iDeviceStatus, $sRelayNumber );
+											onoff_rlb_relay($sNewResp24);
+											$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$iDeviceStatus);
+										}
+										$aResponse['code']      = 1;
+										$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+										$aResponse['data']      = 'Pump status changed successfully.';
+									}
+								}
+							}
+							else
+							{
+								$aResponse['code']      = 5;
+								$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+								$aResponse['data']      = 'Pump devices not configured properly.';
+
+								// Return Response to browser. This will exit the script.
+								$this->webResponse($sformat, $aResponse);
+							}
+							
+						}
+						else
+                        {
+                            $aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Pump devices not available.';
+
+                            // Return Response to browser. This will exit the script.
+                            $this->webResponse($sformat, $aResponse);
+                        }
+					}						
+					
                 } // END : if($sDeviceNo != '' && in_array($iDeviceStatus, $aDeviceStatus) && $sDevice != '')
                 else
                 {
@@ -350,6 +497,13 @@
                             $this->webResponse($sformat, $aResponse);
                         }
                     } // END : If Device is Power Center.
+					else if($sDevice == "PS")// START : If Device is PUMPS.
+					{
+						$aPumpDetails	=	$this->home_model->getAllPumpDetails();	
+						echo '<pre>';
+						print_r($aPumpDetails);
+						echo '</pre>';
+					}// END : If Device is PUMPS.
                 } // END : If device type is not empty. if($sDevice != '')
                 else
                 {

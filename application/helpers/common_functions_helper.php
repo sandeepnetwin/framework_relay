@@ -220,9 +220,24 @@
 	}
 
 	function onoff_rlb_pump($sRelayStatus){
-		echo $sUrl = 'm '.$sRelayStatus;
+		$sUrl = 'm '.$sRelayStatus;
 		$sResponse = send_to_rlb($sUrl);		
 		return $sResponse;
+	}
+	
+	function getAddressToPump($sDeviceNumber){
+		$sUrl = 'p pm'.$sDeviceNumber;
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+		return $sResult;
+	}
+	
+	function assignAddressToPump($sDeviceNumber,$sAddress){
+		$sUrl = 'p pm'.$sDeviceNumber.' '.$sAddress;
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+			
+		return $sResult;
 	}
 
 	function switch_arrays($aOrig, $aNew){
@@ -275,6 +290,40 @@
 			}
 		}
 		return $sDeviceNameAE;
+	}
+	
+	
+	function getPermissionOfModule($userID)
+	{
+		$CI = get_instance();
+		$CI->load->model('access_model');
+	    $aPermissions = $CI->access_model->getPermission($userID);
+		$aModules	= array();
+		$aReturn	= array();
+		
+		if(!empty($aPermissions))
+		{
+		  foreach($aPermissions as $sPermission)
+		  {
+			  $aModules['ids'][] = $sPermission->module_id;
+			  $aModules['access_'.$sPermission->module_id] = $sPermission->access;
+		  }
+		}  
+		
+		$CI->load->model('user_model');
+	    $aAllMActiveModule	=	$CI->user_model->getAllModulesActive();
+		
+		$aReturn['sPermissionModule']	=	$aModules;
+		$aReturn['sActiveModule']		=	$aAllMActiveModule;
+		
+		return json_encode($aReturn);
+	}
+	
+	function getModuleAccess($sModule)
+	{
+		$CI = get_instance();
+		$CI->load->model('access_model');
+	    $aPermissions = $CI->access_model->getPermission($userID);
 	}
 	
 ?>

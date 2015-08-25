@@ -1,17 +1,49 @@
 <?php
 $this->load->view('Header');
 $this->load->model('home_model');
+$sAccess 		= '';
+$sModule	    = '';
 $sDeviceFullName = '';
 if($sDevice == 'R')
-  $sDeviceFullName = '24V AC Relay';
+{
+  $sDeviceFullName 	= '24V AC Relay';
+  $sModule	    	= 2;
+}
 if($sDevice == 'P')
+{
   $sDeviceFullName = '12V DC Power Center Relay';
+  $sModule	       = 3;
+}
 if($sDevice == 'V')
+{
   $sDeviceFullName = 'Valve';
+  $sModule	       = 8;
+}
 if($sDevice == 'PS')
+{
   $sDeviceFullName = 'Pump Sequencer';
+  $sModule	       = 9;
+}
 if($sDevice == 'T')
+{
   $sDeviceFullName = 'Temperature sensor';
+  $sModule	       = 10;
+}
+
+  $sAccessKey	= 'access_'.$sModule;
+			  
+  if(!empty($aModules))
+  {
+	  if(in_array($sModule,$aModules->ids))
+	  {
+		 $sAccess 		= $aModules->$sAccessKey;
+	  }
+  }
+  
+  if($sAccess == '')
+	$sAccess = '2' ; 
+  
+  if($sAccess == '0') {redirect(site_url('home/'));}
 ?>
 <link href="<?php echo site_url('assets/jquery-toggles-master/css/toggles.css'); ?>" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo site_url('assets/jquery-toggles-master/css/themes/toggles-light.css'); ?>">
@@ -60,7 +92,8 @@ if($sDevice == 'T')
           </div>
         </div>
         <!-- /.row -->
-        <?php if($sDevice == 'R') { //Relay Device Start  ?> 
+        <?php if($sDevice == 'R') { //Relay Device Start  ?>
+        <?php if($sAccess == '1' || $sAccess == '2') { ?> 		
         <div class="row">
           <div class="col-lg-12">
             <div class="panel panel-primary">
@@ -97,7 +130,7 @@ if($sDevice == 'T')
 						
 							<tr <?php if($j>=1){ echo 'class="displayMore"';}?>>
 							<td>Relay <?php echo $i;?></td>
-							<td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
+							<td><a href="<?php if($sAccess == '2') { echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';} ?>" ><?php echo $sRelayNameDb;?></a></td>
 							<td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
 							<td>
 							<strong style="color:#FF0000">Output is Assigned to Valve.</strong>
@@ -148,7 +181,7 @@ if($sDevice == 'T')
 						?>
 							<tr>
 							<td>Relay <?php echo $i;?></td>
-							<td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sRelayNameDb;?></a></td>
+							<td><a href="<?php if($sAccess == '2') { echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';} ?>" ><?php echo $sRelayNameDb;?></a></td>
 							<td style="width:32px;"><span id="loading_relay_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
 							<td>
 								<div class="toggle-light" style="width:100px;">
@@ -159,8 +192,9 @@ if($sDevice == 'T')
 
 							<script type="text/javascript">
 							  var clickOff  = '';
-							  <?php if($iActiveMode != '2') { ?>
+							  <?php if($iActiveMode != '2' || $sAccess == '1') { ?>
 								  $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>',drag: false, click: false});
+								  <?php if($sAccess == '2') { ?>
 								  $('.toggle<?php echo $i;?>').click(function(){
 									var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
 									if(bConfirm)
@@ -184,6 +218,7 @@ if($sDevice == 'T')
 										});
 									}
 								  });
+								  <?php } ?>
 							  <?php } else { ?> 
 								  $('.toggle<?php echo $i;?>').toggles({height:40,on:'<?php echo $sRelayVal;?>'});
 							  <?php } ?>    
@@ -215,10 +250,10 @@ if($sDevice == 'T')
 						   </script>
 						   </td>
 							<td>
-								<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>">Programs</a>&nbsp&nbsp<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setPrograms/'.base64_encode($i).'/');?>" style="width: 90px;"><?php echo $iRelayProgramCount;?><?php if($iRelayProgramCount == 1 || $iRelayProgramCount == 0){ echo ' Program';}else{ echo ' Programs';}?></a>
+								<a class="btn btn-primary btn-xs" href="<?php if($sAccess == '2') { echo site_url('home/setPrograms/'.base64_encode($i).'/');} else { echo 'javascript:void(0);';}?>">Programs</a>&nbsp&nbsp<a class="btn btn-primary btn-xs" href="<?php if($sAccess == '2') { echo site_url('home/setPrograms/'.base64_encode($i).'/');} else { echo 'javascript:void(0);';}?>" style="width: 90px;"><?php echo $iRelayProgramCount;?><?php if($iRelayProgramCount == 1 || $iRelayProgramCount == 0){ echo ' Program';}else{ echo ' Programs';}?></a>
 							</td>
 							<td>
-							<a class="btn btn-primary btn-xs" href="<?php echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));?>"><?php echo $sDeviceTime;?></a>
+							<a class="btn btn-primary btn-xs" href="<?php if($sAccess == '2') {echo site_url('home/addTime/'.base64_encode($i).'/'.  base64_encode($sDevice));} else { echo 'javascript:void(0);';}?>"><?php echo $sDeviceTime;?></a>
 							</td>     
 							
 						  </tr>
@@ -230,9 +265,13 @@ if($sDevice == 'T')
             </div>
           </div>
         </div><!-- /.row -->
+		<?php } ?>
         <?php } ?> <!-- END : Relay Device -->
         <?php if($sDevice == 'P') {  //Power center Device Start?>
-        <div class="row">
+		<?php if($sAccess == '1' || $sAccess == '2') 
+			  { 
+		?>
+		<div class="row">
           <div class="col-lg-12">
             <div class="panel panel-primary">
               <div class="panel-heading">
@@ -273,7 +312,7 @@ if($sDevice == 'T')
                 ?>
                       <tr>
                       <td>Power Center<?php echo $i;?></td>
-                        <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sPowerCenterNameDb;?></a></td>
+                        <td><a href="<?php if($sAccess == '1'){echo 'javascript:void(0);';} else if($sAccess == '2') { echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');}?>" ><?php echo $sPowerCenterNameDb;?></a></td>
                         <td style="width:32px;"><span id="loading_power_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
                         <td><div class="toggle-light" style="width:100px;">
                         <div>
@@ -282,8 +321,9 @@ if($sDevice == 'T')
                         </div>
                        <script type="text/javascript">
                           var clickOff  = '';
-                          <?php if($iActiveMode != '2') { ?>
+                          <?php if($iActiveMode != '2' || $sAccess == '1') { ?>
                               $('.toggleP<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPowerCenterVal;?>',drag: false, click: false});
+							  <?php if($sAccess == '2') { ?>
 							  $('.toggleP<?php echo $i;?>').click(function(){
 								var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
 								if(bConfirm)
@@ -307,6 +347,7 @@ if($sDevice == 'T')
 									});
 								}
 							  });
+							  <?php } ?>
                           <?php } else { ?> 
                               $('.toggleP<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPowerCenterVal;?>'});
                           <?php } ?>    
@@ -350,14 +391,16 @@ if($sDevice == 'T')
             </div>
           </div>
         </div><!-- /.row -->
+			<?php } ?>
         <?php } ?> <!-- END : Power Center Device -->
 
         <?php if($sDevice == 'V') { // Valve Start ?>
+		 <?php if($sAccess == '1' || $sAccess == '2') { ?>
 		<script>
 		var iActiveMode = '<?php echo $iActiveMode;?>';
+		var sAccess 	= '<?php echo $sAccess;?>';
 		</script>
         <link href="<?php echo site_url('assets/switchy/switchy.css'); ?>" rel="stylesheet" />
-        <!--<link href="<?php echo site_url('assets/switchy/bootstrap.min.css'); ?>" rel="stylesheet" />-->
         <script type="text/javascript" src="<?php echo site_url('assets/switchy/switchy.js'); ?>"></script>
         <script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.event.drag.js'); ?>"></script>
         <script type="text/javascript" src="<?php echo site_url('assets/switchy/jquery.animate-color.js'); ?>"></script>
@@ -411,7 +454,7 @@ if($sDevice == 'T')
                               <tr>
                                 <td>
                                     <div class="col-lg-3">Valve <?php echo $i;?>&nbsp;(<?php echo $j;?>-<?php echo ($j+1);?>)<br /><br /></div>
-                                    <div class="col-lg-3"><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>">Edit Position</a><br /><br /></div>
+                                    <div class="col-lg-3"><a href="<?php if($sAccess == 2) { echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';}?>" ><?php echo $sValvesNameDb;?></a><br /><br /><a href="<?php if($sAccess == 2) { echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';}?>">Edit Position</a><br /><br /></div>
                                     <?php if($iValvesVal != '' && $iValvesVal != '.') { ?>
                                     <div class="col-lg-3">                                    
                                     <div class="span1 valve-<?php echo $i?>" value="1" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;"><?php if($aPositionName[0] == ''){ echo 'Spa';} else { echo $aPositionName[0];} ?></div>
@@ -428,7 +471,6 @@ if($sDevice == 'T')
                                   <script type="text/javascript">
                                   $(function()
                                   {
-									  
 										var bgColor = '#E8E8E8';
 										<?php if($iValvesVal == '1' || $iValvesVal == '2') { ?>
 												bgColor = '#45A31F';
@@ -450,18 +492,49 @@ if($sDevice == 'T')
 										
 										$('#switch-me-<?php echo $i;?>').on('change', function(event)
 										{
-											if(iActiveMode != 2)
+											if(sAccess == 2)
 											{
-												var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
-												if(bConfirm)
+												if(iActiveMode != 2)
 												{
-													$.ajax({
-														type: "POST",
-														url: "<?php echo site_url('analog/changeMode');?>", 
-														data: {iMode:'2'},
-														success: function(data) {
-														}
-													});
+													var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+													if(bConfirm)
+													{
+														$.ajax({
+															type: "POST",
+															url: "<?php echo site_url('analog/changeMode');?>", 
+															data: {iMode:'2'},
+															success: function(data) {
+															}
+														});
+														//event.preventDefault();
+														//return false;
+														// Animate Switchy Bar background color
+														var bgColor = '#E8E8E8';
+
+														if ($(this).val() == '1' || $(this).val() == '2')
+														{
+															bgColor = '#45A31F';
+														} 
+														$('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
+															backgroundColor: bgColor
+														});
+													
+														
+														//$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
+														$.ajax({
+															type: "POST",
+															url: "<?php echo site_url('home/updateStatusOnOff');?>", 
+															data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
+															success: function(data) {
+															//$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
+															location.reload();
+															}
+
+														});
+													}
+												}
+												else											
+												{
 													//event.preventDefault();
 													//return false;
 													// Animate Switchy Bar background color
@@ -483,38 +556,10 @@ if($sDevice == 'T')
 														data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
 														success: function(data) {
 														//$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
-														location.reload();
 														}
 
 													});
 												}
-											}
-											else											
-											{
-												//event.preventDefault();
-												//return false;
-												// Animate Switchy Bar background color
-												var bgColor = '#E8E8E8';
-
-												if ($(this).val() == '1' || $(this).val() == '2')
-												{
-													bgColor = '#45A31F';
-												} 
-												$('#switch-me-<?php echo $i;?>').next('.switchy-container').find('.switchy-bar').animate({
-													backgroundColor: bgColor
-												});
-											
-												
-												//$("#loading_valve_<?php //echo $i;?>").css('visibility','visible');
-												$.ajax({
-													type: "POST",
-													url: "<?php echo site_url('home/updateStatusOnOff');?>", 
-													data: {sName:'<?php echo $i;?>',sStatus:$(this).val(),sDevice:'<?php echo $sDevice;?>'},
-													success: function(data) {
-													//$("#loading_valve_<?php //echo $i;?>").css('visibility','hidden');
-													}
-
-												});
 											}
 										});
                                     });
@@ -536,8 +581,9 @@ if($sDevice == 'T')
            
           </div>
         </div><!-- /.row -->
-        <?php } ?> <!-- END : Valve Device -->  
+		 <?php }} ?> <!-- END : Valve Device -->  
         <?php if($sDevice == 'PS') {  // START : Pump Device?>
+		<?php if($sAccess == 1 || $sAccess == 2) { ?>
         <div class="row">
           <div class="col-lg-12">
             <div class="panel panel-primary">
@@ -578,10 +624,12 @@ if($sDevice == 'T')
 						
 						//$iPower	 = $this->home_model->getDevicePower($i,$sDevice);
 						
+						//$sPowercenter = '01000000'		;
 						//START : Getting assigned relay status from the Server.	
 						//Details of Pump
 						$aPumpDetails = $this->home_model->getPumpDetails($i);
-						if(is_array($aPumpDetails) && !empty($aPumpDetails))
+						
+						if(!empty($aPumpDetails))
 						{
 							foreach($aPumpDetails as $aResultEdit)
 							{
@@ -595,16 +643,19 @@ if($sDevice == 'T')
 								{
 									$iPumpVal = $sRelays[$sPumpRelay];//Taken the status
 								}
+								else if(preg_match('/Emulator/',$sPumpType))
+								{
+									 $iPumpVal = $sPump[$i];
+								}
 							}
 						}	//END : Getting assigned relay status from the Server.
 						$sPumpVal = false;
 						if($iPumpVal)
 						  $sPumpVal = true;
-								
-                ?>
+				?>
                       <tr>
                         <td>Pump Sequencer <?php echo $i;?></td>
-                        <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sPumpNameDb;?></a></td>
+                        <td><a href="<?php if($sAccess == 2) {echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');} else {echo 'javascript:void(0);';}?>" ><?php echo $sPumpNameDb;?></a></td>
                         <td style="width:32px;"><span id="loading_pump_<?php echo $i;?>" style="visibility: hidden;"><img src="<?php echo site_url('assets/images/loading.gif');?>"></span></td>
                         <td><div class="toggle-light" style="width:100px;">
                         <div>
@@ -614,8 +665,9 @@ if($sDevice == 'T')
 
                        <script type="text/javascript">
                           var clickOff  = '';
-                          <?php if($iActiveMode != '2') { ?>
+                          <?php if($iActiveMode != '2' || $sAccess == '1') { ?>
                               $('.togglePump<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPumpVal;?>',drag: false, click: false});
+							  <?php if($sAccess == 2) { ?>
 							  $('.togglePump<?php echo $i;?>').click(function(){
 								var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
 								if(bConfirm)
@@ -639,6 +691,7 @@ if($sDevice == 'T')
 									});
 								}
 							  });
+							<?php } ?>
                           <?php } else { ?> 
                               $('.togglePump<?php echo $i;?>').toggles({height:40,on:'<?php echo $sPumpVal;?>'});
                           <?php } ?>    
@@ -669,8 +722,8 @@ if($sDevice == 'T')
                           });
                        </script>
                        </td>
-                        <td><a class="btn btn-primary btn-xs" href="<?php echo site_url('home/pumpConfigure/'.base64_encode($i).'/');?>">Configure</a>&nbsp;&nbsp;
-                            <a class="btn btn-primary btn-xs" href="<?php echo site_url('home/setProgramsPump/'.base64_encode($i).'/');?>">Programs</a>
+                        <td><a class="btn btn-primary btn-xs" href="<?php if($sAccess == 2){echo site_url('home/pumpConfigure/'.base64_encode($i).'/');}else{echo 'javscript:void(0);';}?>">Configure</a>&nbsp;&nbsp;
+                            <a class="btn btn-primary btn-xs" href="<?php if($sAccess == 2){ echo site_url('home/setProgramsPump/'.base64_encode($i).'/');} else {echo 'javascript:void(0);';}?>">Programs</a>
                         </td>
 					</tr>
                 <?php } ?>
@@ -681,8 +734,10 @@ if($sDevice == 'T')
             </div>
           </div>
         </div><!-- /.row -->
-        <?php } ?> <!-- END : Pump Device -->
+        <?php }
+			} ?> <!-- END : Pump Device -->
 		<?php if($sDevice == 'T') {  // START : Temperature sensor?>
+		<?php if($sAccess == 1 || $sAccess == 2) { ?>
         <div class="row">
           <div class="col-lg-12">
             <div class="panel panel-primary">
@@ -716,7 +771,7 @@ if($sDevice == 'T')
                       <tr>
                         <td>Temperature sensor <?php echo $i;?></td>
 						<td><?php echo $iTempratureVal;?></td>
-                        <td><a href="<?php echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');?>" ><?php echo $sTempratureNameDb;?></a></td>
+                        <td><a href="<?php if($sAccess == 2){ echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');} else { echo 'javascript:void(0);';}?>" ><?php echo $sTempratureNameDb;?></a></td>
                       </tr>
                 <?php } ?>
                 
@@ -726,7 +781,8 @@ if($sDevice == 'T')
             </div>
           </div>
         </div><!-- /.row -->
-        <?php } ?> <!-- END : Temperature sensor -->
+        <?php }
+		} ?> <!-- END : Temperature sensor -->
       </div><!-- /#page-wrapper -->
 
 

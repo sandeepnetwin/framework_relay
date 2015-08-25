@@ -10,6 +10,9 @@ if (!defined('BASEPATH'))
 
 class Home extends CI_Controller 
 {
+	protected $userID,$aPermissions,$aModules,$aAllActiveModule;
+	
+	
     public function __construct()  
     {
         parent::__construct();
@@ -19,7 +22,18 @@ class Home extends CI_Controller
         {
             redirect('dashboard/login/');
         } //END : Check if user login or not.
-    }
+		
+		//Get Permission Details
+		if($this->userID == '')
+		$this->userID = $this->session->userdata('id');
+		
+		if($this->aPermissions == '')
+		{
+			$this->aPermissions 	= json_decode(getPermissionOfModule($this->userID));
+			$this->aModules 		= $this->aPermissions->sPermissionModule;	
+			$this->aAllActiveModule = $this->aPermissions->sActiveModule;
+		}
+	}
 
     public function index() //START : Function for dashboard
     {
@@ -28,8 +42,8 @@ class Home extends CI_Controller
         
         //Check if IP, PORT and Mode is set or not.
         $this->checkSettingsSaved();
-
-        //Get the status response of devices from relay board.
+		
+		//Get the status response of devices from relay board.
         $sResponse      =   get_rlb_status();
         
         //$sResponse    =   array('valves'=>'0120','powercenter'=>'0000','time'=>'','relay'=>'0000');
@@ -111,8 +125,12 @@ class Home extends CI_Controller
 						
 						$sExtra .='Pool : '.$sResponse[$extra['Pool_Temp_Address']];
 					}
+					else 
+						$sExtra .='<br>';
 					
 				}
+				else 
+						$sExtra .='<br>';
 				
 				if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
 				{
@@ -121,11 +139,15 @@ class Home extends CI_Controller
 						$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
 						$sExtra .='<br>Spa : '.$sResponse[$extra['Spa_Temp_Address']];
 					}
+					else 
+						$sExtra .='<br><br>';
 					
 				}
+				else 
+						$sExtra .='<br><br>';
 				
 					
-				$aViewParameter['sTemperature'] = $sExtra;
+				$aViewParameter['sTemperature'] = '<p style="font-size:20px">'.$sExtra.'</p>';
 				
 				$aViewParameter['welcome_message'] = $strMessage;
 			}
@@ -134,7 +156,12 @@ class Home extends CI_Controller
 			
 		//END: GET the active MODE details.
 		
-        //Home View
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
+		//Home View
         $this->load->view('Home',$aViewParameter);
 		
 
@@ -245,6 +272,10 @@ class Home extends CI_Controller
 			
 			$aViewParameter['manualMinutes'] = $this->home_model->getManualModeTime();
 			
+			//Permission related parameters.
+			$aViewParameter['userID'] 			= $this->userID;
+			$aViewParameter['aModules'] 		= $this->aModules;
+			$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
 			//View Setting
             $this->load->view('Setting',$aViewParameter);
         } // END : If no device type then show setting page. if($sPage == '')
@@ -284,6 +315,11 @@ class Home extends CI_Controller
                 $aViewParameter['sDevice']          =   $sPage;
             //END : Parameter for View
             
+			//Permission related parameters.
+			$aViewParameter['userID'] 			= $this->userID;
+			$aViewParameter['aModules'] 		= $this->aModules;
+			$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+			
             // Device View to show device page.
             $this->load->view('Device',$aViewParameter); 
         } //END : If device type is available then device page. Else for if($sPage == '')
@@ -314,12 +350,32 @@ class Home extends CI_Controller
             $sNewResp = replace_return($sRelays, $sStatus, $sName );
             onoff_rlb_relay($sNewResp);
             $this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+			
+			//Check if the relay is assigned to pump or not.
+			$aPumpDetails =	$this->home_model->getPumpDetailsFromRelayNumber($sName,'24');
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					$this->makePumpOnOFF($sPump->pump_number,$sStatus);
+				}
+			}
             
         }
         if($sDevice == 'P') // If Device type is Power Center
         {
             $sNewResp = replace_return($sPowercenter, $sStatus, $sName );
             onoff_rlb_powercenter($sNewResp);
+			
+			//Check if the relay is assigned to pump or not.
+			$aPumpDetails =	$this->home_model->getPumpDetailsFromRelayNumber($sName,'12');
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					$this->makePumpOnOFF($sPump->pump_number,$sStatus);
+				}
+			}
         }
         if($sDevice == 'V') // If Device type is Valve
         {
@@ -327,6 +383,23 @@ class Home extends CI_Controller
             onoff_rlb_valve($sNewResp);
         }
         if($sDevice == 'PS') // If Device type is Pump
+        {
+			$this->makePumpOnOFF($sName,$sStatus);
+		}
+        exit;
+    } //END : Function to swich the particular device ON/OFF
+	
+	
+	public function makePumpOnOFF($sName,$sStatus)
+	{
+		$sResponse      =   get_rlb_status();
+        
+        $sRelays        =   $sResponse['relay'];    // Relay Device Status
+        $sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+		
+		$sDevice = 'PS';
+		
+		if($sDevice == 'PS') // If Device type is Pump
         {
 			$aPumpDetails = $this->home_model->getPumpDetails($sName);
 			//Variable Initialization to blank.
@@ -370,35 +443,69 @@ class Home extends CI_Controller
 				}
 				else
 				{
-					$sNewResp = '';
-
-					if($sStatus == '0')
-						$sNewResp =  $sName.' '.$sStatus;
-					else if($sStatus == '1')
+					if(preg_match('/Emulator/',$sPumpType))
 					{
-						//Get Pump Configuration details.
-						$aPumpDetails   =   $this->home_model->getPumpDetails($sName);
-						foreach($aPumpDetails as $aResultPumpDetails)
+						$sNewResp = '';
+
+						if($sStatus == '0')
+							$sNewResp =  $sName.' '.$sStatus;
+						else if($sStatus == '1')
 						{
 							$sType          =   '';
-
-							if($aResultPumpDetails->pump_type == '2')
-								$sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_speed;
-							elseif ($aResultPumpDetails->pump_type == '3')
-								$sType  =   $aResultPumpDetails->pump_type.' '.$aResultPumpDetails->pump_flow;
+							if($sPumpSubType == 'VS')
+								$sType  =   '2'.' '.$sPumpSpeed;
+							elseif ($sPumpSubType == 'VF')
+								$sType  =   '3'.' '.$sPumpFlow;
 
 							$sNewResp =  $sName.' '.$sType;    
 						}
 						
+						onoff_rlb_pump($sNewResp);
+						
+						if($sPumpType == 'Emulator12')
+						{
+							$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp12);
+						}
+						if($sPumpType == 'Emulator24')
+						{
+							$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp24);
+							$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+						}
 					}
-					onoff_rlb_pump($sNewResp);
+					else if(preg_match('/Intellicom/',$sPumpType))
+					{
+						$sNewResp = '';
+
+						if($sStatus == '0')
+							$sNewResp =  $sName.' '.$sStatus;
+						else if($sStatus == '1')
+						{
+							$sType  =   '2'.' '.$sPumpSpeed;
+							$sNewResp =  $sName.' '.$sType;    
+						}
+						
+						onoff_rlb_pump($sNewResp);
+						
+						if($sPumpType == 'Intellicom12')
+						{
+							$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp12);
+						}
+						if($sPumpType == 'Intellicom24')
+						{
+							$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp24);
+							$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+						}
+					}
 				}
 			}				
            
         }
-        exit;
-    } //END : Function to swich the particular device ON/OFF
-
+	}
+	
     public function deviceName() // START : Function Show Device Name Form and Save
     {
         $aViewParameter              =   array(); // Array for passing parameter to view.
@@ -442,6 +549,11 @@ class Home extends CI_Controller
         // Get the saved device name
         $aViewParameter['sDeviceName']      =   $this->home_model->getDeviceName($sDeviceID,$sDevice);
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         // Device Name save View
         $this->load->view('DeviceName',$aViewParameter); 
     } // END : Function Show Device Name Form and Save
@@ -489,6 +601,11 @@ class Home extends CI_Controller
         // Get the saved device name
         $aViewParameter['sDeviceTime']      =   $this->home_model->getDeviceTime($sDeviceID,$sDevice);
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         // Time save/update View
         $this->load->view('Time',$aViewParameter); 
     }//END : Function to save/update the Relay Time.
@@ -536,6 +653,11 @@ class Home extends CI_Controller
         //Get Existing saved position names for Device
         list($aViewParameter['sPositionName1'],$aViewParameter['sPositionName2'])      =   $this->home_model->getPositionName($sDeviceID,$sDevice);
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         //Position Name Save View
         $this->load->view('PositionName',$aViewParameter); 
     } //END : Function to save position names for Valve
@@ -615,6 +737,11 @@ class Home extends CI_Controller
             $aViewParameter['sProgramDetailsEdit'] = '';
         }
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         //Program View for Getting and Showing Programs
         $this->load->view('PumpPrograms',$aViewParameter); 
     } // END : Function to save/update/delete the Programs to run relay in Auto mode.
@@ -696,6 +823,11 @@ class Home extends CI_Controller
         
 		$aViewParameter['sDeviceTime'] =  $this->home_model->getDeviceTime($sDeviceID,'R');
 		
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         //Program View for Getting and Showing Programs
         $this->load->view('Programs',$aViewParameter); 
     } // END : Function to save/update/delete the Programs to run relay in Auto mode.
@@ -705,6 +837,8 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['err']		 =	'';
+		
         $sDeviceID      =   base64_decode($this->uri->segment('3'));
        
         $this->load->model('home_model');
@@ -722,13 +856,46 @@ class Home extends CI_Controller
                 $sDeviceID   =  $this->input->post('sPumpNumber');
 				
             $this->home_model->savePumpDetails($this->input->post(),$sDeviceID);
-            $aViewParameter['sucess']    =   '1';
+			
+			//Change the address on the Raspberry Device
+			$sPumpType      =   $this->input->post('sPumpType');
+			if($sPumpType != '12' && $sPumpType != '24')
+			{	
+				$sAddress 	= $this->input->post('sPumpAddress');
+				$sRes 		= getAddressToPump($sDeviceID);
+				if(!preg_match('/Invalid response/',$sRes))
+				{
+					$aResult	=	explode(',',$sRes);
+					if($aResult[2] != $sAddress)
+					{
+						$sResult	=	assignAddressToPump($sDeviceID,$sAddress);
+						if(!preg_match('/Invalid response/',$sRes))
+						{}
+						else
+						{
+							$aViewParameter['err']    =   'Following error occurs. '.$sResult;
+						}
+					}
+				}
+				else
+				{
+					$aViewParameter['err']    =   'Following error occurs. '.$sRes;
+				}
+			}
+			
+			$aViewParameter['sucess']    =   '1';
+			
         }// END : Save pump configuration Details.
         
         //Parameter for View
         $aViewParameter['sDeviceID']    =   $sDeviceID;
         $aViewParameter['sPumpDetails'] = 	$this->home_model->getPumpDetails($sDeviceID);
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         //Pump view for configuration of pumps
         $this->load->view('Pump',$aViewParameter); 
     } // END : Function for saving Pump Configuration
@@ -769,6 +936,11 @@ class Home extends CI_Controller
         //Parameter for view
         $aViewParameter['response'] =$sResponse['response'];
         
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
         //Status view for showing relay board status.
         $this->load->view('Status',$aViewParameter);
     } //END : Server response page of relay board.
@@ -948,6 +1120,153 @@ class Home extends CI_Controller
 		echo json_encode($response);
 			
 		//END: GET the active MODE details.
+	}
+	
+	public function getLogDetails()
+	{
+		$dir    	= '/var/log/rlb/';
+		//$dir    	= "D:\wamp\www\CodeIgniter-pool-spa\log\\rlb\\";
+		
+		$sFileName				=	'';
+		$strTodaysLogDetails 	=	'';
+		$strDate				=	'';
+		
+		$strStartDate			=	'';			
+		$strEndDate				=	'';	
+		
+		if($this->input->post('searchLog') == 'Search')
+		{
+			$sFromDate	=	$this->input->post('sFromDate');
+			$sToDate	=	$this->input->post('sToDate');
+			
+			$sFromDate 	=	strtotime($sFromDate);
+			$sToDate 	=	strtotime($sToDate);
+			
+			$strStartDate	=	date('Y-m-d', $sFromDate);			
+			$strEndDate		=	date('Y-m-d', $sToDate);
+			
+			$strDate 	= $strStartDate.' - '.$strEndDate;
+				
+			//echo $sFromDate.'>>'.$sToDate;
+			
+			$allfiles   = scandir($dir);
+			foreach($allfiles as $sFileName)
+			{
+				if (preg_match('/.log/',$sFileName))
+				{
+					$arrFileName	=	explode('.',$sFileName);
+					$counter = 0;
+					$sFileDate       =   $arrFileName[0];
+					$sDateCreated  	 =	'';
+					
+					for($i = 0; $i < strlen($sFileDate); $i++)
+					{
+						if($counter == 2)
+						{
+							$counter = 0;
+							$sDateCreated .= "-".$sFileDate[$i];
+						}
+						else
+						{
+							$sDateCreated .= $sFileDate[$i];
+						}
+						
+						$counter++;
+					}
+					
+					$sDateCreatedTime = strtotime($sDateCreated);
+					
+					if( $sFromDate <= $sDateCreatedTime && $sToDate >= $sDateCreatedTime)
+					{
+						$strTodaysLogDetails .= '<strong>'.$sDateCreated.'</strong><br><br>';
+						
+						$sFileName	=	str_replace('-','',$sDateCreated);
+						$file = fopen($dir.$sFileName.'.log','r');	
+						while(!feof($file)){
+							$line = fgets($file);
+							$strTodaysLogDetails .= str_replace($sFileName,'',$line).'<br>';
+							# do same stuff with the $line
+						}
+						$strTodaysLogDetails .= '<hr>';
+						fclose($file);
+					}
+					
+					//echo $sFileName.'<br>';
+				}
+					
+			}
+		}
+		else
+		{
+			
+			$sFileName	=	date('ymd');
+			
+			$strStartDate	=	date('Y-m-d');			
+			$strEndDate		=	date('Y-m-d');
+			
+			$file = fopen($dir.$sFileName.'.log','r');		
+			
+			$strDate	=	'';
+			if ($file) 
+			{
+				$strDate = date('Y-m-d');
+				while(!feof($file)){
+					$line = fgets($file);
+					$strTodaysLogDetails .= str_replace($sFileName,'',$line).'<br>';
+					# do same stuff with the $line
+				}
+			}
+			else
+			{
+				$strStartDate	=	date('Y-m-d',strtotime('-1 day'));			
+				$strEndDate		=	date('Y-m-d',strtotime('-1 day'));
+				$sFileName	=	date('ymd', strtotime('-1 day'));
+				$strDate = date('Y-m-d', strtotime('-1 day'));
+				$file = fopen($dir.$sFileName.'.log','r');	
+				while(!feof($file)){
+					$line = fgets($file);
+					$strTodaysLogDetails .= str_replace($sFileName,'',$line).'<br>';
+					# do same stuff with the $line
+				}
+			}
+			fclose($file);
+		}
+		
+		$aViewParameter['Log']			= $strTodaysLogDetails;
+		$aViewParameter['sDate']		= $strDate;
+		$aViewParameter['sStartDate']	= $strStartDate;
+		$aViewParameter['sEndDate']		= $strEndDate;
+		$aViewParameter['page']			= 'log';
+		//Status view for showing relay board status.
+        $this->load->view('Log',$aViewParameter);
+	}
+	
+	public function checkAddressPump()
+	{
+		$sDeviceID 		=	$this->input->post('sDeviceID');
+		$sPumpAddress	=	$this->input->post('sPumpAddress');
+		
+		$aResponse		=	array('iAddressCheck'=>0,'iPumpID'=>0);
+		
+		$this->load->model('home_model');
+		$aPumpDetails = $this->home_model->getPumpDetailsExcept($sDeviceID);
+		//print_r($aPumpDetails);
+		if(!empty($aPumpDetails))
+		{
+			foreach($aPumpDetails as $sPump)
+			{
+				if($sPumpAddress == $sPump->pump_address)
+				{
+					$aResponse['iAddressCheck']	=	1;
+					$aResponse['iPumpID']		=	$sPump->pump_number;
+					break;
+				}	
+			}
+		}
+		echo json_encode($aResponse);
+		
+		exit;
+		
 	}
     
 }//END : Class Home
