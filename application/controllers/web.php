@@ -503,15 +503,108 @@
                     } // END : If Device is Power Center.
 					else if($sDevice == "PS")// START : If Device is PUMPS.
 					{
-						$sPumps	= 	array();
-						$sPumps[0] = $sResponse['pump_seq_0_st'];
-						$sPumps[1] = $sResponse['pump_seq_1_st'];
-						$sPumps[2] = $sResponse['pump_seq_2_st'];
-						
+						$sPumps 		= '';
+						for($i=0;$i<3;$i++)
+						{
+							$aPumpDetails = $this->home_model->getPumpDetails($i);
+							//Variable Initialization to blank.
+							$sPumpNumber  	= '';
+							$sPumpType  	= '';
+							$relay_number   = '';
+							
+							if(is_array($aPumpDetails) && !empty($aPumpDetails))
+							{
+							  foreach($aPumpDetails as $aResultEdit)
+							  { 
+								$sPumpNumber  = $aResultEdit->pump_number;
+								$sPumpType    = $aResultEdit->pump_type;
+								$relay_number = $aResultEdit->relay_number;
+								
+								if($sPumpType != '')
+								{
+									if($sPumpType == '12' || $sPumpType == '24')
+									{
+										if($sPumpType == '24')
+										{
+											if($sResponse['relay'] != '')
+											{
+												$sRelays        =   $sResponse['relay'];  // Relay Devices.
+												if(isset($sRelays[$relay_number]) && $sRelays[$relay_number] != '')
+												{    
+													$sPumps      .= $sRelays[$relay_number];
+												}
+												else
+												{
+													$aResponse['code']      = 5;
+													$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+													$aResponse['data']      = 'Device Number is not Valid';
+
+													$this->webResponse($sformat, $aResponse);
+												}
+											}
+											else
+											{
+												$aResponse['code']      = 5;
+												$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+												$aResponse['data']      = 'Devices not available.';
+
+												$this->webResponse($sformat, $aResponse);
+											}
+										}
+										else if($sPumpType == '12')
+										{
+											
+											if($sResponse['powercenter'] != '')
+											{
+												$sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
+												if(isset($sPowercenter[$relay_number]) && $sPowercenter[$relay_number] != '')
+												{    
+													$sPumps      .= $sPowercenter[$relay_number];
+												}
+												else
+												{
+													$aResponse['code']      = 5;
+													$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+													$aResponse['data']      = 'Device Number is not Valid';
+
+													$this->webResponse($sformat, $aResponse);
+												}
+											}
+											else
+											{
+												$aResponse['code']      = 5;
+												$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+												$aResponse['data']      = 'Device not available.';
+
+												$this->webResponse($sformat, $aResponse);
+											}
+										}
+									}
+									else
+									{
+										if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType))
+										{
+											if($sResponse['pump_seq_'.$sPumpNumber.'_st'] > 0)
+												$sPumps .= 1;
+											else 
+												$sPumps .= 0;
+										}
+									}
+								}
+							  }
+							}
+							else
+							{
+								if(isset($sResponse['pump_seq_'.$i.'_st']))
+								{
+									$sPumps .= '.';
+								}
+							}
+						}
 						$aResponse['code']      = 1;
 						$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
-						$aResponse['data']      = json_encode($sPumps);
-						
+						$aResponse['data']      = $sPumps;
+					
 						$this->webResponse($sformat, $aResponse);
 						
 					}// END : If Device is PUMPS.
@@ -702,15 +795,103 @@
 					else if($sDevice == "PS")// START : If Device is PUMPS.
 					{
 						$sPumps = '';
-						if(isset($sResponse['pump_seq_'.$sDeviceNo.'_st']))
+						$aPumpDetails = $this->home_model->getPumpDetails($sDeviceNo);
+						//Variable Initialization to blank.
+						$sPumpNumber  	= '';
+						$sPumpType  	= '';
+						$relay_number   = '';
+						
+						if(is_array($aPumpDetails) && !empty($aPumpDetails))
 						{
-							$sPumps	= 	$sResponse['pump_seq_'.$sDeviceNo.'_st'];
-							if($sPumps > 0)
-								$sPumps = 1;
+						  foreach($aPumpDetails as $aResultEdit)
+						  { 
+							$sPumpNumber  = $aResultEdit->pump_number;
+							$sPumpType    = $aResultEdit->pump_type;
+							$relay_number = $aResultEdit->relay_number;
+							
+							if($sPumpType != '')
+							{
+								if($sPumpType == '12' || $sPumpType == '24')
+								{
+									if($sPumpType == '24')
+									{
+										if($sResponse['relay'] != '')
+										{
+											$sRelays        =   $sResponse['relay'];  // Relay Devices.
+											if(isset($sRelays[$relay_number]) && $sRelays[$relay_number] != '')
+											{    
+												$sPumps      = $sRelays[$relay_number];
+											}
+											else
+											{
+												$aResponse['code']      = 5;
+												$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+												$aResponse['data']      = 'Device Number is not Valid';
+
+												$this->webResponse($sformat, $aResponse);
+											}
+										}
+										else
+										{
+											$aResponse['code']      = 5;
+											$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+											$aResponse['data']      = 'Devices not available.';
+
+											$this->webResponse($sformat, $aResponse);
+										}
+									}
+									else if($sPumpType == '12')
+									{
+										
+										if($sResponse['powercenter'] != '')
+										{
+											$sPowercenter   =   $sResponse['powercenter']; // Power Center Devices.
+											if(isset($sPowercenter[$relay_number]) && $sPowercenter[$relay_number] != '')
+											{    
+												$sPumps      = $sPowercenter[$relay_number];
+											}
+											else
+											{
+												$aResponse['code']      = 5;
+												$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+												$aResponse['data']      = 'Device Number is not Valid';
+
+												$this->webResponse($sformat, $aResponse);
+											}
+										}
+										else
+										{
+											$aResponse['code']      = 5;
+											$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+											$aResponse['data']      = 'Device not available.';
+
+											$this->webResponse($sformat, $aResponse);
+										}
+									}
+								}
+								else
+								{
+									$sResponse['pump_seq_'.$sPumpNumber.'_st'];
+									if($sResponse['pump_seq_'.$sPumpNumber.'_st'] > 0)
+										$sPumps = 1;
+									else if($sResponse['pump_seq_'.$sPumpNumber.'_st'] == 0)
+										$sPumps = 0;
+									
+								}
+							}
+						  }
+						}
+						else
+						{
+							if(isset($sResponse['pump_seq_'.$sDeviceNo.'_st']))
+							{
+								$sPumps = '.';
+							}
 						}
 						
-						if($sPumps != '')
+						if($sPumps != '' || $sPumps == 0)
 						{
+							echo 'HERE';
 							$aResponse['code']      = 1;
 							$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
 							$aResponse['data']      = $sPumps;
