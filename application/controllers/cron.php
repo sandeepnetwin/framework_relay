@@ -104,10 +104,105 @@ class Cron extends CI_Controller
             usleep($micro); */    
         }      
     }
+	
+	public function pumpResponse()
+    {
+        $seconds = 2;
+        $micro = $seconds * 1000000;
+        $this->load->model('analog_model');
+        $this->load->model('home_model');
+        while(true)
+        {    
+            list($sIpAddress, $sPortNo) = $this->home_model->getSettings();
+            
+            if($sIpAddress == '')
+            {
+                if(IP_ADDRESS)
+                {
+                    $sIpAddress = IP_ADDRESS;
+                }
+            }
+            
+            //Check for Port Number constant
+            if($sPortNo == '')
+            {   
+                if(PORT_NO)
+                {
+                    $sPortNo = PORT_NO;
+                }
+            }
+
+            if($sIpAddress == '' || $sPortNo == '')
+            {
+
+            }   
+            else
+            { 
+				$sResponse =   send_command_udp_new($sIpAddress,$sPortNo);
+                /* $sResponse =   get_rlb_status();
+                $aAP       =   array($sResponse['AP0'],$sResponse['AP1'],$sResponse['AP2'],$sResponse['AP3']);
+                //$aAP       =   array(0,1,0,1);
+
+                $sValves        =   $sResponse['valves'];
+                $sRelays        =   $sResponse['relay'];
+                $sPowercenter   =   $sResponse['powercenter'];
+
+                $aResult            =   $this->analog_model->getAllAnalogDevice();
+                $aResultDirection   =   $this->analog_model->getAllAnalogDeviceDirection();
+                $iResultCnt =   count($aResult);
+                
+                for($i=0; $i<$iResultCnt; $i++)
+                {
+                    if($aResult[$i] != '')
+                    {
+                        $aDevice = explode('_',$aResult[$i]);
+                        if($aDevice[1] != '')
+                        {
+                            if($aDevice[1] == 'R')
+                            {
+                                if($sRelays[$aDevice[0]] != '' && $sRelays[$aDevice[0]] != '.')
+                                {
+                                    $sNewResp = replace_return($sRelays, $aAP[$i], $aDevice[0] );
+                                    onoff_rlb_relay($sNewResp);
+                                }
+                                //exex('rlb m 0 2 1');
+                            }
+                            if($aDevice[1] == 'P')
+                            {
+                                $sNewResp = replace_return($sPowercenter, $aAP[$i], $aDevice[0] );
+                                onoff_rlb_powercenter($sNewResp);
+                            }
+                            if($aDevice[1] == 'V')
+                            {
+                                if($sValves[$aDevice[0]] != '' && $sValves[$aDevice[0]] != '.')
+                                {
+                                    $sStatusChnage = $aResultDirection[$i];
+
+                                    if($aAP[$i] == '0')
+                                    $sNewResp = replace_return($sValves, $aAP[$i], $aDevice[0] );
+                                    else if($aAP[$i] == '1')
+                                    $sNewResp = replace_return($sValves, $sStatusChnage, $aDevice[0] ); 
+
+                                    onoff_rlb_valve($sNewResp);
+                                }
+                            }
+                        }
+                    }
+                } */
+            } 
+
+            $myFile = "/var/www/relay_framework/daemontest1.txt";
+            $fh = fopen($myFile, 'a') or die("Can't open file");
+            $stringData = "File updated at: " . $sResponse. "\n";
+            fwrite($fh, $stringData);
+            fclose($fh); 
+            usleep($micro);   
+        }      
+    }
 
     public function program()
     {
-        $this->load->model('home_model');
+		$this->load->model('home_model');
         $sResponse      =   get_rlb_status();
         //$sResponse      =   array('valves'=>'','powercenter'=>'0000','time'=>'','relay'=>'0000','day'=>'');
         $sValves        =   $sResponse['valves'];
@@ -122,7 +217,7 @@ class Cron extends CI_Controller
         $iPowerCount    =   strlen($sPowercenter);
 
         $iMode          =   $this->home_model->getActiveMode();
-        //$iMode          =   $this->uri->segment('3');
+        //$iMode          =   1;
         $sTime          =   date('H:i:s',time());
         $aAllProgram    =   $this->home_model->getAllProgramsDetails();
         

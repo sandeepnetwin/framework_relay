@@ -85,6 +85,30 @@
 		
 		return $sReply;
 	}
+	
+	function send_command_udp_new($IP,$PORT){
+		$sServer = $IP;
+		$iPort = $PORT;
+		
+		
+		$fp =  fsockopen("udp://$sServer", $iPort, $iErrorcode, $sErrormsg,3);
+		if (!$fp) {
+			die("Could not send data: [$iErrorcode] $sErrormsg \n");
+		} else {
+                        
+			//fwrite($fp, "$sInput");
+			$sReply = fread($fp, 1024);
+			fclose($fp);
+		}
+                
+                //Check for invalid response.
+		$iCommaCount = substr_count($sReply, ",");
+		if(stripos($sReply, '?') !== FALSE){
+			die("Invalid response: $sReply \n");
+		}
+		
+		return $sReply;
+	}
 
 	function send_to_rlb($sUrl){
 		$sReturnUrl = get_url($sUrl);
