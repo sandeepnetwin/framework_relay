@@ -206,7 +206,11 @@
 					
 					if($sDevice == 'PS')
 					{
-						if($aReturn['pump_seq_'.$sDeviceNo.'_st'] != '')
+						$sPump	=	'';
+						if(isset($sResponse['pump_seq_'.$sDeviceNo.'_st']))
+							$sPump = $sResponse['pump_seq_'.$sDeviceNo.'_st'];
+						
+						if($sPump != '')
 						{		
 							$aPumpDetails = $this->home_model->getPumpDetails($sDeviceNo);
 							//Variable Initialization to blank.
@@ -499,10 +503,17 @@
                     } // END : If Device is Power Center.
 					else if($sDevice == "PS")// START : If Device is PUMPS.
 					{
-						$aPumpDetails	=	$this->home_model->getAllPumpDetails();	
-						echo '<pre>';
-						print_r($aPumpDetails);
-						echo '</pre>';
+						$sPumps	= 	array();
+						$sPumps[0] = $sResponse['pump_seq_0_st'];
+						$sPumps[1] = $sResponse['pump_seq_1_st'];
+						$sPumps[2] = $sResponse['pump_seq_2_st'];
+						
+						$aResponse['code']      = 1;
+						$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+						$aResponse['data']      = json_encode($sPumps);
+						
+						$this->webResponse($sformat, $aResponse);
+						
 					}// END : If Device is PUMPS.
                 } // END : If device type is not empty. if($sDevice != '')
                 else
@@ -671,6 +682,30 @@
                             $this->webResponse($sformat, $aResponse);
                         }
                     } // END : If Device is Power Center.
+					else if($sDevice == "PS")// START : If Device is PUMPS.
+					{
+						$sPumps = '';
+						if(isset($sResponse['pump_seq_'.$sDeviceNo.'_st']))
+							$sPumps	= 	$sResponse['pump_seq_'.$sDeviceNo.'_st'];
+						
+						if($sPumps != '')
+						{
+							$aResponse['code']      = 1;
+							$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+							$aResponse['data']      = $sPumps;
+							
+							$this->webResponse($sformat, $aResponse);
+						}
+						else
+						{
+							$aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Pump devices not available.';
+
+                            $this->webResponse($sformat, $aResponse);
+						}
+					}// END : If Device is PUMPS.
+					
                 } // if($sDevice != '')  END : If device type is not empty and Valid Device number is there. 
                 else
                 {
