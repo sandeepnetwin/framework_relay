@@ -515,6 +515,23 @@
 						$this->webResponse($sformat, $aResponse);
 						
 					}// END : If Device is PUMPS.
+					else if($sDevice == "T")// START : If Device is PUMPS.
+					{
+						$sTemprature	= 	array();
+						$sTemprature[0] = $sResponse['TS0'];
+						$sTemprature[1] = $sResponse['TS1'];
+						$sTemprature[2] = $sResponse['TS2'];
+						$sTemprature[3] = $sResponse['TS3'];
+						$sTemprature[4] = $sResponse['TS4'];
+						$sTemprature[5] = $sResponse['TS5'];
+						
+						$aResponse['code']      = 1;
+						$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+						$aResponse['data']      = json_encode($sTemprature);
+						
+						$this->webResponse($sformat, $aResponse);
+						
+					}// END : If Device is PUMPS.
                 } // END : If device type is not empty. if($sDevice != '')
                 else
                 {
@@ -686,7 +703,11 @@
 					{
 						$sPumps = '';
 						if(isset($sResponse['pump_seq_'.$sDeviceNo.'_st']))
+						{
 							$sPumps	= 	$sResponse['pump_seq_'.$sDeviceNo.'_st'];
+							if($sPumps > 0)
+								$sPumps = 1;
+						}
 						
 						if($sPumps != '')
 						{
@@ -705,7 +726,31 @@
                             $this->webResponse($sformat, $aResponse);
 						}
 					}// END : If Device is PUMPS.
-					
+					else if($sDevice == "T")// START : If Device is Temperature.
+					{
+						$sTemprature = '';
+						if(isset($sResponse['TS'.$sDeviceNo]))
+						{
+							$sTemprature	= 	$sResponse['TS'.$sDeviceNo];
+						}
+						
+						if($sTemprature != '')
+						{
+							$aResponse['code']      = 1;
+							$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+							$aResponse['data']      = $sTemprature;
+							
+							$this->webResponse($sformat, $aResponse);
+						}
+						else
+						{
+							$aResponse['code']      = 5;
+                            $aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                            $aResponse['data']      = 'Temperature devices not available.';
+
+                            $this->webResponse($sformat, $aResponse);
+						}
+					}// END : If Device is Temperature.
                 } // if($sDevice != '')  END : If device type is not empty and Valid Device number is there. 
                 else
                 {
