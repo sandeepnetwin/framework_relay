@@ -13,6 +13,8 @@ class Cron extends CI_Controller
     
     public function index()
     {
+		echo 'HERE';
+		die;
         $seconds = 2;
         $micro = $seconds * 1000000;
         $this->load->model('analog_model');
@@ -113,36 +115,39 @@ class Cron extends CI_Controller
 		list($sIpAddress, $sPortNo) = $this->home_model->getSettings();
 		
 		$aPumps		= $this->home_model->selectEmulatorOnPumps();	
-		
+		$aPumpsChk	= json_decode($aPumps);
 		//print_r($aPumps);
 		//while(true)
-		if(!empty(json_decode($aPumps)))	
+		if(!empty($aPumpsChk))	
         { 
-			$sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
-			
-			if($sResponse != '')
+			//while(true)
 			{
-				//$aResponse['message'] =$sResponse;
-				$aResponse	=	explode("|||",$sResponse);
-				foreach($aResponse as $strResponse)
+				$sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
+				
+				if($sResponse != '')
 				{
-					$aCheckResponse	=	explode(',',$strResponse);
-					$iPump			=   str_replace('M','',$aCheckResponse[0]);
-					if($aCheckResponse[1] == '0')
-						$strResponse .= ',STOP';
+					//$aResponse['message'] =$sResponse;
+					$aResponse	=	explode("|||",$sResponse);
+					foreach($aResponse as $strResponse)
+					{
+						$aCheckResponse	=	explode(',',$strResponse);
+						$iPump			=   str_replace('M','',$aCheckResponse[0]);
+						if($aCheckResponse[1] == '0')
+							$strResponse .= ',STOP';
+						
+						$this->home_model->savePumpResponse($strResponse,$iPump);
+					}
 					
-					$this->home_model->savePumpResponse($strResponse,$iPump);
+					//echo json_encode($aResponse);
 				}
 				
-				//echo json_encode($aResponse);
+				/* $myFile = "/var/www/relay_framework/daemontest1.txt";
+				$fh = fopen($myFile, 'a') or die("Can't open file");
+				$stringData = "File updated at: " . time(). "\n";
+				fwrite($fh, $stringData);
+				fclose($fh); */
+				usleep($micro); 
 			}
-			
-			/* $myFile = "/var/www/relay_framework/daemontest1.txt";
-            $fh = fopen($myFile, 'a') or die("Can't open file");
-            $stringData = "File updated at: " . time(). "\n";
-            fwrite($fh, $stringData);
-            fclose($fh); 
-            usleep($micro); */
 		}
 		
 		//$aresponse['message'] = $sResponse;
