@@ -167,24 +167,62 @@ class Home_model extends CI_Model
 	
 	public function updateSettingTemp($aTemprature)
     {
+		$aExtra	=	array();
         $sSql   =   "SELECT * FROM rlb_setting";
         $query  =   $this->db->query($sSql);
 
         if ($query->num_rows() > 0)
         {
             foreach($query->result() as $aRow)
-            {    
-                $data = array('extra' => serialize($aTemprature) );
+            {
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['Pool_Temp'] 		 = $aTemprature['Pool_Temp'];
+				$aExtra['Pool_Temp_Address'] = $aTemprature['Pool_Temp_Address'];
+				$aExtra['Spa_Temp'] 		 = $aTemprature['Spa_Temp'];
+				$aExtra['Spa_Temp_Address']  = $aTemprature['Spa_Temp_Address'];
+				
+                $data = array('extra' => serialize($aExtra) );
                 $this->db->where('id', $aRow->id);
                 $this->db->update('rlb_setting', $data);
             }
         }
         else
         {
-            $data = array('extra' => serialize($aTemprature) );
+            $data = array('extra' => serialize($aExtra) );
             $this->db->insert('rlb_setting', $data);
         }
     }
+	
+	public function updateSettingNumberDevice($aNumDevice,$showRemoteSpa)
+	{
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['PumpsNumber'] = $aNumDevice['PumpsNumber'];
+				$aExtra['ValveNumber'] = $aNumDevice['ValveNumber'];
+				$aExtra['Remote_Spa']  = $showRemoteSpa;
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+	}
 	
 	public function saveDeviceName($sDeviceID,$sDevice,$sDeviceName)
     {
@@ -274,7 +312,9 @@ class Home_model extends CI_Model
                       'program_absolute_total_time'=>$sTotalTime
                       );
         $this->db->insert('rlb_program', $data);
-
+		
+		$insert_id = $this->db->insert_id();
+		return $insert_id;
     }
 
     public function updateProgramDetails($aPost,$sProgramID,$sDeviceID,$sDevice)
@@ -308,9 +348,7 @@ class Home_model extends CI_Model
                       'end_time'  => $sEndTime,
                       'program_modified_date'=> date('Y-m-d H:i:s'),
                       'program_absolute' => $bAbsoluteProgram,
-                      'program_absolute_total_time'=>$sTotalTime,
-                      'program_absolute_start_time'=>$sAbsoluteStart,
-                      'program_absolute_end_time'=>$sAbsoluteEnd
+                      'program_absolute_total_time'=>$sTotalTime
                       );
         $this->db->where('program_id', $sProgramID);
         $this->db->update('rlb_program', $data);
@@ -504,6 +542,7 @@ class Home_model extends CI_Model
 		$sPumpSubType   =   '';
         $sPumpSpeed     =   '';
         $sPumpFlow      =   '';
+		$sRelayNumber1  =   '';
 		
 		if(preg_match('/Emulator/',$sPumpType))
 		{
@@ -535,6 +574,12 @@ class Home_model extends CI_Model
 		{
             $sPumpFlow      =   $aPost['sPumpFlow'];
 		}
+		
+		if($sPumpType == '2Speed')
+		{
+			$sRelayNumber1  =   $aPost['sRelayNumber1'];
+			$sPumpSubType   =   $aPost['sPumpSubType1'];
+		}
         
         $this->db->select('pump_id');
         $query = $this->db->get_where('rlb_pump_device', array('pump_number' => $sDeviceID));
@@ -551,7 +596,8 @@ class Home_model extends CI_Model
                               'pump_closure'        => $sPumpClosure,
 							  'relay_number'		=> $sRelayNumber,
 							  'pump_address'		=> $sPumpAddress,
-                              'pump_modified_date'  => date('Y-m-d H:i:s')   
+                              'pump_modified_date'  => date('Y-m-d H:i:s'),
+							  'relay_number_1'		=> $sRelayNumber1
                               );
 
                 $this->db->where('pump_id', $aResult->pump_id);
@@ -738,6 +784,29 @@ class Home_model extends CI_Model
             $this->db->query($sSqlInsert);
         }
     }//END : Function to Save/UPDATE Device Time
+	
+	public function saveDeviceMainType($sDeviceID,$sDevice,$sType) //START : Function to Save/UPDATE Device Main type
+    {
+        //Check if device already present in the table.
+        $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0) //START: If device is already present in table.
+        {
+            foreach($query->result() as $aRow)
+            {
+                //Update the Time.
+                $sSqlUpdate =   "UPDATE rlb_device SET is_pool_or_spa='".$sType."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+                $this->db->query($sSqlUpdate);
+            }
+        }//END: If device is already present in table.
+        else //START: If device is not present in table.
+        {
+            //Insert Device with time.
+            $sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,is_pool_or_spa,last_updated_date) VALUES('".$sDeviceID."','".$sDevice."','".$sType."','".date('Y-m-d H:i:s')."')";
+            $this->db->query($sSqlInsert);
+        }
+    }//END : Function to Save/UPDATE Device Main type
 
     public function getDevicePower($sDeviceID,$sDevice) //START : Function to get Device Time
     {
@@ -758,9 +827,28 @@ class Home_model extends CI_Model
         return $sDevicePower;
     } //End : Function to get Device Time
 	
+	public function getDeviceMainType($sDeviceID,$sDevice) //START : Function to get Device Time
+    {
+        $sDeviceMainType = '';
+        
+        //Get saved time for the device.
+        $sSql   =   "SELECT device_id,is_pool_or_spa FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type='".$sDevice."'";
+        $query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+                $sDeviceMainType = $aRow->is_pool_or_spa;
+            }
+        }
+
+        return $sDeviceMainType;
+    } //End : Function to get Device Time
+	
 	public function getPumpDetailsExcept($sDeviceID)
 	{
-		$sSql   =   "SELECT pump_number,pump_address FROM rlb_pump_device WHERE pump_number != ".$sDeviceID;
+		$sSql   =   "SELECT pump_number,pump_address,relay_number,pump_type FROM rlb_pump_device WHERE pump_number != ".$sDeviceID;
 		$query  =   $this->db->query($sSql);
 
         if($query->num_rows() > 0)
@@ -783,6 +871,49 @@ class Home_model extends CI_Model
 
         return '';
 	}
+	
+	public function saveProcess($line)
+	{
+		$sSql   =   "INSERT into test(res) VALUES('".$line."')";
+		$query  =   $this->db->query($sSql);
+
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+	}
+	
+	public function savePumpResponse($sResponse,$iPump)
+	{
+		$sSql   =   "INSERT INTO rlb_pump_response(pump_number,pump_response_time,pump_response) VALUES(".$iPump.",'".date('Y-m-d H:i:s')."','".$sResponse."')";
+		$query  =   $this->db->query($sSql);
+	}
+	
+	public function updateDeviceStauts($sName,$sDevice,$sStatus)
+	{
+		$sSql = "UPDATE rlb_pump_device SET status='".$sStatus."' WHERE pump_number='".$sName."'";
+		$query  =   $this->db->query($sSql);
+	}
+	
+	public function selectEmulatorOnPumps()
+	{
+		$aResult	=	array();
+		$this->db->like('pump_type', 'Emulator'); 
+        $this->db->where('status','1');
+        $query = $this->db->get('rlb_pump_device');
+
+        if($query->num_rows() > 0)
+        {
+			foreach($query->results() as $aRows)
+			{
+				$aResult[] = 'M'.$aRows->pump_number;
+			}
+        }
+
+        return json_encode($aResult);
+	}
+	
+	
 }
 
 /* End of file home_model.php */

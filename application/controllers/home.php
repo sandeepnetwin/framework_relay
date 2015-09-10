@@ -12,16 +12,17 @@ class Home extends CI_Controller
 {
 	protected $userID,$aPermissions,$aModules,$aAllActiveModule;
 	
-	
     public function __construct()  
     {
         parent::__construct();
-        $this->load->library('form_validation');
+		$this->load->library('form_validation');
         $this->load->helper('common_functions'); //Common functions will be available for all functions in the file.
-        if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
+		if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
         {
             redirect('dashboard/login/');
+			die;
         } //END : Check if user login or not.
+		
 		
 		//Get Permission Details
 		if($this->userID == '')
@@ -148,6 +149,7 @@ class Home extends CI_Controller
 				
 					
 				$aViewParameter['sTemperature'] = '<p style="font-size:20px">'.$sExtra.'</p>';
+				$aViewParameter['Remote_Spa'] = isset($extra['Remote_Spa'])?$extra['Remote_Spa']:0;
 				
 				$aViewParameter['welcome_message'] = $strMessage;
 			}
@@ -174,6 +176,7 @@ class Home extends CI_Controller
         $aViewParameter['page']         =   'home';
         $aViewParameter['sucess']       =   '0';
         $aViewParameter['err_sucess']   =   '0';
+		
         
         //Get the type of the device to show page.
         $sPage  =   $this->uri->segment('3'); 
@@ -185,13 +188,13 @@ class Home extends CI_Controller
 
         if($sPage == '') // START : If no device type then show setting page.
         {
-            $aViewParameter['page']         =   'setting';
+			$aViewParameter['Title']       =   'Settings';
+            $aViewParameter['page']        =   'setting';
             
             if($this->input->post('command') == 'Save Setting') // START : IF Setting details are posted.
             {
                 // Get mode value from POST.
-                //$iMode  =   $this->input->post('relay_mode'); 
-                $this->load->model('home_model');
+                    $this->load->model('home_model');
                 
                 // Get IP and PORT value from POST.
                 $sIP    =   $this->input->post('relay_ip_address');
@@ -206,22 +209,38 @@ class Home extends CI_Controller
 				$sSpaTempAddress	=	'';
 				
 				if($sPoolTemp == '1')
-				$sPoolTempAddress   =   $this->input->post('selPoolTemp');
+					$sPoolTempAddress   =   $this->input->post('selPoolTemp');
 				if($sSpaTemp == '1')
-				$sSpaTempAddress	=   $this->input->post('selSpaTemp');
+					$sSpaTempAddress	=   $this->input->post('selSpaTemp');
 			
+				//Get the number of pumps and valve.
+					$iNumPumps  =   $this->input->post('numPumps');
+					$iNumValve  =   $this->input->post('numValve');
+				
+				$aNumDevice     =   array();
+				if($iNumPumps != '')	
+					$aNumDevice['PumpsNumber']     =   $iNumPumps;
+				else
+					$aNumDevice['PumpsNumber']     =   0;
+				
+				if($iNumValve != '')	
+					$aNumDevice['ValveNumber']     =   $iNumValve;
+				else
+					$aNumDevice['ValveNumber']     =   0;
+				
+				$showRemoteSpa = $this->input->post('showRemoteSpa');
+				
 				//Get Manual Mode Minutes
 				$sManualModeTime   =   $this->input->post('manualMinutes');
 			
-				
-                //Check for IP constant if IP is blank in POST
+			    //Check for IP constant if IP is blank in POST
                 if($sIP == '')
                 {
                     if(IP_ADDRESS)
                         $sIP = IP_ADDRESS;
                 }
                 
-                 //Check for PORT number constant if PORT is blank in POST
+                //Check for PORT number constant if PORT is blank in POST
                 if($sPort == '')
                 {   
                     if(PORT_NO)
@@ -244,6 +263,9 @@ class Home extends CI_Controller
 				
 				//Save Manual Mode Time.
 				$this->home_model->updateManualModeTime($sManualModeTime);
+				
+				//Save Number of Devices and Spa Remote
+				$this->home_model->updateSettingNumberDevice($aNumDevice,$showRemoteSpa);
 				
 				$aViewParameter['sucess']    =   '1'; //Set success flag 1 if Saved details. 
              } // END : IF Setting details are posted. if($this->input->post('command') == 'Save Setting') 
@@ -284,6 +306,18 @@ class Home extends CI_Controller
             //Check if IP, PORT and Mode is set or not.
             $this->checkSettingsSaved();
             
+			$aViewParameter['Title']       =   '';
+			if($sPage == 'R')
+				$aViewParameter['Title']       =   '24V AC Relays';
+			if($sPage == 'V')
+				$aViewParameter['Title']       =   'Valves';
+			if($sPage == 'P')
+				$aViewParameter['Title']       =   '12V DC Power Center Relays';
+			if($sPage == 'PS')
+				$aViewParameter['Title']       =   'Pumps';
+			if($sPage == 'T')
+				$aViewParameter['Title']       =   'Temperature Sensors';
+				
             //Get the status response of devices from relay board.
             $sResponse      =   get_rlb_status();
             //$sResponse      =   array('valves'=>'','powercenter'=>'0000','time'=>'','relay'=>'0000');
@@ -410,6 +444,7 @@ class Home extends CI_Controller
 			$sPumpFlow 		= '';
 			$sPumpClosure   = '';
 			$sRelayNumber  	= '';
+			$sRelayNumber1  = '';
 
 			if(is_array($aPumpDetails) && !empty($aPumpDetails))
 			{
@@ -422,12 +457,13 @@ class Home extends CI_Controller
 				$sPumpFlow    = $aResultEdit->pump_flow;
 				$sPumpClosure = $aResultEdit->pump_closure;
 				$sRelayNumber = $aResultEdit->relay_number;
+				$sRelayNumber1 = $aResultEdit->relay_number_1;
 			  }
 			}
 			
-			if($sPumpType != '')
+			if($sPumpType != '' && $sPumpClosure == '1')
 			{
-				if($sPumpType == '12' || $sPumpType == '24')
+				if($sPumpType == '12' || $sPumpType == '24' || $sPumpType == '2Speed')
 				{
 					if($sPumpType == '24')
 					{
@@ -439,6 +475,77 @@ class Home extends CI_Controller
 					{
 						$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
 						onoff_rlb_powercenter($sNewResp);
+					}
+					if($sPumpType == '2Speed')
+					{
+						if($sPumpSubType == '24')
+						{
+							if($sStatus == '0')
+							{
+								$sNewResp = replace_return($sRelays, 0, $sRelayNumber );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber1 );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+							}
+							if($sStatus == '1')
+							{
+								$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber1 );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+							}
+							if($sStatus == '2')
+							{	
+								$sStatus = '1';
+								$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber1 );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber );
+								onoff_rlb_relay($sNewResp);
+								$this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+							}
+							
+						}
+						else if($sPumpSubType == '12')
+						{
+							if($sStatus == '0')
+							{
+								$sNewResp = replace_return($sPowercenter, '0', $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber1 );
+								onoff_rlb_powercenter($sNewResp);
+							}
+							if($sStatus == '1')
+							{
+								$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber1 );
+								onoff_rlb_powercenter($sNewResp);
+							}
+							if($sStatus == '2')
+							{	
+								$sStatus = '1';
+								$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber1 );
+								onoff_rlb_powercenter($sNewResp);
+								
+								$sNewResp = replace_return($sNewResp, '0', $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp);
+								
+								$sStatus = '2';
+							}
+							
+						}
+							
+						
 					}
 				}
 				else
@@ -501,6 +608,8 @@ class Home extends CI_Controller
 						}
 					}
 				}
+				
+				$this->home_model->updateDeviceStauts($sName,$sDevice,$sStatus);
 			}				
            
         }
@@ -511,6 +620,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Device Name';
         
         //Get Device ID and Device Type From URL.
         $sDeviceID  =   base64_decode($this->uri->segment('3'));
@@ -563,6 +673,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Program Max Time For 24V AC Relays';
         
         //Get Device ID and Device Type From URL.
         $sDeviceID  =   base64_decode($this->uri->segment('3'));
@@ -616,6 +727,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Position Details';
         $sDeviceID  =   base64_decode($this->uri->segment('3')); //Get Device ID to which position names will be saved.
         $sDevice    =   base64_decode($this->uri->segment('4')); //Get Device Type
 
@@ -667,6 +779,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Program For Pumps';
         
         //Get Values From URL.
         $sDeviceID      =   base64_decode($this->uri->segment('3')); // Get Device ID
@@ -751,6 +864,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Program 24V AC Relays';
         
         //Get Values From URL.
         $sDeviceID      =   base64_decode($this->uri->segment('3')); // Get Device ID
@@ -837,6 +951,7 @@ class Home extends CI_Controller
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Pump Configuration';
 		$aViewParameter['err']		 =	'';
 		
         $sDeviceID      =   base64_decode($this->uri->segment('3'));
@@ -854,12 +969,102 @@ class Home extends CI_Controller
         {
             if($this->input->post('sPumpNumber') != '')
                 $sDeviceID   =  $this->input->post('sPumpNumber');
+			
+			//Make Pump OFF if the type selected is different from existing
+				$sResponse      =   get_rlb_status();
+        
+				$sRelays        =   $sResponse['relay'];    // Relay Device Status
+				$sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
 				
+				$sDevice = 'PS';
+		
+				$aPumpDetails = $this->home_model->getPumpDetails($sDeviceID);
+				//Variable Initialization to blank.
+				$sPumpNumber  	= '';
+				$sPumpType  	= '';
+				$sPumpSubType  	= '';
+				$sPumpSpeed  	= '';
+				$sPumpFlow 		= '';
+				$sPumpClosure   = '';
+				$sRelayNumber  	= '';
+					
+				if(is_array($aPumpDetails) && !empty($aPumpDetails))
+				{
+				  foreach($aPumpDetails as $aResultEdit)
+				  { 
+					$sPumpNumber  = $aResultEdit->pump_number;
+					$sPumpType    = $aResultEdit->pump_type;
+					$sPumpSubType = $aResultEdit->pump_sub_type;
+					$sPumpSpeed   = $aResultEdit->pump_speed;
+					$sPumpFlow    = $aResultEdit->pump_flow;
+					$sPumpClosure = $aResultEdit->pump_closure;
+					$sRelayNumber = $aResultEdit->relay_number;
+				  }
+				}
+				$sStatus	=	0;
+				if($sPumpType != '' && $sPumpType != $this->input->post('sPumpType'))
+				{
+					if($sPumpType == '12' || $sPumpType == '24')
+					{
+						if($sPumpType == '24')
+						{
+							$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp);
+							$this->home_model->updateDeviceRunTime($sDeviceID,$sDevice,$sStatus);
+						}
+						else if($sPumpType == '12')
+						{
+							$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp);
+						}
+					}
+					else
+					{
+						if(preg_match('/Emulator/',$sPumpType))
+						{
+							$sNewResp = '';
+							$sNewResp =  $sDeviceID.' '.$sStatus;
+							
+							onoff_rlb_pump($sNewResp);
+							
+							if($sPumpType == 'Emulator12')
+							{
+								$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp12);
+							}
+							if($sPumpType == 'Emulator24')
+							{
+								$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+								onoff_rlb_relay($sNewResp24);
+								$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+							}
+						}
+						else if(preg_match('/Intellicom/',$sPumpType))
+						{
+							$sNewResp = '';
+							$sNewResp =  $sDeviceID.' '.$sStatus;
+							onoff_rlb_pump($sNewResp);
+							
+							if($sPumpType == 'Intellicom12')
+							{
+								$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp12);
+							}
+							if($sPumpType == 'Intellicom24')
+							{
+								$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+								onoff_rlb_relay($sNewResp24);
+								$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+							}
+						}
+					}
+				}
+			
             $this->home_model->savePumpDetails($this->input->post(),$sDeviceID);
 			
 			//Change the address on the Raspberry Device
 			$sPumpType      =   $this->input->post('sPumpType');
-			if($sPumpType != '12' && $sPumpType != '24')
+			if($sPumpType != '12' && $sPumpType != '24' && $sPumpType != '2Speed')
 			{	
 				$sAddress 	= $this->input->post('sPumpAddress');
 				$sRes 		= getAddressToPump($sDeviceID);
@@ -925,8 +1130,9 @@ class Home extends CI_Controller
 
     public function systemStatus() //START : Server response page of relay board.
     {
-        $aViewParameter         =   array(); // Array for passing parameter to view.
-        $aViewParameter['page'] =   'status';
+        $aViewParameter         	=   array(); // Array for passing parameter to view.
+        $aViewParameter['page'] 	=   'status';
+		$aViewParameter['Title'] 	=   'System Status Details';
         //Check if IP, PORT and Mode is set or not.
         $this->checkSettingsSaved();
 
@@ -957,7 +1163,21 @@ class Home extends CI_Controller
 			$this->load->model('home_model');
 			$this->home_model->saveDevicePower($sDeviceID,$sDevice,$sPowerValue);
 		}
-	}	
+	}
+	public function saveDeviceMainType()
+	{
+		//Get the input 
+		$sDeviceID   =  $this->input->post('sDeviceID');
+		$sDevice   	 =  $this->input->post('sDevice');
+		$sType =  $this->input->post('sType');
+		
+		if($sDeviceID != '' && $sDevice != '' && $sType != '')
+		{
+			$this->load->model('home_model');
+			$this->home_model->saveDeviceMainType($sDeviceID,$sDevice,$sType);
+		}
+	}
+	
 	
 	//START : Function to check if there is program exists for the selected time.
 	public function checkProgramTimeAlreadyExist()
@@ -1124,6 +1344,7 @@ class Home extends CI_Controller
 	
 	public function getLogDetails()
 	{
+		$aViewParameter['Title'] = 'Log Details';
 		$dir    	= '/var/log/rlb/';
 		//$dir    	= "D:\wamp\www\CodeIgniter-pool-spa\log\\rlb\\";
 		
@@ -1267,6 +1488,184 @@ class Home extends CI_Controller
 		
 		exit;
 		
+	}
+	
+	public function checkRelayNumber()
+	{
+		$sDeviceID 		=	$this->input->post('sDeviceID');
+		$sRelayNumber	=	$this->input->post('sRelayNumber');
+		$sPumpType		=	$this->input->post('type');
+		$sPumpTypeChk	=	'';	
+		
+		$aResponse		=	array('iPumpCheck'=>0,'iPumpID'=>0);
+		
+		//Check if IP, PORT and Mode is set or not.
+        $this->checkSettingsSaved();
+		
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+        if(preg_match('/12/',$sPumpType))
+		{
+			$sPumpTypeChk = 12;
+			if($sRelayNumber > 7)
+				$aResponse['iPumpCheck'] = 1;
+			
+				
+		}
+		else if(preg_match('/24/',$sPumpType))
+		{
+			$sPumpTypeChk = 24;
+			if($sRelayNumber > 15)
+				$aResponse['iPumpCheck'] = 1;
+			else if($sRelays[$sRelayNumber] == '.')
+				$aResponse['iPumpCheck'] = 2;
+		}
+		
+		if($aResponse['iPumpCheck'] != 1 || $aResponse['iPumpCheck'] != 2)
+		{
+			$this->load->model('home_model');
+			$aPumpDetails = $this->home_model->getPumpDetailsExcept($sDeviceID);
+			//print_r($aPumpDetails);
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					if($sRelayNumber == $sPump->relay_number && preg_match('/'.$sPumpTypeChk.'/',$sPump->pump_type))
+					{
+						$aResponse['iPumpCheck']	=	1;
+						$aResponse['iPumpID']		=	$sPump->pump_number;
+						break;
+					}	
+				}
+			}
+		}
+		echo json_encode($aResponse);
+		
+		exit;
+	}
+	
+	public function SpaDevice()
+	{
+		$aViewParameter                 =   array(); // Array for passing parameter to view.
+        $aViewParameter['page']         =   'home';
+        $aViewParameter['sucess']       =   '0';
+		$aViewParameter['Title']        =   'Spa Devices';
+        $aViewParameter['err_sucess']   =   '0';
+		//Check if IP, PORT and Mode is set or not.
+		$this->checkSettingsSaved();
+		
+		$this->load->model('home_model');
+		
+		//Current mode of the system.
+        $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
+		
+		//Get the status response of devices from relay board.
+		$sResponse      =   get_rlb_status();
+		//$sResponse      =   array('valves'=>'','powercenter'=>'0000','time'=>'','relay'=>'0000');
+		
+		$sValves        =   $sResponse['valves']; // Valve Device Status
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+		$sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+		$sTime          =   $sResponse['time']; // Server time from Response
+		
+		// Pump Device Status
+		$sPump	=	array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+		// Temperature Sensor Device 
+		
+		$sTemprature    =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+
+		//START : Parameter for View
+			$aViewParameter['relay_count']      =   strlen($sRelays);
+			$aViewParameter['valve_count']      =   strlen($sValves);
+			$aViewParameter['power_count']      =   strlen($sPowercenter);
+			$aViewParameter['time']             =   $sTime;
+			$aViewParameter['pump_count']       =   count($sPump);
+			$aViewParameter['temprature_count'] =   count($sTemprature);
+
+			$aViewParameter['sRelays']          =   $sRelays; 
+			$aViewParameter['sPowercenter']     =   $sPowercenter;
+			$aViewParameter['sValves']          =   $sValves;
+			$aViewParameter['sPump']            =   $sPump;
+			$aViewParameter['sTemprature']      =   $sTemprature;
+
+			//$aViewParameter['sDevice']          =   $sPage;
+		//END : Parameter for View
+		
+		/* for ($i=0;$i < $relay_count; $i++)
+        {
+			$sMainType =	$this->home_model->getDeviceMainType($i,$sDevice);
+		} */
+		
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
+		// Device View to show device page.
+		$this->load->view('SpaDevice',$aViewParameter);
+	}
+	
+	public function PoolDevice()
+	{
+		$aViewParameter                 =   array(); // Array for passing parameter to view.
+        $aViewParameter['page']         =   'home';
+        $aViewParameter['sucess']       =   '0';
+        $aViewParameter['err_sucess']   =   '0';
+		$aViewParameter['Title']        =   'Pool Devices';
+		//Check if IP, PORT and Mode is set or not.
+		$this->checkSettingsSaved();
+		
+		$this->load->model('home_model');
+		
+		//Current mode of the system.
+        $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
+		
+		//Get the status response of devices from relay board.
+		$sResponse      =   get_rlb_status();
+		//$sResponse      =   array('valves'=>'','powercenter'=>'0000','time'=>'','relay'=>'0000');
+		
+		$sValves        =   $sResponse['valves']; // Valve Device Status
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+		$sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+		$sTime          =   $sResponse['time']; // Server time from Response
+		
+		// Pump Device Status
+		$sPump	=	array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+		// Temperature Sensor Device 
+		
+		$sTemprature    =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+
+		//START : Parameter for View
+			$aViewParameter['relay_count']      =   strlen($sRelays);
+			$aViewParameter['valve_count']      =   strlen($sValves);
+			$aViewParameter['power_count']      =   strlen($sPowercenter);
+			$aViewParameter['time']             =   $sTime;
+			$aViewParameter['pump_count']       =   count($sPump);
+			$aViewParameter['temprature_count'] =   count($sTemprature);
+
+			$aViewParameter['sRelays']          =   $sRelays; 
+			$aViewParameter['sPowercenter']     =   $sPowercenter;
+			$aViewParameter['sValves']          =   $sValves;
+			$aViewParameter['sPump']            =   $sPump;
+			$aViewParameter['sTemprature']      =   $sTemprature;
+
+			//$aViewParameter['sDevice']          =   $sPage;
+		//END : Parameter for View
+		
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
+		// Device View to show device page.
+		$this->load->view('PoolDevice',$aViewParameter);
+	}
+	
+	
+	public function responsetest()
+	{
+		$this->load->view('welcome_message');
 	}
     
 }//END : Class Home
