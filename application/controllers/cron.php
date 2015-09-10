@@ -120,7 +120,7 @@ class Cron extends CI_Controller
 		//while(true)
 		if(!empty($aPumpsChk))	
         { 
-			//while(true)
+			while(true)
 			{
 				$sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
 				
