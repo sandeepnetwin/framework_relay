@@ -114,7 +114,9 @@ class Cron extends CI_Controller
 		
 		$aPumps		= $this->home_model->selectEmulatorOnPumps();	
 		
-		while(true)
+		//print_r($aPumps);
+		//while(true)
+		if(!empty(json_decode($aPumps)))	
         { 
 			$sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
 			
@@ -125,11 +127,11 @@ class Cron extends CI_Controller
 				foreach($aResponse as $strResponse)
 				{
 					$aCheckResponse	=	explode(',',$strResponse);
-					$iPump			=   str_replace('M','',$aCheckResponse);
+					$iPump			=   str_replace('M','',$aCheckResponse[0]);
 					if($aCheckResponse[1] == '0')
 						$strResponse .= ',STOP';
 					
-					$this->home_model->savePumpResponse($sResponse,$iPump);
+					$this->home_model->savePumpResponse($strResponse,$iPump);
 				}
 				
 				//echo json_encode($aResponse);

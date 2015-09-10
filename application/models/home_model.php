@@ -904,11 +904,12 @@ class Home_model extends CI_Model
 
         if($query->num_rows() > 0)
         {
-			foreach($query->results() as $aRows)
+			foreach($query->result() as $aRows)
 			{
 				$aResult[] = 'M'.$aRows->pump_number;
 			}
         }
+		
 
         return json_encode($aResult);
 	}

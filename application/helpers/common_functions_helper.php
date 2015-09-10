@@ -121,7 +121,7 @@
 		for($i=0;$i<=$cntPump; $i++)
 		{
 			$strResponse = socket_read($sSock, 255); 
-			if(!preg_match('/^S/',$line2))
+			if(!preg_match('/^S/',$strResponse))
 			{
 				if($strPumpResponse == '')
 				{
@@ -129,7 +129,7 @@
 				}
 				else
 				{
-					$strPumpResponse .= .'|||'.$strResponse;
+					$strPumpResponse .= '|||'.$strResponse;
 				}
 			}
 		}
