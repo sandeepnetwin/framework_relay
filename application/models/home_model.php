@@ -914,7 +914,117 @@ class Home_model extends CI_Model
         return json_encode($aResult);
 	}
 	
+	public function getValveRelayNumber($iDeviceID,$sDevice)
+	{
+		$arrValveRelayNumber	=	array();
+		$this->db->select('valve_relay_number');
+		$this->db->where('device_number', $iDeviceID); 
+        $this->db->where('device_type', $sDevice);
+        $query = $this->db->get('rlb_device');
+
+        if($query->num_rows() > 0)
+        {
+			foreach($query->result() as $aRows)
+			{
+				$arrValveRelayNumber = unserialize($aRows->valve_relay_number);
+			}
+        }
+        return json_encode($arrValveRelayNumber);
+	}
 	
+	public function saveValveRelays($sDeviceID,$sDeviceIDold,$sDevice,$sRelay1,$sRelay2)
+    {
+        $sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceID." AND device_type ='".$sDevice."'";
+		$query  =   $this->db->query($sSql);
+        
+        $aRelays = array('Relay1'=>$sRelay1,'Relay2'=>$sRelay2);
+        
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {
+				
+                $sSqlUpdate 	=   "UPDATE rlb_device SET valve_relay_number='".serialize($aRelays)."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+                $this->db->query($sSqlUpdate);
+            }
+        }
+        else
+        {
+            $sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,valve_relay_number,last_updated_date) VALUES('".$sDeviceID."','".$sDevice."','".serialize($aRelays)."','".date('Y-m-d H:i:s')."')";
+			$this->db->query($sSqlInsert);
+        }
+		
+		$sDeleteValve	=	"DELETE FROM rlb_device WHERE device_type ='".$sDevice."' AND valve_relay_number = ''";
+		$this->db->query($sDeleteValve);
+		
+		if($sDeviceID != $sDeviceIDold)
+		{
+			$sDeleteOldValve	=	"DELETE FROM rlb_device WHERE device_type ='".$sDevice."' AND device_number = '".$sDeviceIDold."'";
+			$this->db->query($sDeleteOldValve);
+		}
+    }
+	
+	public function getAllValvesHavingRelays()
+	{
+		$sSql   =   "SELECT * FROM rlb_device WHERE device_type ='V' AND valve_relay_number != ''";
+        $query  =   $this->db->query($sSql);
+        
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+		
+		return '';
+	}
+	
+	public function selectPumpsLatestResponse($iPumpID)
+	{
+		$sSql   =   "SELECT pump_response FROM rlb_pump_response WHERE pump_number ='".$iPumpID."' ORDER BY id DESC LIMIT 1";
+		
+        $query  =   $this->db->query($sSql);
+        
+        if($query->num_rows() > 0)
+        {
+            foreach($query->result() as $row)
+			{
+				return $row->pump_response;
+			}
+        }
+		
+		return '';
+	}
+	
+	public function removeValveRelays($iValveNumber)
+	{
+		$sDeleteOldValve	=	"DELETE FROM rlb_device WHERE device_type ='V' AND device_number = '".$iValveNumber."'";
+		$this->db->query($sDeleteOldValve);
+	}
+	
+	public function removeAllValves()
+	{
+		$sDeleteOldValve	=	"DELETE FROM rlb_device WHERE device_type ='V'";
+		$this->db->query($sDeleteOldValve);
+	}
+	
+	
+	public function getAllPumps()
+	{
+		$sSql   =   "SELECT * FROM rlb_pump_device";
+        $query  =   $this->db->query($sSql);
+        
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+		
+		return '';
+	}
+	
+	public function removeAllPumps()
+	{
+		$sDeleteOldValve	=	"DELETE FROM rlb_pump_device";
+		$this->db->query($sDeleteOldValve);
+	}
 }
 
 /* End of file home_model.php */

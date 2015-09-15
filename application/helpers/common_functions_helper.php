@@ -85,6 +85,7 @@
 		{
 			die("Invalid response: $sReply \n");
 		}
+		//if(hardware,busy)
 		
 		return $sReply;
 	}
@@ -718,6 +719,14 @@
 	
 	function assignAddressToPump($sDeviceNumber,$sAddress){
 		$sUrl = 'p pm'.$sDeviceNumber.' '.$sAddress;
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+			
+		return $sResult;
+	}
+	
+	function assignValvesToRelay($sHexNumber){
+		$sUrl = 'p vlm '.$sHexNumber;
 		$sReturnUrl = get_url($sUrl);
 		$sResult = relayboard_command($sReturnUrl);
 			

@@ -65,7 +65,7 @@ class Home extends CI_Controller
 			
             $aViewParameter['pump_count']   		=   count($sPump);
 			$aViewParameter['temprature_count']   	=   count($sTemprature);
-            $aViewParameter['time']         =   $sTime;
+            $aViewParameter['time']         		=   $sTime;
         //END : Parameter for View
 		
 		//START: GET the active MODE details.
@@ -73,86 +73,86 @@ class Home extends CI_Controller
 			$this->load->model('home_model');
 			$aModeDetails = $this->home_model->getActiveModeDetails();
 			
-			//Get Extra Details
-			list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
-						
-			if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
+		//Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
+					
+		if($aModeDetails['start_time'] != '0000-00-00 00:00:00' && $aModeDetails['start_time'] != '')
+		{
+			$sTimeDiff = date_diff(date_create($aModeDetails['start_time']),date_create(date('Y-m-d H:i:s')));
+			
+			$strMessage = 'For';
+			if($sTimeDiff->y != 0)
 			{
-				$sTimeDiff = date_diff(date_create($aModeDetails['start_time']),date_create(date('Y-m-d H:i:s')));
-				
-				$strMessage = 'For';
-				if($sTimeDiff->y != 0)
-				{
-					if($sTimeDiff->y == 1)
-						$strMessage .= ' <strong>'.$sTimeDiff->y.' Year</strong> and';
-					else
-						$strMessage .= ' <strong>'.$sTimeDiff->y.' Years</strong> and';
-				}	
-				if($sTimeDiff->m != 0)
-				{
-					if($sTimeDiff->m == 1)
-						$strMessage .= ' <strong>'.$sTimeDiff->m.' Month</strong> and';
-					else
-						$strMessage .= ' <strong>'.$sTimeDiff->m.' Months</strong> and';
-				}
-				if($sTimeDiff->d != 0)
-				{
-					if($sTimeDiff->d == 1)
-						$strMessage .= ' <strong>'.$sTimeDiff->d.' Day</strong> and';
-					else
-						$strMessage .= ' <strong>'.$sTimeDiff->d.' Days</strong> and';
-				}
-				if($sTimeDiff->h != 0)
-				{
-					if($sTimeDiff->h == 1)
-						$strMessage .= ' <strong>'.$sTimeDiff->h.' Hour</strong> and';
-					else
-						$strMessage .= ' <strong>'.$sTimeDiff->h.' Hours</strong> and';
-				}
-				if($sTimeDiff->i == 0 || $sTimeDiff->i == 1)	
-					$strMessage .= ' <strong>1 minute</strong>,';
+				if($sTimeDiff->y == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->y.' Year</strong> and';
 				else
-					$strMessage .= ' <strong>'.$sTimeDiff->i.' minutes</strong>,';
-				
-				$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
-				
-				$sExtra = '';
-				
-				if($extra['Pool_Temp'] == '1' && isset($extra['Pool_Temp']))
-				{
-					if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '' && $sResponse[$extra['Pool_Temp_Address']] != '')
-					{
-						$strMessage.=' <strong>Pool temperature is '.$sResponse[$extra['Pool_Temp_Address']].'.</strong>';
-						
-						$sExtra .='Pool : '.$sResponse[$extra['Pool_Temp_Address']];
-					}
-					else 
-						$sExtra .='<br>';
-					
-				}
-				else 
-						$sExtra .='<br>';
-				
-				if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
-				{
-					if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
-					{
-						$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
-						$sExtra .='<br>Spa : '.$sResponse[$extra['Spa_Temp_Address']];
-					}
-					else 
-						$sExtra .='<br><br>';
-					
-				}
-				else 
-						$sExtra .='<br><br>';
-				
-					
-				$aViewParameter['sTemperature'] = '<p style="font-size:20px">'.$sExtra.'</p>';
-				$aViewParameter['Remote_Spa'] = isset($extra['Remote_Spa'])?$extra['Remote_Spa']:0;
-				
-				$aViewParameter['welcome_message'] = $strMessage;
+					$strMessage .= ' <strong>'.$sTimeDiff->y.' Years</strong> and';
+			}	
+			if($sTimeDiff->m != 0)
+			{
+				if($sTimeDiff->m == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->m.' Month</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->m.' Months</strong> and';
 			}
+			if($sTimeDiff->d != 0)
+			{
+				if($sTimeDiff->d == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->d.' Day</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->d.' Days</strong> and';
+			}
+			if($sTimeDiff->h != 0)
+			{
+				if($sTimeDiff->h == 1)
+					$strMessage .= ' <strong>'.$sTimeDiff->h.' Hour</strong> and';
+				else
+					$strMessage .= ' <strong>'.$sTimeDiff->h.' Hours</strong> and';
+			}
+			if($sTimeDiff->i == 0 || $sTimeDiff->i == 1)	
+				$strMessage .= ' <strong>1 minute</strong>,';
+			else
+				$strMessage .= ' <strong>'.$sTimeDiff->i.' minutes</strong>,';
+			
+			$strMessage .= ' '.$aModeDetails['mode_name'].' Mode has been Active.';
+			
+			$sExtra = '';
+			
+			if($extra['Pool_Temp'] == '1' && isset($extra['Pool_Temp']))
+			{
+				if(isset($extra['Pool_Temp_Address']) && $extra['Pool_Temp_Address'] != '' && $sResponse[$extra['Pool_Temp_Address']] != '')
+				{
+					$strMessage.=' <strong>Pool temperature is '.$sResponse[$extra['Pool_Temp_Address']].'.</strong>';
+					
+					$sExtra .='Pool : '.$sResponse[$extra['Pool_Temp_Address']];
+				}
+				else 
+					$sExtra .='<br>';
+				
+			}
+			else 
+					$sExtra .='<br>';
+			
+			if($extra['Spa_Temp'] == '1' && isset($extra['Spa_Temp']) && $sResponse[$extra['Spa_Temp_Address']] != '')
+			{
+				if(isset($extra['Spa_Temp_Address']) && $extra['Spa_Temp_Address'] != '')
+				{
+					$strMessage.=' <strong>Spa temperature is '.$sResponse[$extra['Spa_Temp_Address']].'.</strong>';
+					$sExtra .='<br>Spa : '.$sResponse[$extra['Spa_Temp_Address']];
+				}
+				else 
+					$sExtra .='<br><br>';
+				
+			}
+			else 
+					$sExtra .='<br><br>';
+			
+				
+			$aViewParameter['sTemperature'] = '<p style="font-size:20px">'.$sExtra.'</p>';
+			$aViewParameter['Remote_Spa'] = isset($extra['Remote_Spa'])?$extra['Remote_Spa']:0;
+			
+			$aViewParameter['welcome_message'] = $strMessage;
+		}
 			
 			
 			
@@ -227,6 +227,25 @@ class Home extends CI_Controller
 					$aNumDevice['ValveNumber']     =   $iNumValve;
 				else
 					$aNumDevice['ValveNumber']     =   0;
+				
+				
+				if($iNumPumps == '' || $iNumPumps == 0)
+				{
+					$this->home_model->removeAllPumps();
+					$arrPumps = array(0,1,2);
+					foreach($arrPumps as $pump)
+					{
+						assignAddressToPump($pump,0);
+					}
+				}
+				
+				if($iNumValve == '' || $iNumValve == 0)
+				{
+					$this->home_model->removeAllValves();
+					$strValves	=	'00000000';
+					$hexNumber = dechex(bindec(strrev($strValves)));
+					$response	=	assignValvesToRelay($hexNumber)	;
+				}
 				
 				$showRemoteSpa = $this->input->post('showRemoteSpa');
 				
@@ -317,6 +336,14 @@ class Home extends CI_Controller
 				$aViewParameter['Title']       =   'Pumps';
 			if($sPage == 'T')
 				$aViewParameter['Title']       =   'Temperature Sensors';
+			
+			if($sPage == 'V' || $sPage == 'PS')
+			{
+				//Get saved IP and PORT 
+				list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
+				$aViewParameter['ValveRelays']	=	$this->home_model->getAllValvesHavingRelays();
+				$aViewParameter['Pumps']		=	$this->home_model->getAllPumps();
+			}
 				
             //Get the status response of devices from relay board.
             $sResponse      =   get_rlb_status();
@@ -1662,11 +1689,113 @@ class Home extends CI_Controller
 		$this->load->view('PoolDevice',$aViewParameter);
 	}
 	
+	public function valveRelays()
+	{
+		
+		$aViewParameter              =   array(); // Array for passing parameter to view.
+        $aViewParameter['page']      =   'home';
+        $aViewParameter['sucess']    =   '0';
+		$aViewParameter['Title']     =   'Position Details';
+        $sDeviceID  =   base64_decode($this->uri->segment('3')); //Get Device ID to which position names will be saved.
+        $sDevice    =   base64_decode($this->uri->segment('4')); //Get Device Type
+
+		$this->load->model('home_model');	
+        if($sDeviceID == '') //START : Check if Device id is blank then redirect to the device list page  
+        {
+            $sDeviceID  =   base64_decode($this->input->post('sDeviceID'));
+            if($sDeviceID == '') // IF Device ID not present in POST redirect to the Device List
+                if($sDevice != '')
+                redirect(site_url('home/setting/'.$sDevice));
+        } //END : Check if Device id is blank then redirect to the device list page  
+
+        if($sDevice == '') //START : Check if Device type is blank then redirect to home page
+        {
+            $sDevice  =   base64_decode($this->input->post('sDevice'));
+            if($sDevice == '')// IF Device Type not present in POST redirect to the Dashboard
+                redirect(site_url('home'));
+        } //END : Check if Device type is blank then redirect to home page
+        
+        
+
+        
+		
+		if($this->input->post('command') == 'Save') // START: Save position names in DB for device.
+        {
+			
+			if($this->input->post('sDeviceIDHID') != '')
+			{
+				$sDeviceIDOld = $sDeviceID;
+				$sDeviceID  =   $this->input->post('sDeviceIDHID');
+			}
+			
+			//Get position values from POST
+            $sRelay1 = $this->input->post('sRelay1');
+            $sRelay2 = $this->input->post('sRelay2');
+            $this->home_model->saveValveRelays($sDeviceID,$sDeviceIDOld,$sDevice,$sRelay1,$sRelay2);
+			
+			$arrValves	=	$this->home_model->getAllValvesHavingRelays();
+			$strValves	=	'00000000';
+			if(!empty($arrValves))
+			{
+				foreach($arrValves as $aValve)
+				{
+					$device_number = $aValve->device_number;
+					$strValves[$device_number] = '1';
+				}
+			}
+			
+			$hexNumber = dechex(bindec(strrev($strValves)));
+			
+			$response	=	assignValvesToRelay($hexNumber)	;
+	
+			$aViewParameter['sucess']    =   '1'; // Set success flag 1
+			redirect(base_url('home/setting/V/'));
+        } // END : Save position names in DB for device.
+
+		//Parameter for View
+        $aViewParameter['sDeviceID']    =   $sDeviceID;
+        $aViewParameter['sDevice']      =   $sDevice;
+		
+        //Get Existing saved position names for Device
+        list($aViewParameter['sPositionName1'],$aViewParameter['sPositionName2'])      =   $this->home_model->getPositionName($sDeviceID,$sDevice);
+        
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
+		$this->load->view('ValveRelays',$aViewParameter);
+	}
+	
+	public function removeValveRelays()
+	{
+		$iValaveNumber	= $this->input->post('iValaveNumber');
+		$this->load->model('home_model');
+		$this->home_model->removeValveRelays($iValaveNumber);
+			
+		$arrValves	=	$this->home_model->getAllValvesHavingRelays();
+		$strValves	=	'00000000';
+		if(!empty($arrValves))
+		{
+			foreach($arrValves as $aValve)
+			{
+				$device_number = $aValve->device_number;
+				$strValves[$device_number] = '1';
+			}
+		}
+		
+		$hexNumber = dechex(bindec(strrev($strValves)));
+		
+		echo $response	=	assignValvesToRelay($hexNumber)	;
+		die;
+	}
 	
 	public function responsetest()
 	{
 		$this->load->view('welcome_message');
 	}
+	
+	
     
 }//END : Class Home
 
