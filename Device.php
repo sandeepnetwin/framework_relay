@@ -1555,7 +1555,21 @@ function removeValve()
 										  $(document).ready(function() {
 											setInterval( function() {
 												$.getJSON('<?php echo site_url('cron/pumpResponseLatest/');?>', {iPumpID: "<?php echo $i;?>"}, function(json) {
-													$("#pumpRealResponse_<?php echo $i;?>").html(json);
+													
+													if(json == '')
+													{
+														$("#lablePump-"+relayNumber).addClass('checked');
+													}
+													else
+													{
+														$("#pumpRealResponse_<?php echo $i;?>").html(json);
+														if($("#lablePump-"+relayNumber).hasClass('checked'))
+														{}
+														else
+														{
+															$("#lablePump-"+relayNumber).addClass('checked');
+														}
+													}
 												});
 												},30000);
 										  });
