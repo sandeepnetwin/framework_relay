@@ -1567,7 +1567,7 @@ function removeValve()
 											</div>
 										</div>
 											<?php if($iPumpVal > 0 && preg_match('/Emulator/',$sPumpType)) { ?>
-											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"></div>
+											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"><?php echo $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($i);?></div>
 											<?php } ?>
 										<?php } ?>
 										</div>
