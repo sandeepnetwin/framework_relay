@@ -1550,7 +1550,7 @@ function removeValve()
 								   
 										<?php } else if($sPumpType != '') { ?>
 										
-										<?php if($iPumpVal > 0 && preg_match('/Emulator/',$sPumpType)) { ?>
+										<?php if(preg_match('/Emulator/',$sPumpType)) { ?>
 										<script>
 										  $(document).ready(function() {
 											setInterval( function() {
@@ -1558,16 +1558,16 @@ function removeValve()
 													
 													if(json == '')
 													{
-														$("#lablePump-"+relayNumber).addClass('checked');
+														$("#lablePump-"+<?php echo $i;?>).removeClass('checked');
 													}
 													else
 													{
 														$("#pumpRealResponse_<?php echo $i;?>").html(json);
-														if($("#lablePump-"+relayNumber).hasClass('checked'))
+														if($("#lablePump-"+<?php echo $i;?>).hasClass('checked'))
 														{}
 														else
 														{
-															$("#lablePump-"+relayNumber).addClass('checked');
+															$("#lablePump-"+<?php echo $i;?>).addClass('checked');
 														}
 													}
 												});
