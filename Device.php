@@ -1559,10 +1559,11 @@ function removeValve()
 													if(json == '')
 													{
 														$("#lablePump-"+<?php echo $i;?>).removeClass('checked');
+														$("#pumpRealResponse_"+<?php echo $i;?>).html('');
 													}
 													else
 													{
-														$("#pumpRealResponse_<?php echo $i;?>").html(json);
+														$("#pumpRealResponse_"+<?php echo $i;?>).html(json);
 														if($("#lablePump-"+<?php echo $i;?>).hasClass('checked'))
 														{}
 														else
@@ -1580,8 +1581,8 @@ function removeValve()
 												<label style="margin-left: 60px;" <?php echo $strChecked;?>  id="lablePump-<?php echo $i?>" for="pumps-<?php echo $i?>"><span style="float:right; color:#C9376E;"><?php echo $strPumpName;?></span></label>
 											</div>
 										</div>
-											<?php if($iPumpVal > 0 && preg_match('/Emulator/',$sPumpType)) { ?>
-											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"><?php echo $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($i);?></div>
+											<?php if(preg_match('/Emulator/',$sPumpType)) { ?>
+											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"><?php if($iPumpVal > 0) { echo $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($i); }?></div>
 											<?php } ?>
 										<?php } ?>
 										</div>
