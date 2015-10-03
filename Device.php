@@ -336,7 +336,7 @@ jQuery(document).ready(function($) {
 	
 	$(".pumpsButton").click(function()
 	{
-		 $(".loading-progress").show();
+		$(".loading-progress").show();
 		var progress = $(".loading-progress").progressTimer({
 			timeLimit: 10,
 			onFinish: function () {
@@ -393,7 +393,42 @@ jQuery(document).ready(function($) {
 		 <?php } ?> 
 	});
 	
-	
+	$(".pumpSpeedSet").click(function() {
+		$(".loading-progress").show();
+		var progress = $(".loading-progress").progressTimer({
+			timeLimit: 10,
+			onFinish: function () {
+			  //$(".loading-progress").hide();
+				setTimeout(function(){location.reload();parent.$a.fancybox.close();},1000);
+			}
+		});
+		
+		$a("#checkLink").trigger('click');
+		
+		var speed 		= $(this).val();
+		var pumpName	= $(this).attr('name');
+		
+		var PumpID		=	pumpName.split("_");
+		
+		$.ajax({
+			type: "POST",
+			url: "<?php echo site_url('home/updatePumpSpeed/');?>", 
+			data: {PumpID:PumpID[1],speed:speed},
+			success: function(data) 
+			{
+				
+			}
+		}).error(function(){
+        progress.progressTimer('error', {
+            errorText:'ERROR!',
+            onFinish:function(){
+                alert('There was an error processing your information!');
+            }
+        });
+		}).done(function(){
+			progress.progressTimer('complete');
+		});
+	});
 	
 	
 });
@@ -1420,8 +1455,8 @@ function removeValve()
 										$sMainType	 = $this->home_model->getDeviceMainType($i,$sDevice);
 										
 										$strPumpName = 'Pump '.$i;
-										//if($sPumpNameDb != '' && $sPumpNameDb != 'Add Name')
-											//$strPumpName = $sPumpNameDb;
+										if($sPumpNameDb != '' && $sPumpNameDb != 'Add Name')
+											$strPumpName .= '('.$sPumpNameDb.')';
 										
 										if($sStatus2Speed == '')
 											$sStatus2Speed = '0';
@@ -1724,7 +1759,7 @@ function removeValve()
 											OFF
 				</div>                              </div>
 										<div class="span1 pump-<?php echo $i?>" value="2" style="margin-top: 10px; width: auto; color: #428BCA;font-weight: bold; cursor: pointer; float: left;">Relay 2</div>
-										<div style="margin-top:10px; float:right; color:#C9376E;"><strong>Pump <?php echo $i;?>&nbsp;(<?php echo $sPumpType;?>)</strong></div>
+										<div style="margin-top:10px; float:right; color:#C9376E;"><strong><?php echo $strPumpName;?></strong></div>
 									  <script type="text/javascript">
 									  
 									  $(function()
@@ -1826,7 +1861,7 @@ function removeValve()
 										<?php } else if($sPumpType != '') { ?>
 										 <div class="rowCheckbox switch">
 											<div class="custom-checkbox"><input type="checkbox" value="<?php echo $i;?>" id="pumps-<?php echo $i?>" name="pumps-<?php echo $i?>" class="pumpsButton" hidefocus="true" style="outline: medium none;">
-												<label style="margin-left: 60px;" <?php echo $strChecked;?>  id="lablePump-<?php echo $i?>" for="pumps-<?php echo $i?>"><span style="color:#C9376E;float:right;" ><?php echo $strPumpName;?>&nbsp;(<?php echo $sPumpType;?>)</span></label>
+												<label style="margin-left: 60px;" <?php echo $strChecked;?>  id="lablePump-<?php echo $i?>" for="pumps-<?php echo $i?>"><span style="color:#C9376E;float:right;" ><?php echo $strPumpName;?></span></label>
 											</div>
 										</div>
 										
@@ -1913,6 +1948,7 @@ function removeValve()
 										//Details of Pump
 										$aPumpDetails = $this->home_model->getPumpDetails($i);
 										$sPumpType		=	'';
+										$sPumpSpeed		=	'';
 										if(!empty($aPumpDetails))
 										{
 											foreach($aPumpDetails as $aResultEdit)
@@ -1961,9 +1997,10 @@ function removeValve()
 														}
 													}
 												}
-												else if(preg_match('/Emulator/',$sPumpType))
+												else if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType))
 												{
-													 $iPumpVal = $sPump[$i];
+													 $iPumpVal 		= $sPump[$i];
+													 $sPumpSpeed 	= $aResultEdit->pump_speed;	
 												}
 											}
 										}	//END : Getting assigned relay status from the Server.
@@ -1990,6 +2027,18 @@ function removeValve()
 									</td>
 									<td><a class="btn btn-green btn-small" href="<?php if($sAccess == 2){echo site_url('home/pumpConfigure/'.base64_encode($i).'/');}else{echo 'javscript:void(0);';}?>"><span>Configure</span></a>&nbsp;&nbsp;
 										<a class="btn btn-red btn-small" href="<?php if($sAccess == 2){ echo site_url('home/setProgramsPump/'.base64_encode($i).'/');} else {echo 'javascript:void(0);';}?>"><span>Programs</span></a>
+									<?php 
+										if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType)) {
+									?>									
+									<div style="padding-top: 10px; padding-bottom: 10px;">
+									Change Speed: <br />	
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed0" <?php if($sPumpSpeed == 0) {echo 'checked="checked";';}?> value="0">&nbsp;0&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed1" value="1" <?php if($sPumpSpeed == 1) {echo 'checked="checked";';}?>>&nbsp;1&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed2" value="2" <?php if($sPumpSpeed == 2) {echo 'checked="checked";';}?>>&nbsp;2&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed3" value="3" <?php if($sPumpSpeed == 3) {echo 'checked="checked";';}?>>&nbsp;3&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed4" value="4" <?php if($sPumpSpeed == 4) {echo 'checked="checked";';}?>>&nbsp;4&nbsp;&nbsp;
+									</div>
+										<?php } ?>									
 									</td>
 									</tr>
 									<?php 
@@ -2032,6 +2081,8 @@ function removeValve()
 												//Details of Pump
 												$aPumpDetails = $this->home_model->getPumpDetails($i);
 												$sPumpType		=	'';
+												$sPumpSpeed 	= 	'';	
+												
 												if(!empty($aPumpDetails))
 												{
 													foreach($aPumpDetails as $aResultEdit)
@@ -2080,9 +2131,10 @@ function removeValve()
 																}
 															}
 														}
-														else if(preg_match('/Emulator/',$sPumpType))
+														else if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType))
 														{
-															 $iPumpVal = $sPump[$i];
+															 $iPumpVal 		= $sPump[$i];
+															 $sPumpSpeed 	= $aResultEdit->pump_speed;	
 														}
 													}
 												}	//END : Getting assigned relay status from the Server.
@@ -2109,6 +2161,18 @@ function removeValve()
 									</td>
 									<td><a class="btn btn-green btn-small" href="<?php if($sAccess == 2){echo site_url('home/pumpConfigure/'.base64_encode($i).'/');}else{echo 'javscript:void(0);';}?>"><span>Configure</span></a>&nbsp;&nbsp;
 										<a class="btn btn-red btn-small" href="<?php if($sAccess == 2){ echo site_url('home/setProgramsPump/'.base64_encode($i).'/');} else {echo 'javascript:void(0);';}?>"><span>Programs</span></a>
+										<?php 
+										if(preg_match('/Emulator/',$sPumpType) || preg_match('/Intellicom/',$sPumpType)) {
+									?>									
+									<div style="padding-top: 10px; padding-bottom: 10px;">
+									Change Speed: <br />	
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed0" <?php if($sPumpSpeed == 0) {echo 'checked="checked";';}?> value="0">&nbsp;0&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed1" value="1" <?php if($sPumpSpeed == 1) {echo 'checked="checked";';}?>>&nbsp;1&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed2" value="2" <?php if($sPumpSpeed == 2) {echo 'checked="checked";';}?>>&nbsp;2&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed3" value="3" <?php if($sPumpSpeed == 3) {echo 'checked="checked";';}?>>&nbsp;3&nbsp;&nbsp;
+									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed4" value="4" <?php if($sPumpSpeed == 4) {echo 'checked="checked";';}?>>&nbsp;4&nbsp;&nbsp;
+									</div>
+										<?php } ?>		
 									</td>
 									</tr>
 											<?php } ?>

@@ -1109,6 +1109,29 @@ class Home_model extends CI_Model
             $this->db->insert('rlb_setting', $data);
         }
 	}
+	
+	public function getCurrentPumpSpeed($pumpID)
+	{
+		$sPump	=	"";
+		$sSql   =   "SELECT pump_speed FROM rlb_pump_device WHERE pump_number ='".$pumpID."'";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				$sPump	=	$aRow->pump_speed;
+			}
+		}
+		
+		return $sPump;
+	}
+	
+	public function updatePumpSpeed($pumpID,$speed)
+	{
+		$sSql   =   "UPDATE rlb_pump_device SET pump_speed='".$speed."' WHERE pump_number ='".$pumpID."'";
+        $query  =   $this->db->query($sSql);
+	}
 }
 
 /* End of file home_model.php */
