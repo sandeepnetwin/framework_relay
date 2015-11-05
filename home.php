@@ -11,7 +11,7 @@ if (!defined('BASEPATH'))
 
 class Home extends CI_Controller 
 {
-	protected $userID,$aPermissions,$aModules,$aAllActiveModule;
+    protected $userID,$aPermissions,$aModules,$aAllActiveModule;
 	
     public function __construct()  
     {
@@ -20,12 +20,25 @@ class Home extends CI_Controller
         $this->load->helper('common_functions'); //Common functions will be available for all functions in the file.
 		
 		//print_r($this->session->all_userdata());
-	    /* if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
+	     if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
         {
             redirect('dashboard/login/');
 			die;
-        }  *///END : Check if user login or not. 
-	}
+        }  //END : Check if user login or not. 
+		
+		//Get Permission Details
+		if($this->userID == '')
+		$this->userID = $this->session->userdata('id');
+		
+		if($this->aPermissions == '')
+		{
+			$this->aPermissions 	= json_decode(getPermissionOfModule($this->userID));
+			
+			$this->aModules 		= $this->aPermissions->sPermissionModule;	
+			$this->aAllActiveModule = $this->aPermissions->sActiveModule;
+			
+		}
+   }
 
     public function index() //START : Function for dashboard
     {
@@ -377,6 +390,10 @@ class Home extends CI_Controller
 				//Get the number of pumps and valve.
 					$iNumPumps  =   $this->input->post('numPumps');
 					$iNumValve  =   $this->input->post('numValve');
+					$iNumLight  =   $this->input->post('numLight');
+					
+					$iNumHeater  =   $this->input->post('numHeater');
+					$iNumBlower  =   $this->input->post('numBlower');
 				
 				$aNumDevice     =   array();
 				if($iNumPumps != '')	
@@ -388,6 +405,21 @@ class Home extends CI_Controller
 					$aNumDevice['ValveNumber']     =   $iNumValve;
 				else
 					$aNumDevice['ValveNumber']     =   0;
+				
+				if($iNumLight != '')	
+					$aNumDevice['LightNumber']     =   $iNumLight;
+				else
+					$aNumDevice['LightNumber']     =   0;
+				
+				if($iNumHeater != '')	
+					$aNumDevice['HeaterNumber']     =   $iNumHeater;
+				else
+					$aNumDevice['HeaterNumber']     =   0;
+				
+				if($iNumBlower != '')	
+					$aNumDevice['BlowerNumber']     =   $iNumBlower;
+				else
+					$aNumDevice['BlowerNumber']     =   0;
 				
 				
 				if($iNumPumps == '' || $iNumPumps == 0)
@@ -875,7 +907,7 @@ class Home extends CI_Controller
 	}
 	
 	public function deviceName() // START : Function Show Device Name Form and Save
-    {
+        {
         $aViewParameter              =   array(); // Array for passing parameter to view.
         $aViewParameter['page']      =   'home';
         $aViewParameter['sucess']    =   '0';
@@ -1473,6 +1505,30 @@ class Home extends CI_Controller
 					}
 				}
 				
+				if($sStatus == 0)
+				{
+					$aProgramDetails	=	$this->home_model->getProgramDetailsForDevice($sName,$sDevice);
+					
+					foreach($aProgramDetails as $Program)
+					{
+						if($Program->program_active == '1')
+						{
+							$this->home_model->updateProgramStatus($Program->program_id, 0);
+							if($Program->program_absolute == '1')
+							{
+								$aAbsoluteDetails   = array(
+								'absolute_s'  => $Program->program_absolute_start_time,             'absolute_e'  => $Program->program_absolute_end_time,
+								'absolute_t'  => $Program->program_absolute_total_time,
+								'absolute_ar' => $Program->program_absolute_run_time,
+								'absolute_sd' => $Program->program_absolute_start_date,
+								'absolute_st' => $Program->program_absolute_run);
+															
+								$this->home_model->updateAlreadyRunTime($Program->program_id, $aAbsoluteDetails);
+								
+							}
+						}
+					}
+				}
 				//$this->home_model->updateDeviceStauts($sName,$sDevice,$sStatus);
 			}				
            
@@ -1660,9 +1716,11 @@ class Home extends CI_Controller
 				$aResponse['iPumpCheck'] = 2;
 		}
 		
+		$this->load->model('home_model');
+		
 		if($aResponse['iPumpCheck'] != 1 || $aResponse['iPumpCheck'] != 2)
 		{
-			$this->load->model('home_model');
+			
 			$aPumpDetails = $this->home_model->getPumpDetailsExcept($sDeviceID);
 			//print_r($aPumpDetails);
 			if(!empty($aPumpDetails))
@@ -1678,6 +1736,27 @@ class Home extends CI_Controller
 				}
 			}
 		}
+		
+		if($aResponse['iPumpCheck'] != 1 || $aResponse['iPumpCheck'] != 2)
+		{
+			//START: Get all Light Devices with relays and of particular type.
+			$arrLights	=	json_decode($this->home_model->getAllLightDeviceForType($sPumpTypeChk));
+			if(!empty($arrLights))
+			{
+				foreach($arrLights as $aLight)
+				{
+					$sRelayDetails	= unserialize($aLight->light_relay_number);
+					
+					if($sRelayNumber == $sRelayDetails['sRelayNumber'])
+					{
+						$aResponse['iPumpCheck']	=	1;
+						$aResponse['iPumpID']		=	'';
+						break;
+					}
+				}
+			}
+		}
+		
 		echo json_encode($aResponse);
 		
 		exit;
@@ -1687,17 +1766,17 @@ class Home extends CI_Controller
 	public function SpaDevice()
 	{
 		$aViewParameter                 =   array(); // Array for passing parameter to view.
-        $aViewParameter['page']         =   'home';
-        $aViewParameter['sucess']       =   '0';
+                $aViewParameter['page']         =   'home';
+                $aViewParameter['sucess']       =   '0';
 		$aViewParameter['Title']        =   'Spa Devices';
-        $aViewParameter['err_sucess']   =   '0';
+                $aViewParameter['err_sucess']   =   '0';
 		//Check if IP, PORT and Mode is set or not.
 		$this->checkSettingsSaved();
 		
 		$this->load->model('home_model');
 		
 		//Current mode of the system.
-        $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
+                $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
 		
 		//Get the status response of devices from relay board.
 		$sResponse      =   get_rlb_status();
@@ -1740,6 +1819,9 @@ class Home extends CI_Controller
 		$aViewParameter['userID'] 			= $this->userID;
 		$aViewParameter['aModules'] 		= $this->aModules;
 		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+                
+        //Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
 		
 		// Device View to show device page.
 		$this->template->build('SpaDevice',$aViewParameter);
@@ -1748,9 +1830,9 @@ class Home extends CI_Controller
 	public function PoolDevice()
 	{
 		$aViewParameter                 =   array(); // Array for passing parameter to view.
-        $aViewParameter['page']         =   'home';
-        $aViewParameter['sucess']       =   '0';
-        $aViewParameter['err_sucess']   =   '0';
+                $aViewParameter['page']         =   'home';
+                $aViewParameter['sucess']       =   '0';
+                $aViewParameter['err_sucess']   =   '0';
 		$aViewParameter['Title']        =   'Pool Devices';
 		//Check if IP, PORT and Mode is set or not.
 		$this->checkSettingsSaved();
@@ -1758,7 +1840,7 @@ class Home extends CI_Controller
 		$this->load->model('home_model');
 		
 		//Current mode of the system.
-        $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
+                 $aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
 		
 		//Get the status response of devices from relay board.
 		$sResponse      =   get_rlb_status();
@@ -1797,6 +1879,9 @@ class Home extends CI_Controller
 		$aViewParameter['aModules'] 		= $this->aModules;
 		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
 		
+		//Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
+		
 		// Device View to show device page.
 		$this->template->build('PoolDevice',$aViewParameter);
 	}
@@ -1804,8 +1889,147 @@ class Home extends CI_Controller
 	
 	public function PoolSpaSetting()
 	{
-		$this->template->build('PoolSpaSetting');
+		//Permission related parameters.
+		$aViewParameter['userID'] 			= $this->userID;
+		$aViewParameter['aModules'] 		= $this->aModules;
+		$aViewParameter['aAllActiveModule'] = $this->aAllActiveModule;
+		
+		$this->load->model('home_model');
+		if($this->input->post('command') && $this->input->post('command') == 'save')
+		{
+			//All General Question 
+			$arrGeneral			=	array();
+			
+			$arrGeneral['type']				=	trim($this->input->post('strType'));
+			//$arrGeneral['equip']			=	trim($this->input->post('strEquipment'));
+			$arrGeneral['pool_max_temp']	=	trim($this->input->post('pool_maximum_temperature'));
+			$arrGeneral['pool_temp']		=	trim($this->input->post('pool_temperature'));
+			$arrGeneral['pool_manual']		=	trim($this->input->post('pool_manual'));
+			
+			if(isset($_POST['display_pool_temp']))
+				$arrGeneral['display_pool_temp']=	trim($this->input->post('display_pool_temp'));
+			else
+				$arrGeneral['display_pool_temp']=	'';
+			
+			if(isset($_POST['display_spa_temp']))
+				$arrGeneral['display_spa_temp']	=	trim($this->input->post('display_spa_temp'));
+			else
+				$arrGeneral['display_spa_temp']	= '';
+		
+			$arrGeneral['spa_max_temp']		=	trim($this->input->post('spa_maximum_temperature'));
+			$arrGeneral['spa_temperature']	=	trim($this->input->post('spa_temperature'));
+			$arrGeneral['spa_manual']		=	trim($this->input->post('spa_manual'));
+			
+			//All Device
+			$arrDevice			=	array();
+			$arrDevice['valve'] 			= 	trim($this->input->post('strValve'));
+			$arrDevice['valve_actuated'] 	= 	$this->input->post('valve_actuated');
+			$arrDevice['reasonValve']		=	trim($this->input->post('reasonValve'));
+			$arrDevice['valveRunTime'] 		= 	trim($this->input->post('valveRunTime'));
+			//$arrDevice['valveSequence'] 	= 	trim($this->input->post('valveSequence'));
+			
+			$arrDevice['pump']				=	trim($this->input->post('automatic_pumps'));
+			$arrDevice['pump1'] 			= 	trim($this->input->post('Pump1'));
+			$arrDevice['pump2'] 			= 	trim($this->input->post('Pump2'));
+			$arrDevice['pump3'] 			= 	trim($this->input->post('Pump3'));
+			//$arrDevice['pumpRunTime'] 		= 	trim($this->input->post('pumpRunTime'));
+			//$arrDevice['pumpSequence'] 		= 	trim($this->input->post('pumpSequence'));
+			
+			//Heater Questions
+			$arrHeater			=	array();
+			$arrHeater['heater']			=	trim($this->input->post('automatic_heaters_question1'));
+			$arrHeater['heater1_equip']			=	trim($this->input->post('heater1_equiment'));
+			$arrHeater['heater2_equip']			=	trim($this->input->post('heater2_equiment'));
+			$arrHeater['heater3_equip']			=	trim($this->input->post('heater3_equiment'));
+			//$arrHeater['heaterSequence']		=	trim($this->input->post('heaterSequence'));	
+			$arrHeater['Heater1']				=	trim($this->input->post('Heater1'));
+			$arrHeater['Heater2']				=	trim($this->input->post('Heater2'));
+			$arrHeater['Heater3']				=	trim($this->input->post('Heater3'));
+			$arrHeater['HeaterPump1']			=	trim($this->input->post('HeaterPump1'));
+			$arrHeater['HeaterPump2']			=	trim($this->input->post('HeaterPump2'));
+			$arrHeater['HeaterPump3']			=	trim($this->input->post('HeaterPump3'));
+			
+			//More questions
+			$arrMore			=	array();
+			$arrMore['light']					=	trim($this->input->post('no_light'));
+			$arrMore['lightRunTime']			=	trim($this->input->post('lightRunTime'));
+			//$arrMore['lightSequence']			=	trim($this->input->post('lightSequence'));
+			$arrMore['blower']					=	trim($this->input->post('no_blower'));
+			$arrMore['blowerRunTime']			=	trim($this->input->post('blowerRunTime'));
+			//$arrMore['blowerSequence']			=	trim($this->input->post('blowerSequence'));
+			$arrMore['temperature1']			=	trim($this->input->post('temperature1'));
+			$arrMore['temperature2']			=	trim($this->input->post('temperature2'));
+			//$arrMore['temperature3']			=	trim($this->input->post('temperature3'));
+			//$arrMore['temperature4']			=	trim($this->input->post('temperature4'));
+			//$arrMore['temperature5']			=	trim($this->input->post('temperature5'));
+			
+			$arrDetails	=	array('General'=>$arrGeneral,'Device'=>$arrDevice,'Heater'=>$arrHeater,'More'=>$arrMore);
+			
+			$this->home_model->savePoolSpaModeQuestions($arrDetails);
+			
+		}
+		
+		$aViewParameter['arrDetails']	=	$this->home_model->getPoolSpaModeQuestions();
+		
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+        
+        $aViewParameter['sValves']       =   $sResponse['valves']; // Valve Device Status
+        		
+		$iPowerCnt = strlen($sResponse['powercenter']);
+		$iRelayCnt = strlen($sResponse['relay']);
+		
+		$available12VRelays	=array();
+		$available24VRelays	=array();
+		
+		//Check 12V relays First
+		for($i=0;$i<$iPowerCnt;$i++)
+		{
+			$iCheck			=	$this->checkRelayNumbers($i,'12');
+			
+			if(!$iCheck)
+			{
+				$available12VRelays[] = $i;
+			}
+		}
+		
+		//Check 24V relays First
+		for($i=0;$i<$iRelayCnt;$i++)
+		{
+			if($sResponse['relay'][$i] != '.')
+			{
+				$iCheck			=	$this->checkRelayNumbers($i,'24');
+				
+				if(!$iCheck)
+				{
+					$available24VRelays[] = $i;
+				}
+			}
+		}
+		
+		$aViewParameter['sRelays']       =   $available24VRelays;
+        $aViewParameter['sPowercenter']  =   $available12VRelays;
+		
+		//Pump device Status
+        $aViewParameter['sPump']         =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+		
+        // Temperature Sensor Device 
+		$aViewParameter['sTemprature']   =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+		
+		$aViewParameter['ValveRelays']	=	$this->home_model->getAllValvesHavingRelays();
+		$aViewParameter['Pumps']		=	$this->home_model->getAllPumps();
+		
+		if($aViewParameter['ValveRelays'] == '')
+			$aViewParameter['ValveRelays'] = array();
+		if($aViewParameter['Pumps'] == '')
+			$aViewParameter['Pumps'] = array();
+		
+		//Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$aViewParameter['extra']) = $this->home_model->getSettings();
+				
+		$this->template->build('PoolSpaSetting',$aViewParameter);
 	}
+	
 	
 	public function positionName() //START : Function to save position names for Valve 
     {
@@ -1926,7 +2150,745 @@ class Home extends CI_Controller
 			}
 		}
 	}
+	
+	public function checkRelayNumberAlreadyAssigned()
+	{
+		$sRelayNumber	=	$this->input->post('sRelayNumber');
+		$sPumpType		=	$this->input->post('type');
+		$sDeviceId      =   $this->input->post('sDeviceId');
+
+		$aResponse      =	array('iPumpCheck'=>0,'iPumpID'=>0);
+		
+		//Check if IP, PORT and Mode is set or not.
+            $this->checkSettingsSaved();
+		
+		//Get the status response of devices from relay board.
+            $sResponse      =   get_rlb_status();
+			
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+                
+		$this->load->model('home_model');
+		
+		//First Check the existing Light Devices
+		$aLightDetails = $this->home_model->getLightDeviceExceptSelected($sDeviceId);
+		
+		if(!empty($aLightDetails))
+		{
+			foreach($aLightDetails as $sLight)
+			{
+				$arrLight   = unserialize($sLight->light_relay_number);
+				if($sRelayNumber == $arrLight['sRelayNumber'] && $sPumpType == $arrLight['sRelayType'])
+				{
+					$aResponse['iPumpCheck']	=	1;
+					$aResponse['iPumpID']		=	$sPump->pump_number;
+					break;
+				}
+			}
+		}
        
+		if($aResponse['iPumpCheck'] != 1)
+		{
+			$aPumpDetails = $this->home_model->getAllPumpDetails();
+			//print_r($aPumpDetails);
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					if($sRelayNumber == $sPump->relay_number && preg_match('/'.$sPumpType.'/',$sPump->pump_type))
+					{
+						$aResponse['iPumpCheck']	=	1;
+						$aResponse['iPumpID']		=	$sPump->pump_number;
+						break;
+					}
+					else if($sPump->pump_type == '2Speed')				
+					{
+						if($sRelayNumber == $sPump->relay_number ||  $sRelayNumber == $sPump->relay_number_1)
+						{
+							$aResponse['iPumpCheck']	=	1;
+							$aResponse['iPumpID']		=	$sPump->pump_number;
+							break;
+						}
+					}	
+				}
+			}
+		}
+		
+		echo json_encode($aResponse);
+		exit;
+	}
+        
+	public function saveLightRelay()
+	{
+		$sRelayNumber   =   $this->input->post('sRelayNumber');
+		$sDevice        =   $this->input->post('sDevice');
+		$sDeviceId      =   $this->input->post('sDeviceId');
+		$sRelayType     =   $this->input->post('sRelayType');
+		
+		$this->load->model('home_model');
+		
+		$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+	}
+	
+	public function updatePoolSpaMode()
+	{
+		$iMode   =   $this->input->post('iMode');
+		$this->load->model('home_model');
+		
+		$this->home_model->UpdatePoolSpaMode($iMode);
+	}
+	
+	public function checkRelayNumbers($sRelayNumber,$sPumpType)
+	{
+		$iCheck	=	0;
+		
+		$this->load->model('home_model');
+		
+		//First Check the existing Light Devices
+		$aLightDetails = $this->home_model->getLightDevices();
+		if(!empty($aLightDetails))
+		{
+			foreach($aLightDetails as $sLight)
+			{
+				$arrLight   = unserialize($sLight->light_relay_number);
+				if($sRelayNumber == $arrLight['sRelayNumber'] && $sPumpType == $arrLight['sRelayType'])
+				{
+					$iCheck	=	1;
+					break;
+				}
+			}
+		}
+       
+		if($iCheck != 1)
+		{
+			$aPumpDetails = $this->home_model->getAllPumpDetails();
+			//print_r($aPumpDetails);
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					if($sRelayNumber == $sPump->relay_number && preg_match('/'.$sPumpType.'/',$sPump->pump_type))
+					{
+						$iCheck	=	1;
+						break;
+					}
+					else if($sPump->pump_type == '2Speed')				
+					{
+						if($sRelayNumber == $sPump->relay_number ||  $sRelayNumber == $sPump->relay_number_1)
+						{
+							$iCheck	=	1;
+							break;
+						}
+					}	
+				}
+			}
+		}
+		
+		return $iCheck;
+	}
+	
+	function saveValveRelayConf()
+	{
+		$arrValves 	=	json_decode($this->input->post('valve'));
+		$sDevice	=	$this->input->post('sDevice');
+		
+		$arrRelayStart 	=	array('0','2','4','6','8','10','12','14');
+		
+		$this->load->model('home_model');
+		
+		if(!empty($arrValves))
+		{
+			$sSql   =   "DELETE FROM rlb_device WHERE device_type = 'V'";
+			$query  =   $this->db->query($sSql);
+			
+			foreach($arrValves as $valve)
+			{
+				//Get position values
+				$sRelay1 = $valve[0];
+				$sRelay2 = $valve[1];
+				
+				$sDeviceID		=	array_search($sRelay1,$arrRelayStart);
+				$sDeviceIDOld	=	$sDeviceID;
+				
+				
+				$this->home_model->saveValveRelays($sDeviceID,$sDeviceIDOld,$sDevice,$sRelay1,$sRelay2);
+			}
+		}
+		
+		
+		$arrValves	=	$this->home_model->getAllValvesHavingRelays();
+		$strValves	=	'00000000';
+		if(!empty($arrValves))
+		{
+			foreach($arrValves as $aValve)
+			{
+				$device_number = $aValve->device_number;
+				$strValves[$device_number] = '1';
+			}
+		}
+		
+		$hexNumber = dechex(bindec(strrev($strValves)));
+		
+		$response	=	assignValvesToRelay($hexNumber);
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['ValveNumber'] 	= count($arrValves);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['ValveNumber']	=	count($arrValves);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo json_encode($arrValves);
+		exit;
+	}
+	
+	function savePumpRelayConf()
+	{
+		$arrPumps 	=	json_decode($this->input->post('pump'));
+		$this->load->model('home_model');
+		$aResponse	=	array();
+		if(!empty($arrPumps))
+		{
+			$icheck	=	0;
+			foreach($arrPumps as $sDeviceID => $pump)
+			{
+				$icheck	= $this->checkPumpRelayConf($sDeviceID,$pump->relayNumber1,$pump->type);
+				if($icheck == '1')				
+				{
+					echo 'Relay number for pump '.$sDeviceID.' is already in use by other Device!';
+					exit;
+				}
+			}
+			
+			foreach($arrPumps as $sDeviceID => $pump)
+			{
+				//Make Pump OFF if the type selected is different from existing
+				$sResponse      =   get_rlb_status();
+		
+				$sRelays        =   $sResponse['relay'];    // Relay Device Status
+				$sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+				
+				$sDevice = 'PS';
+		
+				$aPumpDetails = $this->home_model->getPumpDetails($sDeviceID);
+				//Variable Initialization to blank.
+				$sPumpNumber  	= '';
+				$sPumpType  	= '';
+				$sPumpSubType  	= '';
+				$sPumpSpeed  	= '';
+				$sPumpFlow 		= '';
+				$sPumpClosure   = '';
+				$sRelayNumber  	= '';
+					
+				if(is_array($aPumpDetails) && !empty($aPumpDetails))
+				{
+				  foreach($aPumpDetails as $aResultEdit)
+				  { 
+					$sPumpNumber  = $aResultEdit->pump_number;
+					$sPumpType    = $aResultEdit->pump_type;
+					$sPumpSubType = $aResultEdit->pump_sub_type;
+					$sPumpSpeed   = $aResultEdit->pump_speed;
+					$sPumpFlow    = $aResultEdit->pump_flow;
+					$sPumpClosure = $aResultEdit->pump_closure;
+					$sRelayNumber = $aResultEdit->relay_number;
+				  }
+				}
+				$sStatus	=	0;
+				if($sPumpType != '' && $sPumpType != $this->input->post('sPumpType'))
+				{
+					if($sPumpType == '12' || $sPumpType == '24')
+					{
+						if($sPumpType == '24')
+						{
+							$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp);
+							$this->home_model->updateDeviceRunTime($sDeviceID,$sDevice,$sStatus);
+						}
+						else if($sPumpType == '12')
+						{
+							$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp);
+						}
+					}
+					else
+					{
+						if(preg_match('/Emulator/',$sPumpType))
+						{
+							$sNewResp = '';
+							$sNewResp =  $sDeviceID.' '.$sStatus;
+							
+							onoff_rlb_pump($sNewResp);
+							
+							if($sPumpType == 'Emulator12')
+							{
+								$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp12);
+							}
+							if($sPumpType == 'Emulator24')
+							{
+								$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+								onoff_rlb_relay($sNewResp24);
+								$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+							}
+						}
+						else if(preg_match('/Intellicom/',$sPumpType))
+						{
+							$sNewResp = '';
+							$sNewResp =  $sDeviceID.' '.$sStatus;
+							onoff_rlb_pump($sNewResp);
+							
+							if($sPumpType == 'Intellicom12')
+							{
+								$sNewResp12 = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+								onoff_rlb_powercenter($sNewResp12);
+							}
+							if($sPumpType == 'Intellicom24')
+							{
+								$sNewResp24 = replace_return($sRelays, $sStatus, $sRelayNumber );
+								onoff_rlb_relay($sNewResp24);
+								$this->home_model->updateDeviceRunTime($sRelayNumber,'R',$sStatus);
+							}
+						}
+					}
+				}
+				$aPost	=	array('sPumpClosure'=>$pump->closure,'sPumpType'=>$pump->type,'sRelayNumber'=>$pump->relayNumber1,'sPumpSubType'=>$pump->pumpSubType,'sPumpAddress'=>$pump->pumpAddress,'sPumpSpeed'=>$pump->pumpSpeed,'sPumpFlow'=>$pump->pumpFlow,'sRelayNumber1'=>$pump->relayNumber2,'sPumpSubType1'=>$pump->pumpSubType1,'sPumpSpeedIn'=>$pump->pumpSpeedIn);
+				
+				$this->home_model->savePumpDetails($aPost,$sDeviceID);
+				
+				//Change the address on the Raspberry Device
+				$sPumpType      =   $this->input->post('sPumpType');
+				if($sPumpType != '12' && $sPumpType != '24' && $sPumpType != '2Speed')
+				{	
+					$sAddress 	= $this->input->post('sPumpAddress');
+					$sRes 		= getAddressToPump($sDeviceID);
+					if(!preg_match('/Invalid response/',$sRes))
+					{
+						$aResult	=	explode(',',$sRes);
+						if($aResult[2] != $sAddress)
+						{
+							$sResult	=	assignAddressToPump($sDeviceID,$sAddress);
+						}
+					}
+				}
+			}
+		}
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['PumpsNumber'] 	= count((array)$arrPumps);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['PumpsNumber']	=	count((array)$arrPumps);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo 'Pump Configuration done successfully!';
+		exit;
+	}
+	
+	public function checkPumpRelayConf($sDeviceID,$sRelayNumber,$sPumpType)
+	{
+		$sPumpTypeChk	=	'';	
+		
+		$iCheck	=	0;
+		
+		//Check if IP, PORT and Mode is set or not.
+        $this->checkSettingsSaved();
+		
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+        if(preg_match('/12/',$sPumpType))
+		{
+			$sPumpTypeChk = 12;
+			if($sRelayNumber > 7)
+				$iCheck = 1;
+		}
+		else if(preg_match('/24/',$sPumpType))
+		{
+			$sPumpTypeChk = 24;
+			if($sRelayNumber > 15)
+				$iCheck = 1;
+			else if($sRelays[$sRelayNumber] == '.')
+				$iCheck = 2;
+		}
+		
+		$this->load->model('home_model');
+		
+		if($iCheck == 0)
+		{
+			//First Check the existing Light Devices
+			$aLightDetails = $this->home_model->getLightDevices();
+			if(!empty($aLightDetails))
+			{
+				foreach($aLightDetails as $sLight)
+				{
+					$arrLight   = unserialize($sLight->light_relay_number);
+					if($sRelayNumber == $arrLight['sRelayNumber'] && $sPumpType == $arrLight['sRelayType'])
+					{
+						$iCheck	=	1;
+						break;
+					}
+				}
+			}
+		}
+		
+		if($iCheck != 1 || $iCheck != 2)
+		{
+			//$aPumpDetails = $this->home_model->getAllPumpDetails();
+			$aPumpDetails 	= $this->home_model->getPumpDetailsExcept($sDeviceID);
+			//print_r($aPumpDetails);
+			if(!empty($aPumpDetails))
+			{
+				foreach($aPumpDetails as $sPump)
+				{
+					if($sRelayNumber == $sPump->relay_number && preg_match('/'.$sPumpType.'/',$sPump->pump_type))
+					{
+						$iCheck	=	1;
+						break;
+					}
+					else if($sPump->pump_type == '2Speed')				
+					{
+						if($sRelayNumber == $sPump->relay_number ||  $sRelayNumber == $sPump->relay_number_1)
+						{
+							$iCheck	=	1;
+							break;
+						}
+					}	
+				}
+			}
+		}
+		return $iCheck;
+	}
+	
+	public function saveHeaterRelayConf()
+	{
+		$arrHeater 	=	json_decode($this->input->post('heater'));
+		
+		//First Check whether relay is already assigned to other device or not.
+		foreach($arrHeater as $heaterNumber => $heaterDetails)
+		{
+			$relayType		=	$heaterDetails->relayType;
+			$sRelayNumber	=	$heaterDetails->relayNumber;
+			
+			$iCheck			=	$this->checkRelayNumbers($sRelayNumber,$sPumpType);
+			if($icheck == '1')				
+			{
+				echo 'Relay number for Heater '.$heaterNumber.' is already in use by other Device!';
+				exit;
+			}
+			//checkRelayNumbers
+		}
+		
+		foreach($arrHeater as $heaterNumber => $heaterDetails)
+		{
+			$sRelayType		=	$heaterDetails->relayType;
+			$sRelayNumber	=	$heaterDetails->relayNumber;
+			
+			$sDevice        =   'H';
+			$sDeviceId      =   ($heaterNumber-1);
+			
+			$this->load->model('home_model');
+			
+			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+		}
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['HeaterNumber'] 	= count((array)$arrHeater);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['HeaterNumber']	=	count((array)$arrHeater);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo 'Heater Configuration done successfully!';
+		exit;
+	
+	}
+	
+	
+	public function saveLightRelayConf()
+	{
+		$arrLight 	=	json_decode($this->input->post('light'));
+		
+		//First Check whether relay is already assigned to other device or not.
+		foreach($arrLight as $lightNumber => $lightDetails)
+		{
+			$relayType		=	$lightDetails->relayType;
+			$sRelayNumber	=	$lightDetails->relayNumber;
+			
+			$iCheck			=	$this->checkRelayNumbers($sRelayNumber,$sPumpType);
+			if($icheck == '1')				
+			{
+				echo 'Relay number for Light '.$lightNumber.' is already in use by other Device!';
+				exit;
+			}
+			//checkRelayNumbers
+		}
+		
+		foreach($arrLight as $lightNumber => $lightDetails)
+		{
+			$sRelayType		=	$lightDetails->relayType;
+			$sRelayNumber	=	$lightDetails->relayNumber;
+			
+			$sDevice        =   'L';
+			$sDeviceId      =   ($lightNumber-1);
+			
+			$this->load->model('home_model');
+			
+			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+		}
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['LightNumber'] 	= count((array)$arrLight);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['LightNumber']	=	count((array)$arrLight);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo 'Light Configuration done successfully!';
+		exit;
+	}
+	
+	
+	public function saveBlowerRelayConf()
+	{
+		$arrBlower 	=	json_decode($this->input->post('blower'));
+		
+		//First Check whether relay is already assigned to other device or not.
+		foreach($arrBlower as $blowerNumber => $blowerDetails)
+		{
+			$relayType		=	$blowerDetails->relayType;
+			$sRelayNumber	=	$blowerDetails->relayNumber;
+			
+			$iCheck			=	$this->checkRelayNumbers($sRelayNumber,$sPumpType);
+			if($icheck == '1')				
+			{
+				echo 'Relay number for Light '.$blowerNumber.' is already in use by other Device!';
+				exit;
+			}
+			//checkRelayNumbers
+		}
+		
+		foreach($arrBlower as $blowerNumber => $blowerDetails)
+		{
+			$sRelayType		=	$blowerDetails->relayType;
+			$sRelayNumber	=	$blowerDetails->relayNumber;
+			
+			$sDevice        =   'B';
+			$sDeviceId      =   ($blowerNumber-1);
+			
+			$this->load->model('home_model');
+			
+			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+		}
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['BlowerNumber'] 	= count((array)$arrBlower);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['BlowerNumber']	=	count((array)$arrBlower);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo 'Blower Configuration done successfully!';
+		exit;
+	}
+	
+	public function removePump()
+	{
+		$iPumpNumber	=	$this->input->post('iPumpNumber');
+		$this->load->model('home_model');
+		
+		//First check if pump ON/OFF
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+		
+		$sValves        =   $sResponse['valves']; // Valve Device Status
+        $sRelays        =   $sResponse['relay'];  // Relay Device Status
+        $sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+        
+        //Pump device Status
+        $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+		
+		if($sPump[$iPumpNumber] > 0) //Currently Pump is ON, make it OFF.
+		{
+			$aPumpDetails = $this->home_model->getPumpDetails($i);						
+			//Variable Initialization to blank.
+			$sPumpNumber  	= '';
+			$sPumpType  	= '';
+			$sPumpSubType  	= '';
+			$sPumpSpeed  	= '';
+			$sPumpFlow 		= '';
+			$sPumpClosure   = '';
+			$sRelayNumber  	= '';
+
+			if(is_array($aPumpDetails) && !empty($aPumpDetails))
+			{
+			  foreach($aPumpDetails as $aResultEdit)
+			  { 
+				$sPumpNumber  = $aResultEdit->pump_number;
+				$sPumpType    = $aResultEdit->pump_type;
+				$sPumpSubType = $aResultEdit->pump_sub_type;
+				$sPumpSpeed   = $aResultEdit->pump_speed;
+				$sPumpFlow    = $aResultEdit->pump_flow;
+				$sPumpClosure = $aResultEdit->pump_closure;
+				$sRelayNumber = $aResultEdit->relay_number;
+			  }
+			}
+			
+			$iPumpStatus = 0;
+				
+			if($sPumpType != '' && $sPumpClosure == '1')
+			{
+				if($sPumpType == '12' || $sPumpType == '24')
+				{
+					if($sPumpType == '24')
+					{
+						$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+						onoff_rlb_relay($sNewResp);
+					}
+					else if($sPumpType == '12')
+					{
+						$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+						onoff_rlb_powercenter($sNewResp);
+					}
+				}
+				else
+				{
+					if(preg_match('/Emulator/',$sPumpType))
+					{
+						$sNewResp = '';
+						$sNewResp =  $sRelayName.' '.$iPumpStatus;
+						onoff_rlb_pump($sNewResp);
+						
+						if($sPumpType == 'Emulator12')
+						{
+							$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp12);
+						}
+						if($sPumpType == 'Emulator24')
+						{
+							$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp24);
+						}
+					}
+					else if(preg_match('/Intellicom/',$sPumpType))
+					{
+						$sNewResp = '';
+						$sNewResp =  $sRelayName.' '.$iPumpStatus;
+						onoff_rlb_pump($sNewResp);
+						
+						if($sPumpType == 'Intellicom12')
+						{
+							$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+							onoff_rlb_powercenter($sNewResp12);
+						}
+						if($sPumpType == 'Intellicom24')
+						{
+							$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+							onoff_rlb_relay($sNewResp24);
+						}
+					}
+				}
+			}
+		}
+		
+		//Remove Pump Details From database.
+		$this->home_model->removePump($iPumpNumber);
+		
+		//Remove the address associated with the pump on the relay board.
+		$Pump	=	'pm'.$iPumpNumber;
+		removePumpAddress($Pump);
+		
+		exit;
+	}
+	
 }//END : Class Home
 
 /* End of file home.php */
