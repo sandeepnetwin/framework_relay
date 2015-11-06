@@ -298,8 +298,6 @@ class Analog extends CI_Controller
 		if($this->uri->segment('4') != '' && $this->uri->segment('4') == 'remove')
 		{
 			$iTempAction	=	$this->uri->segment('4');
-			echo $iTempAction;
-			die;
 		}
 		
 		
@@ -308,7 +306,7 @@ class Analog extends CI_Controller
 		if($iTempAction != '')
 		{
 			$busNumber	=	'0000000000000000';
-			$this->analog_model->saveBusNumber($iTempID,$busNumber);
+			$this->analog_model->saveBusNumber($iTempID,'');
 			
 			//Configure bus to Temperature Sensors.
 				$sResponse      =   configureTempratureBus('ts'.$iTempID,$busNumber);
