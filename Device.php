@@ -1,5 +1,7 @@
 <?php
 $this->load->model('home_model');
+$this->load->model('analog_model');
+
 $sAccess 		= '';
 $sModule	    = '';
 $sDeviceFullName = '';
@@ -37,6 +39,10 @@ if($sDevice == 'T')
 	  {
 		 $sAccess 		= $aModules->$sAccessKey;
 	  }
+	  else if(!in_array($sModule,$aModules->ids)) 
+	  {
+		$sAccess 		= '0'; 
+	  }
   }
   
   if($sAccess == '')
@@ -44,15 +50,23 @@ if($sDevice == 'T')
   
   if($sAccess == '0') {redirect(site_url('home/'));}
 ?>
+<style>
+.fancybox-inner 
+{
+	height:40px !important;
+}
+</style>
 <script type="text/javascript" src="<?php echo HTTP_ASSETS_PATH.'fancybox/source/jquery.fancybox.js?v=2.1.5';?>"></script>
 <link rel="stylesheet" type="text/css" href="<?php echo HTTP_ASSETS_PATH.'fancybox/source/jquery.fancybox.css?v=2.1.5';?>" media="screen" />
+<?php if($sDevice != 'V') { ?>
 <script type="text/javascript">
 var $a = $.noConflict();
 $a(document).ready(function() {
 	$a('.fancybox').fancybox({'closeBtn' : false,'helpers': {'overlay' : {'closeClick': false}}
 	});
 });
-</script>	
+</script>
+<?php } ?>	
 <link href="<?php echo HTTP_ASSETS_PATH.'progressbar/css/static.css';?>" rel="stylesheet"/>
 <script src="<?php echo HTTP_ASSETS_PATH.'progressbar/js/static.min.js';?>"></script>
 <script src="<?php echo HTTP_ASSETS_PATH.'progressbar/dist/js/jquery.progresstimer.js';?>"></script>
@@ -72,7 +86,7 @@ jQuery(document).ready(function($) {
 		});
 		
 	});
-	
+	<?php if($sAccess == 2) { ?>
 	$("#addMoreValve").click(function() {
 		$("#moreValve").slideToggle('slow');
 	});
@@ -80,7 +94,7 @@ jQuery(document).ready(function($) {
 	$(".relayButton").click(function()
 	{
 		//$a('.fancybox').fancybox();
-		
+		<?php if($iActiveMode == '2') { ?>
 		$(".loading-progress").show();
 		var progress = $(".loading-progress").progressTimer({
 			timeLimit: 10,
@@ -107,7 +121,7 @@ jQuery(document).ready(function($) {
 			status = 1;
 		}
 		
-		<?php if($iActiveMode == '2') { ?>
+		
 		 $.ajax({
 			type: "POST",
 			url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
@@ -176,6 +190,7 @@ jQuery(document).ready(function($) {
 	
 	$(".powerButton").click(function()
 	{
+		<?php if($iActiveMode == '2') { ?>
 		 $(".loading-progress").show();
 		var progress = $(".loading-progress").progressTimer({
 			timeLimit: 10,
@@ -199,7 +214,7 @@ jQuery(document).ready(function($) {
 			status = 1;
 		}
 		
-		<?php if($iActiveMode == '2') { ?>
+		
 		 $.ajax({
 			type: "POST",
 			url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
@@ -336,6 +351,7 @@ jQuery(document).ready(function($) {
 	
 	$(".pumpsButton").click(function()
 	{
+		<?php if($iActiveMode == '2') { ?>
 		$(".loading-progress").show();
 		var progress = $(".loading-progress").progressTimer({
 			timeLimit: 10,
@@ -359,7 +375,7 @@ jQuery(document).ready(function($) {
 			status = 1;
 		}
 		
-		<?php if($iActiveMode == '2') { ?>
+		<?php //if($iActiveMode == '2') { ?>
 		 $.ajax({
 			type: "POST",
 			url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
@@ -390,6 +406,7 @@ jQuery(document).ready(function($) {
 		});
 		 <?php } else {  ?>
 		  alert('You can perform this operation in manual mode only.');
+		  
 		 <?php } ?> 
 	});
 	
@@ -429,9 +446,30 @@ jQuery(document).ready(function($) {
 			progress.progressTimer('complete');
 		});
 	});
-	
+	<?php } ?>
 	
 });
+
+function removePump(iPumpNumber)
+{
+	var cnf	=	confirm("Are you sure, you want to remove Pump?");
+	if(cnf)
+	{
+		$("#loadingImgPumpRemove_"+iPumpNumber).show();
+		$.ajax({
+				type: "POST",
+				url: "<?php echo site_url('home/removePump');?>", 
+				data: {iPumpNumber:iPumpNumber},
+				success: function(resp) {
+					$("#loadingImgPumpRemove_"+iPumpNumber).hide();
+					alert('Pump details removed successfully!');
+					location.reload(); 
+				}
+
+			});
+	}
+}
+
 function RemoveValveRelays(iValaveNumber)
 	{
 		var cnf	=	confirm("Are you sure, you want to remove relays?");
@@ -509,20 +547,14 @@ function removeValve()
 		  <li><img src="<?php echo HTTP_IMAGES_PATH.'icons/home.png';?>" width="24" style="vertical-align: middle !important;">&nbsp;<a href="<?php echo site_url();?>">Home</a> </li>
 		  <li class="active"><?php echo $sDeviceFullName;?></li>
 		</ol>
-		<ol class="breadcrumb" style="float:right;">
-		  <li><a href="<?php echo base_url('home/setting/R/');?>">24V AC Relays</a></li>
-		  <li><a href="<?php echo base_url('home/setting/P/');?>">12V DC Relays</a></li>
-		  <li><a href="<?php echo base_url('home/setting/V/');?>">Valve</a></li>
-		  <li><a href="<?php echo base_url('home/setting/PS/');?>">Pump</a></li>
-		  <li><a href="<?php echo base_url('home/setting/T/');?>">Temperature Sensors</a></li>
-		</ol>
+		<p>
+		<a class="fancybox" id="checkLink" href="#inline1" style="display:none;">&nbsp;</a>
+		<div id="inline1" style="width:250px;height:auto; display:none;"><div class="loading-progress"></div></div>
+		</p>
 	</div>
 </div>	
 
-<p>
-		<a class="fancybox" id="checkLink" href="#inline1" style="display:none;">&nbsp;</a>
-		<div id="inline1" style="width:250px;height:40px; display:none;"><div class="loading-progress"></div></div>
-</p>
+
 		
 <!-- START : 24V AC RELAY -->
 <?php if($sDevice == 'R') 
@@ -531,12 +563,13 @@ function removeValve()
 		  { ?>
 			<div class="row">
 				<div class="col-sm-4">
-					<!-- widget Tags-->
-					<div class="widget-container widget-tags styled boxed">
-						<div class="inner" style="padding-left:15px; padding-right:15px;">
-							<h3 class="widget-title">Relay ON/OFF (24V AC)</h3>
-							<!--<div class="loading-progress"></div>-->
-							<div class="tagcloud clearfix">
+					<div class="widget-container widget-stats boxed green-line">
+					<div class="widget-title">
+						<a href="<?php echo base_url('home/setting/'.$sDevice.'/');?>" class="link-refresh" id="link-refresh-1"><span class="glyphicon glyphicon-refresh"></span></a>
+						<h3>ON/OFF</h3>
+					</div>
+					<div class="stats-content clearfix">
+						<div class="stats-content-right" style="width:96% !important; margin-left:5px; margin-right:5px; margin-top:10px; float:none;">
 							<?php
 								for ($i=0;$i < $relay_count; $i++)
 								{
@@ -555,16 +588,15 @@ function removeValve()
 							?>
 									    <div class="rowCheckbox switch">
 											<div class="custom-checkbox"><input type="checkbox" value="<?php echo $i;?>" id="relay-<?php echo $i?>" name="relay-<?php echo $i?>" class="relayButton" hidefocus="true" style="outline: medium none;">
-												<label <?php echo $strChecked;?>  id="lableRelay-<?php echo $i?>" for="relay-<?php echo $i?>"><span style="color:#C9376E;"><?php echo $strRelayName;?></span></label>
+												<label <?php echo $strChecked;?>  id="lableRelay-<?php echo $i?>" for="relay-<?php echo $i?>"><span style="color:#C9376E; float:right;"><?php echo $strRelayName;?></span></label>
 											</div>
 										</div>
 							<?php 	}		
 								 }
 							?> 
-							</div>
 						</div>
 					</div>
-					<!--/ widget Tags-->
+					</div>
 				</div>
 				  
 				<div class="col-sm-8">
@@ -687,13 +719,14 @@ function removeValve()
 			
 			<div class="row">
 				<div class="col-sm-4">
-					<!-- widget Tags-->
-					<div class="widget-container widget-tags styled boxed">
-						<div class="inner" style="padding-left:15px; padding-right:15px;">
-							<h3 class="widget-title">Relay ON/OFF (12V DC)</h3>
-							
-							<div class="tagcloud clearfix">
-							<?php
+					<div class="widget-container widget-stats boxed green-line">
+					<div class="widget-title">
+						<a href="<?php echo base_url('home/setting/'.$sDevice.'/');?>" class="link-refresh" id="link-refresh-1"><span class="glyphicon glyphicon-refresh"></span></a>
+						<h3>ON/OFF</h3>
+					</div>
+					<div class="stats-content clearfix">
+						<div class="stats-content-right" style="width:96% !important; margin-left:5px; margin-right:5px; margin-top:10px; float:none;">
+						<?php
 								for ($i=0;$i < $power_count; $i++)
 								{
 									$iRelayVal = $sPowercenter[$i];
@@ -711,16 +744,15 @@ function removeValve()
 							?>
 									    <div class="rowCheckbox switch">
 											<div class="custom-checkbox"><input type="checkbox" value="<?php echo $i;?>" id="power-<?php echo $i?>" name="power-<?php echo $i?>" class="powerButton" hidefocus="true" style="outline: medium none;">
-												<label <?php echo $strChecked;?>  id="lablePower-<?php echo $i?>" for="power-<?php echo $i?>"><span style="color:#C9376E;"><?php echo $strRelayName;?></span></label>
+												<label <?php echo $strChecked;?>  id="lablePower-<?php echo $i?>" for="power-<?php echo $i?>"><span style="color:#C9376E; float:right;"><?php echo $strRelayName;?></span></label>
 											</div>
 										</div>
 							<?php 	}		
 								 }
 							?> 
-							</div>
-						</div>
 					</div>
-					<!--/ widget Tags-->
+					</div>
+					</div>
 				</div>
 				<div class="col-sm-8">
 						<!-- Statistics -->
@@ -805,13 +837,14 @@ function removeValve()
 			</script>
 			<div class="row">
 				<div class="col-sm-4">
-					<!-- widget Tags-->
-					<div class="widget-container widget-tags styled boxed">
-						<div class="inner" style="padding-left:15px; padding-right:15px;">
-							<h3 class="widget-title">Valve ON/OFF</h3>
-							
-							<div class="tagcloud clearfix">
-							<?php
+					<div class="widget-container widget-stats boxed green-line">
+					<div class="widget-title">
+						<a href="<?php echo base_url('home/setting/'.$sDevice.'/');?>" class="link-refresh" id="link-refresh-1"><span class="glyphicon glyphicon-refresh"></span></a>
+						<h3>ON/OFF</h3>
+					</div>
+					<div class="stats-content clearfix">
+						<div class="stats-content-right" style="width:96% !important; margin-left:5px; margin-right:5px; margin-top:10px; float:none;">
+						<?php
 							if( $iValveNumber == 0 || $iValveNumber == '' )
 							{ ?>
 								
@@ -1157,11 +1190,10 @@ function removeValve()
 								    }
 								}
 							}
-							?> 
-							</div>
+							?>
 						</div>
 					</div>
-					<!--/ widget Tags-->
+					</div>
 				</div>
 				<div class="col-sm-8">
 				<div class="widget-container widget-stats boxed green-line">
@@ -1248,9 +1280,9 @@ function removeValve()
 										</td>
 										<td>
 
-										<a class="btn btn-green btn-small" style="width:120px" href="<?php echo base_url('home/valveRelays/'.base64_encode($i).'/'.base64_encode($sDevice));?>"><span>Add Relays</span></a>
+										<a class="btn btn-green btn-small" style="width:120px" href="<?php if($sAccess == '2') { echo base_url('home/valveRelays/'.base64_encode($i).'/'.base64_encode($sDevice));} else { echo 'javascript:void(0);';}?>"><span>Add Relays</span></a>
 										<?php if(!empty($aRelayNumber)) { ?>
-										<a class="btn btn-red btn-small" style="width:120px" href="javascript:void(0);" onclick="return RemoveValveRelays('<?php echo $i;?>')"><span>Remove Relays</span></a>
+										<a class="btn btn-red btn-small" style="width:120px" href="javascript:void(0);" <?php if($sAccess == '2') { echo 'onclick="return RemoveValveRelays(\''.$i.'\')"';} ?>><span>Remove Relays</span></a>
 										<?php } ?>
 										<a class="btn btn-small" style="width:120px" href="<?php if($sAccess == 2) { echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';}?>"><span>Edit Position</span></a>
 										<!--<a class="btn btn-small btn-red" style="width:120px" href="<?php if($sAccess == 2) { echo site_url('home/removeValve/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';}?>"><span>Remove Valve</span></a>-->
@@ -1310,12 +1342,12 @@ function removeValve()
 											<div class="rowRadio"><div class="custom-radio"><input class="valveRadio" type="radio" id="radio_pool_<?php echo $i;?>" name="<?php echo $i;?>_MainType" value="2" <?php if($sMainType == '2'){ echo 'checked="checked"';}?> <?php if($sAccess == '1') { echo 'disabled="disabled"';}?> hidefocus="true" style="outline: medium none;"><label id="relay_pool_<?php echo $i;?>" for="radio_pool_<?php echo $i;?>" class="<?php if($sMainType == '2'){ echo 'checked';}?>">Pool</label></div></div>
 										</td>
 										<td>
-										<a class="btn btn-green btn-small" style="width:120px" href="<?php echo base_url('home/valveRelays/'.base64_encode($i).'/'.base64_encode($sDevice));?>"><span>Add Relays</span></a>
+										<a class="btn btn-green btn-small" style="width:120px" href="<?php if($sAccess == '2') { echo base_url('home/valveRelays/'.base64_encode($i).'/'.base64_encode($sDevice));} else { echo 'javascript:void(0);';}?>"><span>Add Relays</span></a>
 										<?php if(!empty($aRelayNumber)) { ?>
-										&nbsp;&nbsp;<a class="btn btn-red btn-small" style="width:120px" href="javascript:void(0);" onclick="return RemoveValveRelays('<?php echo $i;?>')"><span>Remove Relays</span></a>
+										&nbsp;&nbsp;<a class="btn btn-red btn-small" style="width:120px" href="javascript:void(0);" <?php if($sAccess == '2') { echo ' onclick="return RemoveValveRelays(\''.$i.'\');"';}?>><span>Remove Relays</span></a>
 										<?php } ?>
 										<a class="btn btn-small" style="width:120px" href="<?php if($sAccess == 2) { echo site_url('home/positionName/'.base64_encode($i).'/'.base64_encode($sDevice).'/'); } else { echo 'javascript:void(0);';}?>"><span>Edit Position</span></a>
-										<a class="btn btn-small btn-red" style="width:120px" href="javascript:void(0);" onclick="removeValve();"><span>Remove Valve</span></a>
+										<a class="btn btn-small btn-red" style="width:120px" href="javascript:void(0);" <?php if($sAccess == '2') { echo ' onclick="onclick="removeValve();"';}?> ><span>Remove Valve</span></a>
 										</td>
 										</tr>
 								<?php	} ?>
@@ -1351,13 +1383,14 @@ function removeValve()
 		<?php if($sAccess == 1 || $sAccess == 2) { ?>
 			<div class="row">
 				<div class="col-sm-6">
-					<!-- widget Tags-->
-					<div class="widget-container widget-tags styled boxed">
-						<div class="inner" style="padding-left:15px; padding-right:15px;">
-							<h3 class="widget-title">PUMP ON/OFF</h3>
-							
-							<div class="tagcloud clearfix">
-							<?php
+					<div class="widget-container widget-stats boxed green-line">
+					<div class="widget-title">
+						<a href="<?php echo base_url('home/setting/'.$sDevice.'/');?>" class="link-refresh" id="link-refresh-1"><span class="glyphicon glyphicon-refresh"></span></a>
+						<h3>ON/OFF</h3>
+					</div>
+					<div class="stats-content clearfix">
+						<div class="stats-content-right" style="width:96% !important; margin-left:5px; margin-right:5px; margin-top:10px; float:none;">
+						<?php
                     
 								if( $iPumpsNumber == 0 || $iPumpsNumber == '' )
 								{ ?>
@@ -1872,11 +1905,10 @@ function removeValve()
 										</div>
 										<div style="height:20px;">&nbsp;</div>
 									<?php } ?>
-							<?php } ?>	
-							</div>
+							<?php } ?>
 						</div>
 					</div>
-					<!--/ widget Tags-->
+					</div>
 				</div>
 				  
 				<div class="col-sm-6">
@@ -2038,7 +2070,11 @@ function removeValve()
 									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed3" value="3" <?php if($sPumpSpeed == 3) {echo 'checked="checked";';}?>>&nbsp;3&nbsp;&nbsp;
 									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed4" value="4" <?php if($sPumpSpeed == 4) {echo 'checked="checked";';}?>>&nbsp;4&nbsp;&nbsp;
 									</div>
-										<?php } ?>									
+										<?php } ?>
+									<div style="padding-top: 10px; padding-bottom: 10px;">
+									<a href="javascript:void(0);" onclick="removePump('<?php echo $i;?>')" class="btn btn-red btn-small"><span>Remove Pump</span>
+									</a>&nbsp;&nbsp;<span id="loadingImgPumpRemove_<?php echo $i;?>" style="display:none;"><img src="<?php echo site_url('assets/images/loading.gif');?>" alt="Loading...." width="32" height="32"></span>
+									</div>									
 									</td>
 									</tr>
 									<?php 
@@ -2172,7 +2208,11 @@ function removeValve()
 									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed3" value="3" <?php if($sPumpSpeed == 3) {echo 'checked="checked";';}?>>&nbsp;3&nbsp;&nbsp;
 									<input type="radio" class="pumpSpeedSet" name="pageSpeed_<?php echo $i;?>" id="pageSpeed4" value="4" <?php if($sPumpSpeed == 4) {echo 'checked="checked";';}?>>&nbsp;4&nbsp;&nbsp;
 									</div>
-										<?php } ?>		
+										<?php } ?>	
+									<div style="padding-top: 10px; padding-bottom: 10px;">
+									<a href="javascript:void(0);" onclick="removePump('<?php echo $i;?>')" class="btn btn-red btn-small"><span>Remove Pump</span>
+									</a>&nbsp;&nbsp;<span id="loadingImgPumpRemove_<?php echo $i;?>" style="display:none;"><img src="<?php echo site_url('assets/images/loading.gif');?>" alt="Loading...." width="32" height="32"></span>
+									</div>			
 									</td>
 									</tr>
 											<?php } ?>
@@ -2211,7 +2251,8 @@ function removeValve()
 						  <tr style="font-weight:bold;">
 							<th class="header" style="width:25%">Temperature sensor</th>
 							<th class="header"  style="width:25%">Temperature</th>
-							<th class="header"  style="width:50%">Action</th>
+							<th class="header"  style="width:25%">Action</th>
+							<th class="header"  style="width:25%">&nbsp;</th>
 						  </tr>
 						</thead>
 						<tbody>
@@ -2228,11 +2269,25 @@ function removeValve()
 							  
 								if($iTempratureVal == '')
 									$iTempratureVal = '-';
+								
+								$strBusNumber	 =	'';
+								$strGetBusNumber = "SELECT light_relay_number FROM rlb_device WHERE device_type = 'T' AND device_number='".$i."'";
+								
+								$query  =   $this->db->query($strGetBusNumber);
+								
+								if($query->num_rows() > 0)
+								{
+									foreach($query->result() as $rowResult)
+									{
+										$strBusNumber	=	$rowResult->light_relay_number;
+									}
+								}
 						?>
 							  <tr>
 								<td>Temperature sensor <?php echo $i;?></td>
 								<td><?php echo $iTempratureVal;?></td>
 								<td><a href="<?php if($sAccess == 2){ echo site_url('home/deviceName/'.base64_encode($i).'/'.base64_encode($sDevice).'/');} else { echo 'javascript:void(0);';}?>" ><?php echo $sTempratureNameDb;?></a></td>
+								<td><a class="btn btn-small btn-red" href="<?php echo base_url('analog/tempConfig/'.base64_encode($i));?>"><span>Configure</span>	</a><?php if($i != 0 && $strBusNumber != '') { ?>&nbsp;&nbsp;<a class="btn btn-small btn-red" href="<?php echo base_url('analog/tempConfig/'.base64_encode($i).'/remove/');?>"><span>Remove Sensor</span>	</a><?php } ?></td>
 							  </tr>
 						<?php } ?>
 						</tbody>
