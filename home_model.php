@@ -110,7 +110,20 @@ class Home_model extends CI_Model
 	//START : Function to SAVE/UPDATE manual Mode Time.
 	public function updateManualModeTime($sTime)
 	{
+		$iMode			= $this->getActiveMode();
+		$existTime		= $this->getManualModeTime();	
 		$data = array('timer_total' => $sTime);
+		
+		if($iMode == 2 && $existTime != $sTime)
+		{
+			$sProgramAbsStart =   date("H:i:s", time());
+			$aStartTime       =   explode(":",$sProgramAbsStart);
+			$sProgramAbsEnd   =   mktime(($aStartTime[0]),($aStartTime[1]+$sTime),($aStartTime[2]),0,0,0);
+			$sAbsoluteEnd     =   date("H:i:s", $sProgramAbsEnd);
+			
+			$data['timer_start'] = $sProgramAbsStart;
+			$data['timer_end'] 	 = $sAbsoluteEnd;
+		}
         $this->db->where('mode_id',2);
         $this->db->update('rlb_modes', $data);
 	}//END : Function to SAVE/UPDATE manual Mode Time.
