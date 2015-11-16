@@ -227,9 +227,12 @@ class Home_model extends CI_Model
 				if($aRow->extra != '')
 					$aExtra = unserialize($aRow->extra);
 				
-				$aExtra['PumpsNumber'] = $aNumDevice['PumpsNumber'];
-				$aExtra['ValveNumber'] = $aNumDevice['ValveNumber'];
-				$aExtra['Remote_Spa']  = $showRemoteSpa;
+				$aExtra['PumpsNumber'] 	= $aNumDevice['PumpsNumber'];
+				$aExtra['ValveNumber'] 	= $aNumDevice['ValveNumber'];
+				$aExtra['LightNumber'] 	= $aNumDevice['LightNumber'];
+				$aExtra['HeaterNumber'] = $aNumDevice['HeaterNumber'];
+				$aExtra['BlowerNumber'] = $aNumDevice['BlowerNumber'];
+				$aExtra['Remote_Spa']  	= $showRemoteSpa;
 				
                 $data = array('extra' => serialize($aExtra) );
                 $this->db->where('id', $aRow->id);
@@ -443,6 +446,16 @@ class Home_model extends CI_Model
             $this->db->update('rlb_program', $data);
         }
     }
+	
+	public function updateAbsProgramRunDetails($iProgId)
+	{
+		if($iProgId)
+        {
+            $data = array('program_absolute_start_time' => '','program_absolute_end_time'=>'','program_absolute_run_time'=>'');
+            $this->db->where('program_id', $iProgId);
+            $this->db->update('rlb_program', $data);
+        }
+	}
 
     public function updateProgramAbsDetails($iProgId,$aAbsoluteDetails)
     {
@@ -453,7 +466,7 @@ class Home_model extends CI_Model
         $sProgramAbsStartDay    =   $aAbsoluteDetails['absolute_sd'];
         $sProgramAbsRunStatus   =   $aAbsoluteDetails['absolute_st'];
 
-        if($sProgramAbsStartDay == '' || strtotime($sProgramAbsStartDay) != strtotime(date('Y-m-d')))
+		if($sProgramAbsStartDay == '' || strtotime($sProgramAbsStartDay) != strtotime(date('Y-m-d')))
         {
             $aTotalTime       =   explode(":",$sProgramAbsTotal);
             $sProgramAbsStart =   date("H:i:s", time());
@@ -473,8 +486,7 @@ class Home_model extends CI_Model
         }
         else if(strtotime($sProgramAbsStartDay) == strtotime(date('Y-m-d')))
         {
-
-            if($sProgramAbsAlreadyRun != '')
+			if($sProgramAbsAlreadyRun != '')
             {
                 $aAlreadyRunTime    =   explode(":",$sProgramAbsAlreadyRun);
                 $aTotalTime         =   explode(":",$sProgramAbsTotal);
@@ -493,6 +505,7 @@ class Home_model extends CI_Model
                 $this->db->where('program_id', $iProgId);
                 $this->db->update('rlb_program', $data);
             }
+			
         }
     }
 
@@ -505,6 +518,11 @@ class Home_model extends CI_Model
         $sProgramAbsStartDay    =   $aAbsoluteDetails['absolute_sd'];
         $sProgramAbsRunStatus   =   $aAbsoluteDetails['absolute_st'];
 
+		$time1Already      			= new DateTime($sProgramAbsStart);
+        $time2Already      			= new DateTime($sProgramAbsEnd);
+        $intervalAlready   			= $time2Already->diff($time1Already);
+        $sProgramAbsAlreadyRun 		= $intervalAlready->format('%H:%I:%S');
+		
         $time1      = new DateTime($sProgramAbsStart);
         $tempTime   = date('H:i:s',time());
         $time2      = new DateTime($tempTime);
@@ -512,7 +530,8 @@ class Home_model extends CI_Model
         $sTotalTime = $interval->format('%H:%I:%S');
 
         $time1      = new DateTime($sTotalTime);
-        $time2      = new DateTime($sProgramAbsTotal);
+        //$time2      = new DateTime($sProgramAbsTotal);
+		$time2      = new DateTime($sProgramAbsAlreadyRun);
         $interval   = $time2->diff($time1);
         $sTotalTime = $interval->format('%H:%I:%S');
 		
@@ -522,8 +541,8 @@ class Home_model extends CI_Model
                       'program_absolute_start_date'  => date('Y-m-d'),
                       'program_absolute_run'         => $sProgramAbsRunStatus
                       );
-
-        $this->db->where('program_id', $iProgId);
+		
+		$this->db->where('program_id', $iProgId);
         $this->db->update('rlb_program', $data);
     }
 
@@ -931,6 +950,7 @@ class Home_model extends CI_Model
 			}
         }
 		
+	
 
         return json_encode($aResult);
 	}
@@ -1132,6 +1152,264 @@ class Home_model extends CI_Model
 		$sSql   =   "UPDATE rlb_pump_device SET pump_speed='".$speed."' WHERE pump_number ='".$pumpID."'";
         $query  =   $this->db->query($sSql);
 	}
+	
+	public function savePoolSpaModeQuestions($arrDetails)
+	{
+		$sSql   =   "SELECT id FROM `rlb_mode_questions`";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				$data = array('general'     	=> serialize($arrDetails['General']),
+							  'device'			=> serialize($arrDetails['Device']),
+							  'heater'			=> serialize($arrDetails['Heater']),
+							  'more'			=> serialize($arrDetails['More']),
+							  'last_modified'	=> date('Y-m-d H:i:s')
+						);
+				$this->db->where('id',$aRow->id);	
+				$this->db->update('rlb_mode_questions', $data);
+			}
+		}
+		else
+		{
+			$data = array('general'     => serialize($arrDetails['General']),
+						  'device'		=> serialize($arrDetails['Device']),
+						  'heater'		=> serialize($arrDetails['Heater']),
+						  'more'		=> serialize($arrDetails['More']),
+                          'added_date'	=> date('Y-m-d H:i:s')
+						);
+
+            $this->db->insert('rlb_mode_questions', $data);
+		}
+	}
+	
+	public function getPoolSpaModeQuestions()
+	{
+		$arrDetails	=	array();
+		$sSql   =   "SELECT id,general,device,heater,more FROM `rlb_mode_questions`";
+                $query  =   $this->db->query($sSql);
+
+                if ($query->num_rows() > 0)
+                {
+                    foreach($query->result() as $aRow)
+                    {  
+				$arrDetails['General']	=	$aRow->general;
+				$arrDetails['Device']	=	$aRow->device;
+				$arrDetails['Heater']	=	$aRow->heater;
+				$arrDetails['More']		=	$aRow->more;
+		    }
+		}
+		
+		return $arrDetails;
+	}
+        
+	public function saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType)
+	{
+		$sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceId." AND device_type ='".$sDevice."'";
+		$query  =   $this->db->query($sSql);
+		
+		$arrLightDetails    =   array('sRelayType'=>$sRelayType,'sRelayNumber'=>$sRelayNumber);
+		
+		if($query->num_rows() > 0)
+		{
+			foreach($query->result() as $aRow)
+			{
+				$sSqlUpdate =   "UPDATE rlb_device SET light_relay_number='".serialize($arrLightDetails)."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+				$this->db->query($sSqlUpdate);
+			}
+		}
+		else
+		{
+			$sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,light_relay_number,last_updated_date) VALUES('".$sDeviceId."','".$sDevice."','".serialize($arrLightDetails)."','".date('Y-m-d H:i:s')."')";
+			$this->db->query($sSqlInsert);
+		}
+	}
+	
+	public function getLightDeviceExceptSelected($sDeviceId)
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_number != '".$sDeviceId."' AND device_type ='L'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	
+	public function getLightDeviceDetails($sDeviceId)
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_number = '".$sDeviceId."' AND device_type ='L'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function getLightDevices()
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE  device_type ='L'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function getAllLightDeviceForType($sPumpType)
+	{
+		$arrDetails	=	array();
+		$sSql   	=   "SELECT device_number,light_relay_number FROM rlb_device WHERE device_type = 'L' AND light_relay_number !=''";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			foreach($query->result() as $rowResult)
+			{
+				$sRelayDetails	= unserialize($rowResult->light_relay_number);
+				
+				if(preg_match('/'.$sPumpType.'/',$sRelayDetails['sRelayType']))
+				{
+					$arrDetails[] = $rowResult;
+				}
+			}
+		}
+		
+		return json_encode($arrDetails);
+	}
+	
+	
+	public function getHeaterDeviceDetails($sDeviceId)
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_number = '".$sDeviceId."' AND device_type ='H'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function getBlowerDeviceDetails($sDeviceId)
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_number = '".$sDeviceId."' AND device_type ='B'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function getActiveModePoolSpa()
+	{
+		$sSql   =   "SELECT id FROM rlb_pool_spa_mode WHERE mode_status = '1'";
+		$query  =   $this->db->query($sSql);
+
+		if ($query->num_rows() > 0)
+		{
+			foreach($query->result() as $rowResult)
+			{
+				return $rowResult->id; 
+			}
+		}
+
+		return '';
+	}
+	
+	public function UpdatePoolSpaMode($iMode)
+	{
+		//First Make all modes status 0
+		$sSql	=	"UPDATE rlb_pool_spa_mode SET mode_status='0',total_run_time='',unique_id=''";
+		$this->db->query($sSql);
+		
+		$unique_id	=	uniqid (rand(), true);
+		$sSqlUpdate	=	"UPDATE rlb_pool_spa_mode SET mode_status = '1', last_start_date='".date('Y-m-d H:i:s')."',last_end_date='0000-00-00 00:00:00',unique_id='".$unique_id."' WHERE id=".$iMode;
+		$this->db->query($sSqlUpdate);
+	}
+	
+	public function getModePoolSpa()
+	{
+		$strMode =	'';	
+		$sSql   =   "SELECT general FROM rlb_mode_questions WHERE id = '1'";
+		$query  =   $this->db->query($sSql);
+
+		if ($query->num_rows() > 0)
+		{
+			foreach($query->result() as $rowResult)
+			{
+				$arrTemp	=	unserialize($rowResult->general);
+				if(isset($arrTemp['type']) && $arrTemp['type'] != '')
+				{
+					$strMode =	ucfirst($arrTemp['type']);	
+				}
+			}
+		}
+
+		return $strMode;
+	}
+	
+	//Get all absolute programs.
+	public function getAllAbsoluteProgramDetails()
+	{
+		$strSelAbsProgram	=	"SELECT program_id,device_number,device_type FROM rlb_program WHERE program_absolute = '1' AND program_delete = '0'";
+		$query  =   $this->db->query($strSelAbsProgram);
+
+		if ($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}//Get all absolute programs.
+	
+	//Check if absolute program is running or not.
+	public function chkAbsoluteProgramRunning($iProgramID)
+	{
+		$iActive			=	'';
+		$strChkAbsProgram	=	"SELECT program_active FROM rlb_program WHERE program_id = '".$iProgramID."' AND program_delete = '0'";
+		$query  =   $this->db->query($strChkAbsProgram);
+
+		if ($query->num_rows() > 0)
+		{
+			foreach($query->result() as $rowResult)
+			{
+				$iActive	=	$rowResult->program_active;
+			}
+		}
+		
+		return $iActive;
+	}//Check if absolute program is running or not.
+		
+	public function removePump($iPumpNumber)
+	{
+		//First Delete Pump From the Device Table.
+		$strDeletePump	=	"DELETE FROM rlb_device WHERE device_number='".$iPumpNumber."' AND device_type = 'PS'";
+		$this->db->query($strDeletePump);
+		
+		//Delete Pump Details from pump_device table.
+		$strDeletePumpDetails	=	"DELETE FROM rlb_pump_device WHERE pump_number='".$iPumpNumber."'";
+		$this->db->query($strDeletePumpDetails);
+		
+		//Delete Response Stored for the Pump
+		//$strDeletePumpResp	=	"DELETE FROM rlb_pump_response WHERE pump_number='".$iPumpNumber."'";
+		//$this->db->query($strDeletePumpResp);
+	}	
 }
 
 /* End of file home_model.php */

@@ -213,13 +213,16 @@ class Cron extends CI_Controller
 
         $iMode          =   $this->home_model->getActiveMode();
         //$iMode          =   1;
-        $sTime          =   date('H:i:s',time());
+        echo $sTime          =   date('H:i:s',time());
+		
+		//$sTime			=	'10:00:01';
         $aAllProgram    =   $this->home_model->getAllProgramsDetails();
         
         if(is_array($aAllProgram) && !empty($aAllProgram))
         {
             foreach($aAllProgram as $aResultProgram)
             {
+				
                 $sRelayName     = $aResultProgram->device_number;
 				$sDevice     	= $aResultProgram->device_type;
                 $iProgId        = $aResultProgram->program_id;
@@ -314,8 +317,7 @@ class Cron extends CI_Controller
                     }
                 }
 				else if($sDevice == 'PS')
-				{
-					
+				{					
 					if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
 						$aAbsoluteDetails       = array('absolute_s'  => $sProgramAbsStart,
@@ -350,14 +352,13 @@ class Cron extends CI_Controller
 						  }
 						}
 						
-						
+						//$iMode = '1';
 						if($sProgramAbs == '1' && $iMode == 1)
                         {
-							if($sProgramActive == 0)
-                                $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
-							
 							if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
                             {
+								$this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
+							
 								$iPumpStatus = 1;
                                 
 								if($sPumpType != '' && $sPumpClosure == '1')
@@ -379,7 +380,6 @@ class Cron extends CI_Controller
 									{
 										if(preg_match('/Emulator/',$sPumpType))
 										{
-											
 											$sNewResp = '';
 											$sType          =   '';
 											if($sPumpSubType == 'VS')
@@ -389,7 +389,7 @@ class Cron extends CI_Controller
 
 											$sNewResp =  $sRelayName.' '.$sType;
 											
-											echo onoff_rlb_pump($sNewResp);
+											onoff_rlb_pump($sNewResp);
 											
 											if($sPumpType == 'Emulator12')
 											{
@@ -485,12 +485,14 @@ class Cron extends CI_Controller
 								$this->home_model->updateDeviceStauts($sRelayName,'PS','0');
                                 $this->home_model->updateProgramStatus($iProgId, 0);
                                 $this->home_model->updateAbsProgramRun($iProgId, '1');
+								$this->home_model->updateAbsProgramRunDetails($iProgId, '1');
                             }
                         }
-                        else if($sProgramAbs == '1' && $iMode == 2)
+                        else if($sProgramAbs == '1' && $iMode == 2 )
                         {
 							if($sProgramActive == 1)
                             {
+								 
                                $iPumpStatus = 0;
                                 
 								if($sPumpType != '' && $sPumpClosure == '1')
@@ -965,7 +967,7 @@ class Cron extends CI_Controller
 				
 				if($iProgramID)
 				{
-					$data = array('program_absolute_start_date' => '');
+					$data = array('program_absolute_start_time' => '','program_absolute_end_time'=>'','program_absolute_run_time'=>'','program_absolute_start_date'=>'');
 					$this->db->where('program_id', $iProgramID);
 					$this->db->update('rlb_program', $data);
 				}
@@ -985,6 +987,11 @@ class Cron extends CI_Controller
 		fwrite($fh, $stringData);
 		fclose($fh);
 	} */
+	
+	function tp()
+	{
+		$this->template->build('welcome_message');
+	}
 }
 
 ?>
