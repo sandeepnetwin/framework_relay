@@ -1422,6 +1422,20 @@ class Home_model extends CI_Model
 		//Delete Response Stored for the Pump
 		//$strDeletePumpResp	=	"DELETE FROM rlb_pump_response WHERE pump_number='".$iPumpNumber."'";
 		//$this->db->query($strDeletePumpResp);
+	}
+
+	public function getAllActivePrograms()
+	{
+		$iActive			=	'';
+		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0'";
+		$query  =   $this->db->query($strChkProgram);
+
+		if ($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
 	}	
 }
 

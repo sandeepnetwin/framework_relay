@@ -196,6 +196,23 @@ class Home extends CI_Controller
 			$aViewParameter['sTemperature'] = '<p style="line-height:40px">'.$sExtra.'</p>';
 			$aViewParameter['Remote_Spa'] = isset($extra['Remote_Spa'])?$extra['Remote_Spa']:0;
 			
+			$aAllActiveProgram	=	$this->home_model->getAllActivePrograms();
+			
+			if(!empty($aAllActiveProgram))
+			{
+				foreach($aAllActiveProgram as $aActiveProgram)
+				{
+					if($aActiveProgram->device_type == 'R')
+					{
+						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.' is Running for <strong>Relay '.$aActiveProgram->device_number.'</strong>!';
+					}
+					else if($aActiveProgram->device_type == 'PS')
+					{
+						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.' is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>!';
+					}
+				}
+			}
+			
 			$aViewParameter['welcome_message'] = $strMessage;
 		}
 			
