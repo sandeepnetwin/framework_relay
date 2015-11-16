@@ -405,7 +405,71 @@ jQuery(document).ready(function($) {
 			progress.progressTimer('complete');
 		});
 		 <?php } else {  ?>
-		  alert('You can perform this operation in manual mode only.');
+		  //alert('You can perform this operation in manual mode only.');
+		  var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
+			if(bConfirm)
+			{
+				$.ajax({
+					type: "POST",
+					async:false,
+					url: "<?php echo site_url('analog/changeMode');?>", 
+					data: {iMode:'2'},
+					success: function(data) {
+					}
+				});
+				
+				$(".loading-progress").show();
+					var progress = $(".loading-progress").progressTimer({
+						timeLimit: 10,
+						onFinish: function () {
+						  //$(".loading-progress").hide();
+							setTimeout(function(){location.reload();parent.$a.fancybox.close();},1000);
+							
+						}
+					});
+					
+					$a("#checkLink").trigger('click');
+					
+					var relayNumber = $(this).val();
+					var status		= '';
+					if($("#lablePump-"+relayNumber).hasClass('checked'))
+					{	
+						status	=	0;
+					}
+					else
+					{
+						status = 1;
+					}
+					
+					$.ajax({
+						type: "POST",
+						url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
+						data: {sName:relayNumber,sStatus:status,sDevice:'PS'},
+						success: function(data) {
+							
+							if($("#lablePump-"+relayNumber).hasClass('checked'))
+							{	
+								$("#lablePump-"+relayNumber).removeClass('checked');
+							}
+							else
+							{
+								$("#lablePump-"+relayNumber).addClass('checked');
+							}
+							
+							
+							
+						}
+					}).error(function(){
+					progress.progressTimer('error', {
+						errorText:'ERROR!',
+						onFinish:function(){
+							alert('There was an error processing your information!');
+						}
+					});
+					}).done(function(){
+						progress.progressTimer('complete');
+					});
+			}
 		  
 		 <?php } ?> 
 	});
