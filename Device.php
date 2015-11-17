@@ -1713,8 +1713,6 @@ function removeValve()
 													
 													if(json == '')
 													{
-														$("#lablePump-"+<?php echo $i;?>).removeClass('checked');
-														$("#pumpRealResponse_"+<?php echo $i;?>).html('');
 														$("#pumpProgrmaStatus_"+<?php echo $i;?>).html('');
 													}
 													else
