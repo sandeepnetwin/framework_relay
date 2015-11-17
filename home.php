@@ -204,11 +204,30 @@ class Home extends CI_Controller
 				{
 					if($aActiveProgram->device_type == 'R')
 					{
-						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.' is Running for <strong>Relay '.$aActiveProgram->device_number.'</strong>!';
+						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Relay '.$aActiveProgram->device_number.'</strong>!';
 					}
 					else if($aActiveProgram->device_type == 'PS')
 					{
-						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.' is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>!';
+						$aPumpDetails 	=	$this->home_model->getPumpDetails($aActiveProgram->device_number);
+						
+						if(is_array($aPumpDetails) && !empty($aPumpDetails))
+						{
+							foreach($aPumpDetails as $aResultEdit)
+						    { 
+								$sPumpNumber  = $aResultEdit->pump_number;
+								$sPumpType    = $aResultEdit->pump_type;
+								$sPumpSubType = $aResultEdit->pump_sub_type;
+								$sPumpSpeed   = $aResultEdit->pump_speed;
+						    }
+						}
+						
+						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
+						
+						if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+						{
+							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+						}
+						$strMessage .= '!';
 					}
 				}
 			}
