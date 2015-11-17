@@ -409,6 +409,7 @@ jQuery(document).ready(function($) {
 		  var bConfirm	=	confirm('You will need to change to Manual mode to make this change.\nWould you like to activate manual mode?' );
 			if(bConfirm)
 			{
+				$(".loading-progress").show();
 				$.ajax({
 					type: "POST",
 					async:false,
@@ -418,57 +419,57 @@ jQuery(document).ready(function($) {
 					}
 				});
 				
-				$(".loading-progress").show();
-					var progress = $(".loading-progress").progressTimer({
-						timeLimit: 10,
-						onFinish: function () {
-						  //$(".loading-progress").hide();
-							setTimeout(function(){location.reload();parent.$a.fancybox.close();},1000);
-							
-						}
-					});
-					
-					$a("#checkLink").trigger('click');
-					
-					var relayNumber = $(this).val();
-					var status		= '';
-					if($("#lablePump-"+relayNumber).hasClass('checked'))
-					{	
-						status	=	0;
+				
+				var progress = $(".loading-progress").progressTimer({
+					timeLimit: 10,
+					onFinish: function () {
+					  //$(".loading-progress").hide();
+						setTimeout(function(){location.reload();parent.$a.fancybox.close();},1000);
+						
 					}
-					else
-					{
-						status = 1;
+				});
+				
+				$a("#checkLink").trigger('click');
+				
+				var relayNumber = $(this).val();
+				var status		= '';
+				if($("#lablePump-"+relayNumber).hasClass('checked'))
+				{	
+					status	=	0;
+				}
+				else
+				{
+					status = 1;
+				}
+				
+				$.ajax({
+					type: "POST",
+					url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
+					data: {sName:relayNumber,sStatus:status,sDevice:'PS'},
+					success: function(data) {
+						
+						if($("#lablePump-"+relayNumber).hasClass('checked'))
+						{	
+							$("#lablePump-"+relayNumber).removeClass('checked');
+						}
+						else
+						{
+							$("#lablePump-"+relayNumber).addClass('checked');
+						}
+						
+						
+						
 					}
-					
-					$.ajax({
-						type: "POST",
-						url: "<?php echo site_url('home/updateStatusOnOff/');?>", 
-						data: {sName:relayNumber,sStatus:status,sDevice:'PS'},
-						success: function(data) {
-							
-							if($("#lablePump-"+relayNumber).hasClass('checked'))
-							{	
-								$("#lablePump-"+relayNumber).removeClass('checked');
-							}
-							else
-							{
-								$("#lablePump-"+relayNumber).addClass('checked');
-							}
-							
-							
-							
-						}
-					}).error(function(){
-					progress.progressTimer('error', {
-						errorText:'ERROR!',
-						onFinish:function(){
-							alert('There was an error processing your information!');
-						}
-					});
-					}).done(function(){
-						progress.progressTimer('complete');
-					});
+				}).error(function(){
+				progress.progressTimer('error', {
+					errorText:'ERROR!',
+					onFinish:function(){
+						alert('There was an error processing your information!');
+					}
+				});
+				}).done(function(){
+					progress.progressTimer('complete');
+				});
 			}
 		  
 		 <?php } ?> 
@@ -1692,6 +1693,7 @@ function removeValve()
 													{
 														$("#lablePump-"+<?php echo $i;?>).removeClass('checked');
 														$("#pumpRealResponse_"+<?php echo $i;?>).html('');
+														$("#pumpProgrmaStatus_"+<?php echo $i;?>).html('');
 													}
 													else
 													{
@@ -1705,6 +1707,23 @@ function removeValve()
 													}
 												});
 												},30000);
+												
+												setInterval( function() {
+												$.getJSON('<?php echo site_url('cron/getPumpProgramStatus/');?>', {iPumpID: "<?php echo $i;?>"}, function(json) {
+													
+													if(json == '')
+													{
+														$("#lablePump-"+<?php echo $i;?>).removeClass('checked');
+														$("#pumpRealResponse_"+<?php echo $i;?>).html('');
+														$("#pumpProgrmaStatus_"+<?php echo $i;?>).html('');
+													}
+													else
+													{
+														$("#pumpProgrmaStatus_"+<?php echo $i;?>).html(json);
+													}
+												});
+												},30000);
+												
 										  });
 										</script>										  
 										   <?php } ?>
@@ -1715,6 +1734,54 @@ function removeValve()
 										</div>
 											<?php if(preg_match('/Emulator/',$sPumpType)) { ?>
 											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"><?php if($iPumpVal > 0) { echo $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($i); }?></div>
+											<div id="pumpProgrmaStatus_<?php echo $i;?>" style="color: #AEEC16;font-weight: bold;"><?php if($iPumpVal > 0)
+											{
+												$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsForPump($i);
+												$strMessage		=	'';	
+												if(!empty($aAllActiveProgram))
+												{
+													foreach($aAllActiveProgram as $aActiveProgram)
+													{
+														if($aActiveProgram->device_type == 'PS')
+														{
+															$aPumpDetails 	=	$this->home_model->getPumpDetails($aActiveProgram->device_number);
+															
+															if(is_array($aPumpDetails) && !empty($aPumpDetails))
+															{
+																foreach($aPumpDetails as $aResultEdit)
+																{ 
+																	$sPumpNumber  = $aResultEdit->pump_number;
+																	$sPumpType    = $aResultEdit->pump_type;
+																	$sPumpSubType = $aResultEdit->pump_sub_type;
+																	$sPumpSpeed   = $aResultEdit->pump_speed;
+																}
+															}
+															
+															if($strMessage != '')
+															{
+																$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
+																
+																if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+																{
+																	$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+																}
+																$strMessage .= '!';
+															}
+															else
+															{
+																$strMessage .= '<strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
+																
+																if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+																{
+																	$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+																}
+																$strMessage .= '!';
+															}
+														}
+													}
+												}	
+												echo $strMessage;		
+											}?></div>
 											<?php } ?>
 										<?php } ?>
 										</div>

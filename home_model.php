@@ -1437,6 +1437,20 @@ class Home_model extends CI_Model
 		
 		return '';
 	}	
+	
+	public function getAllActiveProgramsForPump($iPumpID)
+	{
+		$iActive			=	'';
+		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0' AND device_number = '".$iPumpID."' AND device_type = 'PS'";
+		$query  =   $this->db->query($strChkProgram);
+
+		if ($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
 }
 
 /* End of file home_model.php */

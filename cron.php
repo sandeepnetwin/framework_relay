@@ -213,7 +213,7 @@ class Cron extends CI_Controller
 
         $iMode          =   $this->home_model->getActiveMode();
         //$iMode          =   1;
-        echo $sTime          =   date('H:i:s',time());
+        $sTime          =   date('H:i:s',time());
 		
 		//$sTime			=	'10:00:01';
         $aAllProgram    =   $this->home_model->getAllProgramsDetails();
@@ -977,6 +977,61 @@ class Cron extends CI_Controller
 			}
 		}
 		
+	}
+	
+	public function getPumpProgramStatus()
+	{
+		$iPumpID	=	$this->input->post('iPumpID');
+		
+		$this->load->model('home_model');
+		
+		$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsForPump($iPumpID);
+		$strMessage		=	'';	
+		if(!empty($aAllActiveProgram))
+		{
+			foreach($aAllActiveProgram as $aActiveProgram)
+			{
+				if($aActiveProgram->device_type == 'PS')
+				{
+					$aPumpDetails 	=	$this->home_model->getPumpDetails($aActiveProgram->device_number);
+					
+					if(is_array($aPumpDetails) && !empty($aPumpDetails))
+					{
+						foreach($aPumpDetails as $aResultEdit)
+						{ 
+							$sPumpNumber  = $aResultEdit->pump_number;
+							$sPumpType    = $aResultEdit->pump_type;
+							$sPumpSubType = $aResultEdit->pump_sub_type;
+							$sPumpSpeed   = $aResultEdit->pump_speed;
+						}
+					}
+					
+					if($strMessage != '')
+					{
+						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
+						
+						if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+						{
+							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+						}
+						$strMessage .= '!';
+					}
+					else
+					{
+						$strMessage .= '<strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
+						
+						if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+						{
+							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+						}
+						$strMessage .= '!';
+					}
+				}
+			}
+		}
+		
+		$aResult['message']	=	$strMessage;
+		echo json_encode($aResult['message']);
 	}
 	
 	/* function testShell()
