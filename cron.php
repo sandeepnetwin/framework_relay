@@ -981,7 +981,7 @@ class Cron extends CI_Controller
 	
 	public function getPumpProgramStatus()
 	{
-		$iPumpID	=	$this->input->post('iPumpID');
+		$iPumpID	=	$_GET['iPumpID'];
 		
 		$this->load->model('home_model');
 		

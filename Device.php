@@ -1732,7 +1732,7 @@ function removeValve()
 										</div>
 											<?php if(preg_match('/Emulator/',$sPumpType)) { ?>
 											<div id="pumpRealResponse_<?php echo $i;?>" style="color: #164c87;font-weight: bold;"><?php if($iPumpVal > 0) { echo $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($i); }?></div>
-											<div id="pumpProgrmaStatus_<?php echo $i;?>" style="color: #AEEC16;font-weight: bold;"><?php if($iPumpVal > 0)
+											<div id="pumpProgrmaStatus_<?php echo $i;?>" style="color: #c9376e;font-weight: bold;"><?php if($iPumpVal > 0)
 											{
 												$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsForPump($i);
 												$strMessage		=	'';	
