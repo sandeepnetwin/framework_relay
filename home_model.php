@@ -1329,6 +1329,18 @@ class Home_model extends CI_Model
 		return '';
 	}
 	
+	public function getAllBlowerDeviceDetails()
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_type ='B'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		return '';
+	}
+	
 	public function getActiveModePoolSpa()
 	{
 		$sSql   =   "SELECT id FROM rlb_pool_spa_mode WHERE mode_status = '1'";
@@ -1442,6 +1454,20 @@ class Home_model extends CI_Model
 	{
 		$iActive			=	'';
 		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0' AND device_number = '".$iPumpID."' AND device_type = 'PS'";
+		$query  =   $this->db->query($strChkProgram);
+
+		if ($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function getAllActivePrograms()
+	{
+		$iActive			=	'';
+		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0'";
 		$query  =   $this->db->query($strChkProgram);
 
 		if ($query->num_rows() > 0)

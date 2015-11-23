@@ -13,8 +13,8 @@ class Cron extends CI_Controller
     
     public function index()
     {
-		$seconds = 2;
-        $micro = $seconds * 1000000;
+	//$seconds = 2; 
+        //$micro = $seconds * 1000000;
         $this->load->model('analog_model');
         $this->load->model('home_model');
         while(true)
@@ -105,111 +105,110 @@ class Cron extends CI_Controller
         }      
     }
 	
-	public function pumpResponse()
+    public function pumpResponse()
     { 		
-		$seconds = 15;
-        $micro = $seconds * 1000000;
-		$this->load->model('home_model');
-		list($sIpAddress, $sPortNo) = $this->home_model->getSettings();
-		
-		$aPumps		= $this->home_model->selectEmulatorOnPumps();	
-		//print_r($aPumps);
-		$aPumpsChk	= json_decode($aPumps);
-		//print_r($aPumps);
-		//while(true)
-					
-		if(!empty($aPumpsChk))	
+        //$seconds = 15;
+        //$micro = $seconds * 1000000;
+        $this->load->model('home_model');
+        list($sIpAddress, $sPortNo) = $this->home_model->getSettings();
+
+        $aPumps		= $this->home_model->selectEmulatorOnPumps();	
+        //print_r($aPumps);
+        $aPumpsChk	= json_decode($aPumps);
+        //print_r($aPumps);
+        //while(true)
+
+        if(!empty($aPumpsChk))	
         { 
-			//while(true)
-			{
-				$sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
-				
-				if($sResponse != '')
-				{
-					//$aResponse['message'] =$sResponse;
-					$aResponse	=	explode("|||",$sResponse);
-					foreach($aResponse as $strResponse)
-					{
-						$aCheckResponse	=	explode(',',$strResponse);
-						//$iPump			=   str_replace('M','',$aCheckResponse[0]);
-						//if($aCheckResponse[1] == '0')
-						//	$strResponse .= ',STOP';
-						
-						$iPump	=	$aCheckResponse[1];
-						
-						if($aCheckResponse[2] == '0')
-							$strResponse .= ',STOP';
-						
-                                                if(preg_match('/^M/',$strResponse))
-                                                    $this->home_model->savePumpResponse($strResponse,$iPump);
-					}
-					
-					//echo json_encode($aResponse);
-				}
-				
-				/* $myFile = "/var/www/relay_framework/daemontest1.txt";
-				$fh = fopen($myFile, 'a') or die("Can't open file");
-				$stringData = "File updated at: " . time(). "\n";
-				fwrite($fh, $stringData);
-				fclose($fh); */
-				//usleep($micro); 
-			}
-		}
-		
-		
-		//$aresponse['message'] = $sResponse;
-		//echo json_encode($aresponse);
-	}
+            //while(true)
+            {
+                $sResponse =   send_command_udp_new($sIpAddress,$sPortNo,$aPumps);
+
+                if($sResponse != '')
+                {
+                        //$aResponse['message'] =$sResponse;
+                        $aResponse	=	explode("|||",$sResponse);
+                        foreach($aResponse as $strResponse)
+                        {
+                                $aCheckResponse	=	explode(',',$strResponse);
+                                //$iPump			=   str_replace('M','',$aCheckResponse[0]);
+                                //if($aCheckResponse[1] == '0')
+                                //	$strResponse .= ',STOP';
+
+                                $iPump	=	$aCheckResponse[1];
+
+                                if($aCheckResponse[2] == '0')
+                                        $strResponse .= ',STOP';
+
+                                if(preg_match('/^M/',$strResponse))
+                                    $this->home_model->savePumpResponse($strResponse,$iPump);
+                        }
+
+                        //echo json_encode($aResponse);
+                }
+
+                /* $myFile = "/var/www/relay_framework/daemontest1.txt";
+                $fh = fopen($myFile, 'a') or die("Can't open file");
+                $stringData = "File updated at: " . time(). "\n";
+                fwrite($fh, $stringData);
+                fclose($fh); */
+                //usleep($micro); 
+            }
+        }
+
+
+        //$aresponse['message'] = $sResponse;
+        //echo json_encode($aresponse);
+    }
 	
-	public function pumpResponseLatest()
-	{
-		$iPumpID	=	$_GET['iPumpID'];
-		$this->load->model('home_model');
-		$strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($iPumpID);	
-		
-		$sResponse      		=   get_rlb_status();
-		//Pump device Status
-        $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
-		
-		$arrPumpsResponse		= $this->home_model->selectPumpsStatus($iPumpID);
-		
-		if($sPump[$iPumpID] > 0 && $arrPumpsResponse == 0)
-		{
-			$arrPumpsResponse		= 1;		
-			$this->home_model->updateDeviceStauts($iPumpID,'PS',$arrPumpsResponse);
-		}
-		else if($sPump[$iPumpID] == 0  && $arrPumpsResponse == 1)	
-		{
-			$arrPumpsResponse		= 0;		
-			$this->home_model->updateDeviceStauts($iPumpID,'PS',$arrPumpsResponse);
-		}
-		
-		
-		if($arrPumpsResponse == 0)
-			$aResult['message'] = '';
-		else
-			$aResult['message'] = $strPumpsResponse;
-		
-		echo json_encode($aResult['message']);
-	}
-	
-	
-	public function program()
+    public function pumpResponseLatest()
     {
-		$this->load->model('home_model');
+            $iPumpID	=	$_GET['iPumpID'];
+            $this->load->model('home_model');
+            $strPumpsResponse		= $this->home_model->selectPumpsLatestResponse($iPumpID);	
+
+            $sResponse      		=   get_rlb_status();
+            //Pump device Status
+            $sPump  =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+            $arrPumpsResponse   =   $this->home_model->selectPumpsStatus($iPumpID);
+
+            if($sPump[$iPumpID] > 0 && $arrPumpsResponse == 0)
+            {
+                    $arrPumpsResponse		= 1;		
+                    $this->home_model->updateDeviceStauts($iPumpID,'PS',$arrPumpsResponse);
+            }
+            else if($sPump[$iPumpID] == 0  && $arrPumpsResponse == 1)	
+            {
+                    $arrPumpsResponse		= 0;		
+                    $this->home_model->updateDeviceStauts($iPumpID,'PS',$arrPumpsResponse);
+            }
+
+            $aResult    =   array();
+            if($arrPumpsResponse == 0)
+                    $aResult['message'] = '';
+            else
+                    $aResult['message'] = $strPumpsResponse;
+
+            echo json_encode($aResult['message']);
+    }
+	
+	
+    public function program()
+    {
+	$this->load->model('home_model');
         $sResponse      =   get_rlb_status();
 		
         //$sResponse      =   array('valves'=>'','powercenter'=>'0000','time'=>'','relay'=>'0000','day'=>'');
-        $sValves        =   $sResponse['valves'];
+        //$sValves        =   $sResponse['valves'];
         $sRelays        =   $sResponse['relay'];
         $sPowercenter   =   $sResponse['powercenter'];
         $sTime          =   $sResponse['time'];
         $sDayret        =   $sResponse['day'];
-        $aTime          =   explode(':',$sTime);
+        //$aTime          =   explode(':',$sTime);
 
-        $iRelayCount    =   strlen($sRelays);
-        $iValveCount    =   strlen($sValves);
-        $iPowerCount    =   strlen($sPowercenter);
+        //$iRelayCount    =   strlen($sRelays);
+        //$iValveCount    =   strlen($sValves);
+        //$iPowerCount    =   strlen($sPowercenter);
 
         $iMode          =   $this->home_model->getActiveMode();
         //$iMode          =   1;
@@ -224,7 +223,7 @@ class Cron extends CI_Controller
             {
 				
                 $sRelayName     = $aResultProgram->device_number;
-				$sDevice     	= $aResultProgram->device_type;
+		$sDevice     	= $aResultProgram->device_type;
                 $iProgId        = $aResultProgram->program_id;
                 $sProgramType   = $aResultProgram->program_type;
                 $sProgramStart  = $aResultProgram->start_time;
@@ -316,380 +315,378 @@ class Cron extends CI_Controller
                         } 
                     }
                 }
-				else if($sDevice == 'PS')
-				{					
-					if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
+		else if($sDevice == 'PS')
+                {					
+                    if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
-						$aAbsoluteDetails       = array('absolute_s'  => $sProgramAbsStart,
+                        $aAbsoluteDetails       = array('absolute_s'  => $sProgramAbsStart,
                                                         'absolute_e'  => $sProgramAbsEnd,
                                                         'absolute_t'  => $sProgramAbsTotal,
                                                         'absolute_ar' => $sProgramAbsAlreadyRun,
                                                         'absolute_sd' => $sProgramAbsStartDay,
                                                         'absolute_st' => $sProgramAbsRun
                                                         ); 
-						
-						$aPumpDetails = $this->home_model->getPumpDetails($sRelayName);						
-						//Variable Initialization to blank.
-						$sPumpNumber  	= '';
-						$sPumpType  	= '';
-						$sPumpSubType  	= '';
-						$sPumpSpeed  	= '';
-						$sPumpFlow 		= '';
-						$sPumpClosure   = '';
-						$sRelayNumber  	= '';
 
-						if(is_array($aPumpDetails) && !empty($aPumpDetails))
-						{
-						  foreach($aPumpDetails as $aResultEdit)
-						  { 
-							$sPumpNumber  = $aResultEdit->pump_number;
-							$sPumpType    = $aResultEdit->pump_type;
-							$sPumpSubType = $aResultEdit->pump_sub_type;
-							$sPumpSpeed   = $aResultEdit->pump_speed;
-							$sPumpFlow    = $aResultEdit->pump_flow;
-							$sPumpClosure = $aResultEdit->pump_closure;
-							$sRelayNumber = $aResultEdit->relay_number;
-						  }
-						}
-						
-						//$iMode = '1';
-						if($sProgramAbs == '1' && $iMode == 1)
+                        $aPumpDetails = $this->home_model->getPumpDetails($sRelayName);						
+                        //Variable Initialization to blank.
+                        $sPumpNumber  	= '';
+                        $sPumpType  	= '';
+                        $sPumpSubType  	= '';
+                        $sPumpSpeed  	= '';
+                        $sPumpFlow 	= '';
+                        $sPumpClosure   = '';
+                        $sRelayNumber  	= '';
+
+                        if(is_array($aPumpDetails) && !empty($aPumpDetails))
                         {
-							if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
-                            {
-								$this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
-							
-								$iPumpStatus = 1;
-                                
-								if($sPumpType != '' && $sPumpClosure == '1')
-								{
-									if($sPumpType == '12' || $sPumpType == '24')
-									{
-										if($sPumpType == '24')
-										{
-											$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_relay($sNewResp);
-										}
-										else if($sPumpType == '12')
-										{
-											$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_powercenter($sNewResp);
-										}
-									}
-									else
-									{
-										if(preg_match('/Emulator/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sType          =   '';
-											if($sPumpSubType == 'VS')
-												$sType  =   '2'.' '.$sPumpSpeed;
-											elseif ($sPumpSubType == 'VF')
-												$sType  =   '3'.' '.$sPumpFlow;
+                            foreach($aPumpDetails as $aResultEdit)
+                            { 
+                                $sPumpNumber  = $aResultEdit->pump_number;
+                                $sPumpType    = $aResultEdit->pump_type;
+                                $sPumpSubType = $aResultEdit->pump_sub_type;
+                                $sPumpSpeed   = $aResultEdit->pump_speed;
+                                $sPumpFlow    = $aResultEdit->pump_flow;
+                                $sPumpClosure = $aResultEdit->pump_closure;
+                                $sRelayNumber = $aResultEdit->relay_number;
+                            }
+                        }
 
-											$sNewResp =  $sRelayName.' '.$sType;
-											
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Emulator12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Emulator24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-										else if(preg_match('/Intellicom/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sType  =   '2'.' '.$sPumpSpeed;
-											$sNewResp =  $sRelayName.' '.$sType;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Intellicom12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Intellicom24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-									}
-								}
-								$this->home_model->updateDeviceStauts($sRelayName,'PS','1');
+                        //$iMode = '1';
+                        if($sProgramAbs == '1' && $iMode == 1)
+                        {
+                            if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
+                            {
+                                $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
+                                $iPumpStatus = 1;
+
+                                if($sPumpType != '' && $sPumpClosure == '1')
+                                {
+                                    if($sPumpType == '12' || $sPumpType == '24')
+                                    {
+                                        if($sPumpType == '24')
+                                        {
+                                            $sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_relay($sNewResp);
+                                        }
+                                        else if($sPumpType == '12')
+                                        {
+                                            $sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_powercenter($sNewResp);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(preg_match('/Emulator/',$sPumpType))
+                                        {
+                                            $sNewResp   =   '';
+                                            $sType      =   '';
+                                            if($sPumpSubType == 'VS')
+                                                $sType  =   '2'.' '.$sPumpSpeed;
+                                            elseif ($sPumpSubType == 'VF')
+                                                $sType  =   '3'.' '.$sPumpFlow;
+
+                                            $sNewResp =  $sRelayName.' '.$sType;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Emulator12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Emulator24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                        else if(preg_match('/Intellicom/',$sPumpType))
+                                        {
+                                            $sNewResp   =   '';
+                                            $sType      =   '2'.' '.$sPumpSpeed;
+                                                                        
+                                            $sNewResp =  $sRelayName.' '.$sType;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Intellicom12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Intellicom24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                    }
+                                }
+                                $this->home_model->updateDeviceStauts($sRelayName,'PS','1');
                                 $this->home_model->updateProgramStatus($iProgId, 1);
                             }
                             else if($sTime >= $sProgramAbsEnd && $sProgramActive == 1)
                             {
                                 $iPumpStatus = 0;
-                                
-								if($sPumpType != '' && $sPumpClosure == '1')
-								{
-									if($sPumpType == '12' || $sPumpType == '24')
-									{
-										if($sPumpType == '24')
-										{
-											$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_relay($sNewResp);
-										}
-										else if($sPumpType == '12')
-										{
-											$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_powercenter($sNewResp);
-										}
-									}
-									else
-									{
-										if(preg_match('/Emulator/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Emulator12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Emulator24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-										else if(preg_match('/Intellicom/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Intellicom12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Intellicom24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-									}
-								}
-								$this->home_model->updateDeviceStauts($sRelayName,'PS','0');
+
+                                if($sPumpType != '' && $sPumpClosure == '1')
+                                {
+                                    if($sPumpType == '12' || $sPumpType == '24')
+                                    {
+                                        if($sPumpType == '24')
+                                        {
+                                            $sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_relay($sNewResp);
+                                        }
+                                        else if($sPumpType == '12')
+                                        {
+                                            $sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_powercenter($sNewResp);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(preg_match('/Emulator/',$sPumpType))
+                                        {
+                                            $sNewResp = '';
+                                            $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Emulator12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Emulator24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                        else if(preg_match('/Intellicom/',$sPumpType))
+                                        {
+                                            $sNewResp = '';
+                                            $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Intellicom12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Intellicom24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                    }
+                                }
+                                $this->home_model->updateDeviceStauts($sRelayName,'PS','0');
                                 $this->home_model->updateProgramStatus($iProgId, 0);
                                 $this->home_model->updateAbsProgramRun($iProgId, '1');
-								$this->home_model->updateAbsProgramRunDetails($iProgId, '1');
+                                $this->home_model->updateAbsProgramRunDetails($iProgId, '1');
                             }
                         }
                         else if($sProgramAbs == '1' && $iMode == 2 )
                         {
-							if($sProgramActive == 1)
+                            if($sProgramActive == 1)
                             {
-								 
-                               $iPumpStatus = 0;
-                                
-								if($sPumpType != '' && $sPumpClosure == '1')
-								{
-									if($sPumpType == '12' || $sPumpType == '24')
-									{
-										if($sPumpType == '24')
-										{
-											$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_relay($sNewResp);
-										}
-										else if($sPumpType == '12')
-										{
-											$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_powercenter($sNewResp);
-										}
-									}
-									else
-									{
-										if(preg_match('/Emulator/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Emulator12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Emulator24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-										else if(preg_match('/Intellicom/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Intellicom12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Intellicom24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-									}
-								}
-								$this->home_model->updateDeviceStauts($sRelayName,'PS','0');
+                                $iPumpStatus = 0;
+
+                                if($sPumpType != '' && $sPumpClosure == '1')
+                                {
+                                    if($sPumpType == '12' || $sPumpType == '24')
+                                    {
+                                        if($sPumpType == '24')
+                                        {
+                                            $sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_relay($sNewResp);
+                                        }
+                                        else if($sPumpType == '12')
+                                        {
+                                            $sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                            onoff_rlb_powercenter($sNewResp);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(preg_match('/Emulator/',$sPumpType))
+                                        {
+                                            $sNewResp = '';
+                                            $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Emulator12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Emulator24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                        else if(preg_match('/Intellicom/',$sPumpType))
+                                        {
+                                            $sNewResp = '';
+                                            $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                            onoff_rlb_pump($sNewResp);
+
+                                            if($sPumpType == 'Intellicom12')
+                                            {
+                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp12);
+                                            }
+                                            if($sPumpType == 'Intellicom24')
+                                            {
+                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp24);
+                                            }
+                                        }
+                                    }
+                                }
+                                $this->home_model->updateDeviceStauts($sRelayName,'PS','0');
                                 $this->home_model->updateProgramStatus($iProgId, 0);
                                 $this->home_model->updateAlreadyRunTime($iProgId, $aAbsoluteDetails);
                             }
                         }
                         else
                         {
-							//on Pump
+                            //on Pump
                             if($sTime >= $sProgramStart && $sTime < $sProgramEnd && $sProgramActive == 0)
                             {
-								if($iMode == 1)
+                                if($iMode == 1)
                                 {
                                     $iPumpStatus = 1;
-                                
-									if($sPumpType != '' && $sPumpClosure == '1')
-									{
-										if($sPumpType == '12' || $sPumpType == '24')
-										{
-											if($sPumpType == '24')
-											{
-												$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp);
-											}
-											else if($sPumpType == '12')
-											{
-												$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp);
-											}
-										}
-										else
-										{
-											if(preg_match('/Emulator/',$sPumpType))
-											{
-												$sNewResp = '';
-												$sType          =   '';
-												if($sPumpSubType == 'VS')
-													$sType  =   '2'.' '.$sPumpSpeed;
-												elseif ($sPumpSubType == 'VF')
-													$sType  =   '3'.' '.$sPumpFlow;
 
-												$sNewResp =  $sRelayName.' '.$sType;
-												
-												onoff_rlb_pump($sNewResp);
-												
-												if($sPumpType == 'Emulator12')
-												{
-													$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-													onoff_rlb_powercenter($sNewResp12);
-												}
-												if($sPumpType == 'Emulator24')
-												{
-													$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-													onoff_rlb_relay($sNewResp24);
-												}
-											}
-											else if(preg_match('/Intellicom/',$sPumpType))
-											{
-												$sNewResp = '';
-												$sType  =   '2'.' '.$sPumpSpeed;
-												$sNewResp =  $sRelayName.' '.$sType;
-												onoff_rlb_pump($sNewResp);
-												
-												if($sPumpType == 'Intellicom12')
-												{
-													$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-													onoff_rlb_powercenter($sNewResp12);
-												}
-												if($sPumpType == 'Intellicom24')
-												{
-													$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-													onoff_rlb_relay($sNewResp24);
-												}
-											}
-										}
-									}                
-									$this->home_model->updateDeviceStauts($sRelayName,'PS','1');
-                                    $this->home_model->updateProgramStatus($iProgId, 1);
-                                }
-                            }//off Pump
-                            else if($sTime >= $sProgramEnd && $sProgramActive == 1)
-                            {
-                                $iPumpStatus = 0;
-                                
-								if($sPumpType != '' && $sPumpClosure == '1')
-								{
-									if($sPumpType == '12' || $sPumpType == '24')
-									{
-										if($sPumpType == '24')
-										{
-											$sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_relay($sNewResp);
-										}
-										else if($sPumpType == '12')
-										{
-											$sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-											onoff_rlb_powercenter($sNewResp);
-										}
-									}
-									else
-									{
-										if(preg_match('/Emulator/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Emulator12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Emulator24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-										else if(preg_match('/Intellicom/',$sPumpType))
-										{
-											$sNewResp = '';
-											$sNewResp =  $sRelayName.' '.$iPumpStatus;
-											onoff_rlb_pump($sNewResp);
-											
-											if($sPumpType == 'Intellicom12')
-											{
-												$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_powercenter($sNewResp12);
-											}
-											if($sPumpType == 'Intellicom24')
-											{
-												$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-												onoff_rlb_relay($sNewResp24);
-											}
-										}
-									}
-								}
-								$this->home_model->updateDeviceStauts($sRelayName,'PS','0');
-                                $this->home_model->updateProgramStatus($iProgId, 0);
-                            }
-                        } 
-                    }
-				}
+                                    if($sPumpType != '' && $sPumpClosure == '1')
+                                    {
+                                        if($sPumpType == '12' || $sPumpType == '24')
+                                        {
+                                            if($sPumpType == '24')
+                                            {
+                                                $sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_relay($sNewResp);
+                                            }
+                                            else if($sPumpType == '12')
+                                            {
+                                                $sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                onoff_rlb_powercenter($sNewResp);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if(preg_match('/Emulator/',$sPumpType))
+                                                                        {
+                                            $sNewResp = '';
+                                                                                $sType          =   '';
+                                                                                if($sPumpSubType == 'VS')
+                                                                                        $sType  =   '2'.' '.$sPumpSpeed;
+                                                                                elseif ($sPumpSubType == 'VF')
+                                                                                        $sType  =   '3'.' '.$sPumpFlow;
+
+                                                                                $sNewResp =  $sRelayName.' '.$sType;
+
+                                                                                onoff_rlb_pump($sNewResp);
+
+                                                                                if($sPumpType == 'Emulator12')
+                                                                                {
+                                                                                        $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                                                        onoff_rlb_powercenter($sNewResp12);
+                                                                                }
+                                                                                if($sPumpType == 'Emulator24')
+                                                                                {
+                                                                                        $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                                                        onoff_rlb_relay($sNewResp24);
+                                                                                }
+                                                                        }
+                                                                        else if(preg_match('/Intellicom/',$sPumpType))
+                                                                        {
+                                                                                $sNewResp = '';
+                                                                                $sType  =   '2'.' '.$sPumpSpeed;
+                                                                                $sNewResp =  $sRelayName.' '.$sType;
+                                                                                onoff_rlb_pump($sNewResp);
+
+                                                                                if($sPumpType == 'Intellicom12')
+                                                                                {
+                                                                                        $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                                                        onoff_rlb_powercenter($sNewResp12);
+                                                                                }
+                                                                                if($sPumpType == 'Intellicom24')
+                                                                                {
+                                                                                        $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                                                        onoff_rlb_relay($sNewResp24);
+                                                                                }
+                                                                        }
+                                                                }
+                                                        }                
+                                                        $this->home_model->updateDeviceStauts($sRelayName,'PS','1');
+                    $this->home_model->updateProgramStatus($iProgId, 1);
+                }
+            }//off Pump
+            else if($sTime >= $sProgramEnd && $sProgramActive == 1)
+            {
+                $iPumpStatus = 0;
+
+                                                if($sPumpType != '' && $sPumpClosure == '1')
+                                                {
+                                                        if($sPumpType == '12' || $sPumpType == '24')
+                                                        {
+                                                                if($sPumpType == '24')
+                                                                {
+                                                                        $sNewResp = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                                        onoff_rlb_relay($sNewResp);
+                                                                }
+                                                                else if($sPumpType == '12')
+                                                                {
+                                                                        $sNewResp = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                                        onoff_rlb_powercenter($sNewResp);
+                                                                }
+                                                        }
+                                                        else
+                                                        {
+                                                                if(preg_match('/Emulator/',$sPumpType))
+                                                                {
+                                                                        $sNewResp = '';
+                                                                        $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                                                        onoff_rlb_pump($sNewResp);
+
+                                                                        if($sPumpType == 'Emulator12')
+                                                                        {
+                                                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                                                onoff_rlb_powercenter($sNewResp12);
+                                                                        }
+                                                                        if($sPumpType == 'Emulator24')
+                                                                        {
+                                                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                                                onoff_rlb_relay($sNewResp24);
+                                                                        }
+                                                                }
+                                                                else if(preg_match('/Intellicom/',$sPumpType))
+                                                                {
+                                                                        $sNewResp = '';
+                                                                        $sNewResp =  $sRelayName.' '.$iPumpStatus;
+                                                                        onoff_rlb_pump($sNewResp);
+
+                                                                        if($sPumpType == 'Intellicom12')
+                                                                        {
+                                                                                $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+                                                                                onoff_rlb_powercenter($sNewResp12);
+                                                                        }
+                                                                        if($sPumpType == 'Intellicom24')
+                                                                        {
+                                                                                $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+                                                                                onoff_rlb_relay($sNewResp24);
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                                $this->home_model->updateDeviceStauts($sRelayName,'PS','0');
+                $this->home_model->updateProgramStatus($iProgId, 0);
+            }
+        } 
+    }
+                }
             }
         }
 
@@ -1032,6 +1029,25 @@ class Cron extends CI_Controller
 		
 		$aResult['message']	=	$strMessage;
 		echo json_encode($aResult['message']);
+	}
+	
+	public function rebootSystem()
+	{
+		$this->load->model('home_model');
+		//First Take all active programs.
+		$aAllActiveProgram	=	$this->home_model->getAllActivePrograms();
+		
+		if(!empty($aAllActiveProgram))
+		{
+			foreach($aAllActiveProgram as $aActive)
+			{
+				//Update all active programs status to inactive.
+				$strChkProgram	=	"UPDATE rlb_program SET program_active = '0', is_on_after_reboot = '1' WHERE program_id = '".$aActive->program_id."' AND program_delete = '0'";
+				$query  =   $this->db->query($strChkProgram);
+			}
+		}
+		
+		exec("sudo /sbin/reboot");
 	}
 	
 	/* function testShell()
