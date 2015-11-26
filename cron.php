@@ -223,8 +223,8 @@ class Cron extends CI_Controller
         {
             foreach($aAllProgram as $aResultProgram)
             {
-				$sRelayName     = $aResultProgram->device_number;
-				$sDevice     	= $aResultProgram->device_type;
+		$sRelayName     = $aResultProgram->device_number;
+		$sDevice     	= $aResultProgram->device_type;
                 $iProgId        = $aResultProgram->program_id;
                 $sProgramType   = $aResultProgram->program_type;
                 $sProgramStart  = $aResultProgram->start_time;
@@ -240,16 +240,17 @@ class Cron extends CI_Controller
 
                 $sProgramAbsStartDay    = $aResultProgram->program_absolute_start_date;
                 $sProgramAbsRun         = $aResultProgram->program_absolute_run;
+                $sReboot                = $aResultProgram->is_on_after_reboot;  
 
                 $sDays          =   '';
                 $aDays          =   array();
 
                 if($sProgramType == 2)
                 {
-					$sDays = str_replace('7','0', $sProgramDays);
+                    $sDays = str_replace('7','0', $sProgramDays);
                     $aDays = explode(',',$sDays);
                 }
-				if($sRelays[$sRelayName] != '' && $sRelays[$sRelayName] != '.' && $sDevice == 'R')
+		if($sRelays[$sRelayName] != '' && $sRelays[$sRelayName] != '.' && $sDevice == 'R')
                 {
                     if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
@@ -266,7 +267,7 @@ class Cron extends CI_Controller
                             if($sProgramActive == 0)
                                 $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
 
-                            if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
+                            if($sTime >= $sProgramStart && ($sProgramActive == 0 || ($sProgramActive == 1 && $sReboot == '1')) && $sProgramAbsRun == 0)
                             {
                                 $iRelayStatus = 1;
                                 $sRelayNewResp = replace_return($sRelays, $iRelayStatus, $sRelayName );
@@ -280,6 +281,11 @@ class Cron extends CI_Controller
                                 onoff_rlb_relay($sRelayNewResp);
                                 $this->home_model->updateProgramStatus($iProgId, 0);
                                 $this->home_model->updateAbsProgramRun($iProgId, '1');
+                            }
+                            
+                            if($sReboot == '1')
+                            {
+                                $this->home_model->updateRebootStatus($iProgId, '0');
                             }
                         }
                         else if($sProgramAbs == '1' && $iMode == 2)
@@ -296,7 +302,7 @@ class Cron extends CI_Controller
                         else
                         {
                             //on relay
-                            if($sTime >= $sProgramStart && $sTime < $sProgramEnd && $sProgramActive == 0)
+                            if($sTime >= $sProgramStart && $sTime < $sProgramEnd && ($sProgramActive == 0 || ($sReboot == '1' && $sProgramActive == 1)))
                             {
                                 if($iMode == 1)
                                 {
@@ -313,10 +319,15 @@ class Cron extends CI_Controller
                                 onoff_rlb_relay($sRelayNewResp);
                                 $this->home_model->updateProgramStatus($iProgId, 0);
                             }
+                            
+                            if($sReboot == '1')
+                            {
+                                $this->home_model->updateRebootStatus($iProgId, '0');
+                            }
                         } 
                     }
                 }
-				else if($sDevice == 'PS')
+		else if($sDevice == 'PS')
                 {					
                     if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
@@ -355,7 +366,7 @@ class Cron extends CI_Controller
                         //$iMode = '1';
                         if($sProgramAbs == '1' && $iMode == 1)
                         {
-                            if($sTime >= $sProgramStart && $sProgramActive == 0 && $sProgramAbsRun == 0)
+                            if($sTime >= $sProgramStart && ($sProgramActive == 0 || ($sReboot == '1' && $sProgramActive == 1)) && $sProgramAbsRun == 0)
                             {
                                 $this->home_model->updateProgramAbsDetails($iProgId, $aAbsoluteDetails);
                                 $iPumpStatus = 1;
@@ -486,6 +497,11 @@ class Cron extends CI_Controller
                                 $this->home_model->updateAbsProgramRun($iProgId, '1');
                                 $this->home_model->updateAbsProgramRunDetails($iProgId, '1');
                             }
+                            
+                            if($sReboot == '1')
+                            {
+                                $this->home_model->updateRebootStatus($iProgId, '0');
+                            }
                         }
                         else if($sProgramAbs == '1' && $iMode == 2 )
                         {
@@ -554,7 +570,7 @@ class Cron extends CI_Controller
                         else
                         {
                             //on Pump
-                            if($sTime >= $sProgramStart && $sTime < $sProgramEnd && $sProgramActive == 0)
+                            if($sTime >= $sProgramStart && $sTime < $sProgramEnd && ($sProgramActive == 0 || ($sReboot == '1' && $sProgramActive == 1) ) )
                             {
                                 if($iMode == 1)
                                 {
@@ -684,6 +700,11 @@ class Cron extends CI_Controller
                                                 }
                                                 $this->home_model->updateDeviceStauts($sRelayName,'PS','0');
                 $this->home_model->updateProgramStatus($iProgId, 0);
+            }
+            
+            if($sReboot == '1')
+            {
+                $this->home_model->updateRebootStatus($iProgId, '0');
             }
         } 
     }
@@ -1151,22 +1172,23 @@ class Cron extends CI_Controller
 	
 	public function rebootSystem()
 	{
-		$this->load->model('home_model');
-		//First Take all active programs.
-		$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsNew();
-		
-		if(!empty($aAllActiveProgram))
-		{
-			foreach($aAllActiveProgram as $aActive)
-			{
-				//Update all active programs status to inactive.
-				$strChkProgram	=	"UPDATE rlb_program SET program_active = '0', is_on_after_reboot = '1' WHERE program_id = '".$aActive->program_id."'";
-				$query  =   $this->db->query($strChkProgram);
-				
-			}
-		}
-		
-		exec("sudo /sbin/reboot");
+            $this->load->model('home_model');
+            //First Take all active programs.
+            $aAllActiveProgram	=	$this->home_model->getAllActiveProgramsNew();
+
+            if(!empty($aAllActiveProgram))
+            {
+                foreach($aAllActiveProgram as $aActive)
+                {
+                    //Update all active programs status to inactive.
+                    $this->home_model->updateProgramStatus($aActive->program_id, 0);
+
+                    $strChkProgram  =   "UPDATE rlb_program SET is_on_after_reboot = '1' WHERE program_id = '".$aActive->program_id."'";
+                    $query  =   $this->db->query($strChkProgram);
+                }
+            }
+
+            exec("sudo /sbin/reboot");
 	}
 	
 	/* function testShell()

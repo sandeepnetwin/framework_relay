@@ -1464,7 +1464,6 @@ class Home_model extends CI_Model
 	
 	public function getAllActiveProgramsNew()
 	{
-		$iActive			=	'';
 		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0'";
 		$query  =   $this->db->query($strChkProgram);
 
@@ -1475,6 +1474,14 @@ class Home_model extends CI_Model
 		
 		return '';
 	}
+        
+        //Function to change the reboot status
+        public function updateRebootStatus($iProgramID,$sStatus)
+        {
+            $strUpdProgram  =   "UPDATE rlb_program SET is_on_after_reboot = '".$sStatus."' 
+                                 WHERE program_id = '".$iProgramID."'";
+            $this->db->query($strUpdProgram);
+        }
 }
 
 /* End of file home_model.php */
