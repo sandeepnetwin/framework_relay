@@ -19,25 +19,23 @@ class Home extends CI_Controller
 		$this->load->library('form_validation');
         $this->load->helper('common_functions'); //Common functions will be available for all functions in the file.
 		
-		//print_r($this->session->all_userdata());
-	     if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
+        //print_r($this->session->all_userdata());
+		if (!$this->session->userdata('is_admin_login')) //START : Check if user login or not.
         {
             redirect('dashboard/login/');
-			die;
+            die;
         }  //END : Check if user login or not. 
 		
-		//Get Permission Details
-		if($this->userID == '')
-		$this->userID = $this->session->userdata('id');
-		
-		if($this->aPermissions == '')
-		{
-			$this->aPermissions 	= json_decode(getPermissionOfModule($this->userID));
-			
-			$this->aModules 		= $this->aPermissions->sPermissionModule;	
-			$this->aAllActiveModule = $this->aPermissions->sActiveModule;
-			
-		}
+        //Get Permission Details
+        if($this->userID == '')
+        $this->userID = $this->session->userdata('id');
+
+        if($this->aPermissions == '')
+        {
+            $this->aPermissions 	= json_decode(getPermissionOfModule($this->userID));
+            $this->aModules 		= $this->aPermissions->sPermissionModule;	
+            $this->aAllActiveModule     = $this->aPermissions->sActiveModule;
+        }
    }
 
     public function index() //START : Function for dashboard
@@ -57,41 +55,50 @@ class Home extends CI_Controller
         $sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
         $sTime          =   $sResponse['time']; // Server Time from Response
         
+		$aViewParameter['sRelays']		=	$sRelays;
+		$aViewParameter['sValves']		=	$sValves;
+		$aViewParameter['sPowercenter']	=	$sPowercenter;
+		
         //Pump device Status
         $sPump          =   array($sResponse['pump_seq_0_st'],$sResponse['pump_seq_1_st'],$sResponse['pump_seq_2_st']);
+		$aViewParameter['sPump']		=	$sPump;
+		
         // Temperature Sensor Device 
 		$sTemprature    =   array($sResponse['TS0'],$sResponse['TS1'],$sResponse['TS2'],$sResponse['TS3'],$sResponse['TS4'],$sResponse['TS5']);
+		
+		$this->load->model('analog_model');
+		$aViewParameter['aAP']      		=   array($sResponse['AP0'],$sResponse['AP1'],$sResponse['AP2'],$sResponse['AP3']);
+		$aViewParameter['aAPResult']            =   $this->analog_model->getAllAnalogDevice();
+        $aViewParameter['aAPResultDirection']   =   $this->analog_model->getAllAnalogDeviceDirection();
+		
 			
         //START : Parameter for View
-            $aViewParameter['relay_count']  =   strlen($sRelays);
-            $aViewParameter['valve_count']  =   strlen($sValves);
-            $aViewParameter['power_count']  =   strlen($sPowercenter);
+        $aViewParameter['relay_count']  =   strlen($sRelays);
+        $aViewParameter['valve_count']  =   strlen($sValves);
+        $aViewParameter['power_count']  =   strlen($sPowercenter);
 			
-            $aViewParameter['pump_count']   		=   count($sPump);
-			$aViewParameter['temprature_count']   	=   count($sTemprature);
-            $aViewParameter['time']         		=   $sTime;
+        $aViewParameter['pump_count']   	=   count($sPump);
+        $aViewParameter['temprature_count'] =   count($sTemprature);
+        $aViewParameter['time']         	=   $sTime;
 			
-			$aViewParameter['activeCountRelay']     = 	$aViewParameter['relay_count'] - substr_count($sRelays, '.');
+		$aViewParameter['activeCountRelay'] = 	$aViewParameter['relay_count'] - substr_count($sRelays, '.');
 			
-			$aViewParameter['OnCountRelay']     	= 	substr_count($sRelays, '1');
-			$aViewParameter['OFFCountRelay']     	= 	substr_count($sRelays, '0');
-			
-			$aViewParameter['OnCountPower']     	= 	substr_count($sPowercenter, '1');
-			$aViewParameter['OFFCountPower']     	= 	substr_count($sPowercenter, '0');
-			
-			$aViewParameter['activeCountValve']     = 	$aViewParameter['valve_count'] - substr_count($sValves, '.');
-			
-			$aViewParameter['OnCountValve']     	= 	substr_count($sValves, '1') + substr_count($sValves, '2');
-			$aViewParameter['OFFCountValve']     	= 	substr_count($sValves, '0');
+        $aViewParameter['OnCountRelay']    = 	substr_count($sRelays, '1');
+        $aViewParameter['OFFCountRelay']   = 	substr_count($sRelays, '0');
+        $aViewParameter['OnCountPower']    = 	substr_count($sPowercenter, '1');
+        $aViewParameter['OFFCountPower']   = 	substr_count($sPowercenter, '0');
+        $aViewParameter['activeCountValve']= 	$aViewParameter['valve_count'] - substr_count($sValves, '.');
+        $aViewParameter['OnCountValve']    = 	substr_count($sValves, '1') + substr_count($sValves, '2');
+        $aViewParameter['OFFCountValve']   = 	substr_count($sValves, '0');
 			
 			
-			$activeCountTemperature 	=	0;
-			foreach($sTemprature as $temperature)
-			{
-				if($temperature > 0)
-					$activeCountTemperature++;
-			}
-			$aViewParameter['activeCountTemperature']     	= 	$activeCountTemperature;
+        $activeCountTemperature 	=	0;
+        foreach($sTemprature as $temperature)
+        {
+                if($temperature > 0)
+                    $activeCountTemperature++;
+        }
+        $aViewParameter['activeCountTemperature']     	= 	$activeCountTemperature;
 			
         //END : Parameter for View
 		
@@ -1541,6 +1548,7 @@ class Home extends CI_Controller
 					}
 				}
 				
+				//Update details of program to which pump is related.
 				if($sStatus == 0)
 				{
 					$aProgramDetails	=	$this->home_model->getProgramDetailsForDevice($sName,$sDevice);
@@ -2021,9 +2029,9 @@ class Home extends CI_Controller
 		//Check 12V relays First
 		for($i=0;$i<$iPowerCnt;$i++)
 		{
-			$iCheck			=	$this->checkRelayNumbers($i,'12');
+			//$iCheck			=	$this->checkRelayNumbers($i,'12');
 			
-			if(!$iCheck)
+			//if(!$iCheck)
 			{
 				$available12VRelays[] = $i;
 			}
@@ -2034,9 +2042,9 @@ class Home extends CI_Controller
 		{
 			if($sResponse['relay'][$i] != '.')
 			{
-				$iCheck			=	$this->checkRelayNumbers($i,'24');
+				//$iCheck			=	$this->checkRelayNumbers($i,'24');
 				
-				if(!$iCheck)
+				//if(!$iCheck)
 				{
 					$available24VRelays[] = $i;
 				}
@@ -2703,6 +2711,7 @@ class Home extends CI_Controller
 			$relayType		=	$lightDetails->relayType;
 			$sRelayNumber	=	$lightDetails->relayNumber;
 			
+			
 			$iCheck			=	$this->checkRelayNumbers($sRelayNumber,$sPumpType);
 			if($icheck == '1')				
 			{
@@ -2716,6 +2725,7 @@ class Home extends CI_Controller
 		{
 			$sRelayType		=	$lightDetails->relayType;
 			$sRelayNumber	=	$lightDetails->relayNumber;
+			$slightName		=	$lightDetails->name;
 			
 			$sDevice        =   'L';
 			$sDeviceId      =   ($lightNumber-1);
@@ -2723,6 +2733,11 @@ class Home extends CI_Controller
 			$this->load->model('home_model');
 			
 			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+			
+			if($slightName != '')
+			{
+				$this->home_model->saveDeviceName($sDeviceId,$sDevice,$slightName);
+			}
 		}
 		
 		$aExtra	=	array();
@@ -2778,6 +2793,7 @@ class Home extends CI_Controller
 		{
 			$sRelayType		=	$blowerDetails->relayType;
 			$sRelayNumber	=	$blowerDetails->relayNumber;
+			$sblowerName	=	$blowerDetails->name;
 			
 			$sDevice        =   'B';
 			$sDeviceId      =   ($blowerNumber-1);
@@ -2785,6 +2801,11 @@ class Home extends CI_Controller
 			$this->load->model('home_model');
 			
 			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+			
+			if($sblowerName != '')
+			{
+				$this->home_model->saveDeviceName($sDeviceId,$sDevice,$sblowerName);
+			}
 		}
 		
 		$aExtra	=	array();
@@ -2923,6 +2944,250 @@ class Home extends CI_Controller
 		removePumpAddress($Pump);
 		
 		exit;
+	}
+	
+	//Get Light Details for Assignment in the Pool and Spa After light configuration changed.
+	public function getAssignLightsDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$lightNumber	=	$extra['LightNumber'];
+		$sLightDetails	=	'';
+		
+		for($i=0;$i<$lightNumber;$i++)
+		{
+			$strLightName 		=	'Light '.($i+1);	
+			$strLightNameTmp 	=	$this->home_model->getDeviceName($i,'L');
+			if($strLightNameTmp != '')
+				$strLightName	.=	' ('.$strLightNameTmp.')';
+				
+	
+			if($i != 0){ $sLightDetails .='<hr />'; }
+			
+			$sLightDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strLightName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayLight-'.$i.'" name="relayLight[]" hidefocus="true" style="outline: medium none;">
+				<label id="lableRelay-'.$i.'" for="relayLight-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+			
+		}
+		
+		echo $sLightDetails;
+		exit;
+		
+	}
+	
+	public function getAssignBlowerDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$blowerNumber	=	$extra['BlowerNumber'];
+		$sBlowerDetails	=	'';
+		
+		for($i=0;$i<$blowerNumber;$i++)
+		{
+			$strBlowerName 		=	'Blower '.($i+1);	
+			$strBlowerNameTmp 	=	$this->home_model->getDeviceName($i,'B');
+			if($strBlowerNameTmp != '')
+				$strBlowerName	.=	' ('.$strBlowerNameTmp.')';
+				
+	
+			if($i != 0){ $sBlowerDetails .='<hr />'; }
+			
+			$sBlowerDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strBlowerName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayBlower-'.$i.'" name="relayBlower[]" hidefocus="true" style="outline: medium none;">
+				<label id="lableRelayBlower-'.$i.'" for="relayBlower-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+			
+		}
+		
+		echo $sBlowerDetails;
+		exit;
+	}
+	
+	public function makeInputDeviceOnOff()
+	{
+		//Get the Device details from POST whose status will be changed.
+		$sInput		=	$this->input->post('input');
+		$aDevice	=	explode("_",$this->input->post('device'));
+		$sStatus	=	$this->input->post('status');
+		
+		$sDeviceNum	=	$aDevice[0];
+		$sDevice	=	$aDevice[1];
+		$sName      =   $sDeviceNum; //Device Number
+		
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+        
+        //$sResponse      =   array('valves'=>'0120','powercenter'=>'0000','time'=>'','relay'=>'0000');
+        $sValves        =   $sResponse['valves'];   // Valve Device Status
+        $sRelays        =   $sResponse['relay'];    // Relay Device Status
+        $sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+        
+        $sNewResp       =   '';
+           
+        $this->load->model('home_model');
+        
+        //R = Relay, P = PowerCenter, V = Valve, PS = Pumps
+        if($sDevice == 'R') // If Device type is Relay
+        {
+            $sNewResp = replace_return($sRelays, $sStatus, $sName );
+            onoff_rlb_relay($sNewResp);
+            $this->home_model->updateDeviceRunTime($sName,$sDevice,$sStatus);
+			
+			list($pumpNumber,$relay1,$relay2)	=	$this->home_model->getPumpNumberFromRelayNumber($sName,'24');
+			if($pumpNumber != '')
+			{
+				//Check if the relay is assigned to pump or not.
+				$aPumpDetails =	$this->home_model->getPumpDetails($pumpNumber);
+				if(!empty($aPumpDetails))
+				{
+					foreach($aPumpDetails as $sPump)
+					{
+						if($sStatus != '0')
+						{
+							if($relay1 == $sName)
+								$sStatus = '1';
+							if($relay2 == $sName)
+								$sStatus = '2';
+						}
+						$this->makePumpOnOFF($sPump->pump_number,$sStatus);
+					}
+				}
+			}
+            
+        }
+        if($sDevice == 'P') // If Device type is Power Center
+        {
+            $sNewResp = replace_return($sPowercenter, $sStatus, $sName );
+            onoff_rlb_powercenter($sNewResp);
+			
+			list($pumpNumber,$relay1,$relay2)	=	$this->home_model->getPumpNumberFromRelayNumber($sName,'12');
+			
+			if($pumpNumber != '')
+			{
+				//Check if the relay is assigned to pump or not.
+				$aPumpDetails =	$this->home_model->getPumpDetails($pumpNumber);
+				if(!empty($aPumpDetails))
+				{
+					foreach($aPumpDetails as $sPump)
+					{
+						if($sStatus != '0')
+						{
+							if($relay1 == $sName)
+								$sStatus = '1';
+							if($relay2 == $sName)
+								$sStatus = '2';
+						}
+						$this->makePumpOnOFF($sPump->pump_number,$sStatus);
+					}
+				}
+			}
+        }
+        if($sDevice == 'V') // If Device type is Valve
+        {
+            $sNewResp = replace_return($sValves, $sStatus, $sName );
+            onoff_rlb_valve($sNewResp);
+        }
+        if($sDevice == 'PS') // If Device type is Pump
+        {
+			$this->makePumpOnOFF($sName,$sStatus);
+		}
+		if($sDevice	==	'L')
+		{
+			$aLightDetails  =   $this->home_model->getLightDeviceDetails($sName);
+			if(!empty($aLightDetails))
+			{
+				foreach($aLightDetails as $aLight)
+				{
+					$sLightStatus	=	'';
+					$sRelayDetails  =   unserialize($aLight->light_relay_number);
+					
+					//Light Operated Type and Relay
+					$sRelayType     =   $sRelayDetails['sRelayType'];
+					$sRelayNumber   =   $sRelayDetails['sRelayNumber'];
+					
+					if($sRelayType == '24')
+					{
+						$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+						onoff_rlb_relay($sNewResp);
+						$this->home_model->updateDeviceRunTime($sRelayNumber,$sDevice,$sStatus);
+					}
+					if($sRelayType == '12')
+					{
+						$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+						onoff_rlb_powercenter($sNewResp);
+					}
+				}
+			}
+		}
+		if($sDevice	==	'B')
+		{
+			$aBlowerDetails  =   $this->home_model->getBlowerDeviceDetails($sName);
+			if(!empty($aBlowerDetails))
+			{
+				foreach($aBlowerDetails as $aBlower)
+				{
+					$sBlowerStatus	=	'';
+					$sRelayDetails  =   unserialize($aBlower->light_relay_number);
+					
+					//Blower Operated Type and Relay
+					$sRelayType     =   $sRelayDetails['sRelayType'];
+					$sRelayNumber   =   $sRelayDetails['sRelayNumber'];
+					
+					if($sRelayType == '24')
+					{
+						$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+						onoff_rlb_relay($sNewResp);
+						$this->home_model->updateDeviceRunTime($sRelayNumber,$sDevice,$sStatus);
+					}
+					if($sRelayType == '12')
+					{
+						$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+						onoff_rlb_powercenter($sNewResp);
+					}
+				}
+			}
+		}
+		if($sDevice	==	'H')
+		{
+			//Heater Details
+			$aHeaterDetails  =   $this->home_model->getHeaterDeviceDetails($sName);
+			if(!empty($aHeaterDetails))
+			{
+				foreach($aHeaterDetails as $aHeater)
+				{
+					$sHeaterStatus	=	'';
+					$sRelayDetails  =   unserialize($aHeater->light_relay_number);
+					
+					//Heater Operated Type and Relay
+					$sRelayType     =   $sRelayDetails['sRelayType'];
+					$sRelayNumber   =   $sRelayDetails['sRelayNumber'];
+					
+					if($sRelayType == '24')
+					{
+						$sNewResp = replace_return($sRelays, $sStatus, $sRelayNumber );
+						onoff_rlb_relay($sNewResp);
+						$this->home_model->updateDeviceRunTime($sRelayNumber,$sDevice,$sStatus);
+					}
+					if($sRelayType == '12')
+					{
+						$sNewResp = replace_return($sPowercenter, $sStatus, $sRelayNumber );
+						onoff_rlb_powercenter($sNewResp);
+					}
+				}
+			}
+		}
+		
+        exit;
+		
 	}
 	
 }//END : Class Home

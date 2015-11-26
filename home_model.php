@@ -1047,8 +1047,7 @@ class Home_model extends CI_Model
 		
 		return '';
 	}
-	
-	
+		
 	public function removeValveRelays($iValveNumber)
 	{
 		$sDeleteOldValve	=	"DELETE FROM rlb_device WHERE device_type ='V' AND device_number = '".$iValveNumber."'";
@@ -1084,8 +1083,7 @@ class Home_model extends CI_Model
 	public function selectPumpsStatus($iPumpID)
 	{
 		$sSql   =   "SELECT status FROM rlb_pump_device WHERE pump_number ='".$iPumpID."'";
-		
-        $query  =   $this->db->query($sSql);
+		$query  =   $this->db->query($sSql);
         
         if($query->num_rows() > 0)
         {
@@ -1464,7 +1462,7 @@ class Home_model extends CI_Model
 		return '';
 	}
 	
-	public function getAllActivePrograms()
+	public function getAllActiveProgramsNew()
 	{
 		$iActive			=	'';
 		$strChkProgram	=	"SELECT * FROM rlb_program WHERE program_active = '1' AND program_delete = '0'";

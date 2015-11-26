@@ -9,15 +9,15 @@ class Cron extends CI_Controller
     {
         parent::__construct();
         $this->load->helper('common_functions');
-    }
+	}
     
     public function index()
     {
-	//$seconds = 2; 
+		//$seconds = 2; 
         //$micro = $seconds * 1000000;
         $this->load->model('analog_model');
         $this->load->model('home_model');
-        while(true)
+        //while(true)
         {    
             list($sIpAddress, $sPortNo) = $this->home_model->getSettings();
             
@@ -44,13 +44,15 @@ class Cron extends CI_Controller
             }   
             else
             { 
-                $sResponse =   get_rlb_status();
+				$sResponse =   response_input_switch($sIpAddress,$sPortNo);
+				
+                /* $sResponse =   get_rlb_status();
                 $aAP       =   array($sResponse['AP0'],$sResponse['AP1'],$sResponse['AP2'],$sResponse['AP3']);
                 //$aAP       =   array(0,1,0,1);
 
-                $sValves        =   $sResponse['valves'];
-                $sRelays        =   $sResponse['relay'];
-                $sPowercenter   =   $sResponse['powercenter'];
+                $sValves        	=   $sResponse['valves'];
+                $sRelays        	=   $sResponse['relay'];
+                $sPowercenter   	=   $sResponse['powercenter'];
 
                 $aResult            =   $this->analog_model->getAllAnalogDevice();
                 $aResultDirection   =   $this->analog_model->getAllAnalogDeviceDirection();
@@ -93,7 +95,7 @@ class Cron extends CI_Controller
                             }
                         }
                     }
-                }
+                } */
             } 
 
             /*$myFile = "/var/www/relay_framework/daemontest1.txt";
@@ -126,25 +128,25 @@ class Cron extends CI_Controller
 
                 if($sResponse != '')
                 {
-                        //$aResponse['message'] =$sResponse;
-                        $aResponse	=	explode("|||",$sResponse);
-                        foreach($aResponse as $strResponse)
-                        {
-                                $aCheckResponse	=	explode(',',$strResponse);
-                                //$iPump			=   str_replace('M','',$aCheckResponse[0]);
-                                //if($aCheckResponse[1] == '0')
-                                //	$strResponse .= ',STOP';
+					//$aResponse['message'] =$sResponse;
+					$aResponse	=	explode("|||",$sResponse);
+					foreach($aResponse as $strResponse)
+					{
+							$aCheckResponse	=	explode(',',$strResponse);
+							//$iPump			=   str_replace('M','',$aCheckResponse[0]);
+							//if($aCheckResponse[1] == '0')
+							//	$strResponse .= ',STOP';
 
-                                $iPump	=	$aCheckResponse[1];
+							$iPump	=	$aCheckResponse[1];
 
-                                if($aCheckResponse[2] == '0')
-                                        $strResponse .= ',STOP';
+							if($aCheckResponse[2] == '0')
+									$strResponse .= ',STOP';
 
-                                if(preg_match('/^M/',$strResponse))
-                                    $this->home_model->savePumpResponse($strResponse,$iPump);
-                        }
+							if(preg_match('/^M/',$strResponse))
+								$this->home_model->savePumpResponse($strResponse,$iPump);
+					}
 
-                        //echo json_encode($aResponse);
+                    //echo json_encode($aResponse);
                 }
 
                 /* $myFile = "/var/www/relay_framework/daemontest1.txt";
@@ -221,9 +223,8 @@ class Cron extends CI_Controller
         {
             foreach($aAllProgram as $aResultProgram)
             {
-				
-                $sRelayName     = $aResultProgram->device_number;
-		$sDevice     	= $aResultProgram->device_type;
+				$sRelayName     = $aResultProgram->device_number;
+				$sDevice     	= $aResultProgram->device_type;
                 $iProgId        = $aResultProgram->program_id;
                 $sProgramType   = $aResultProgram->program_type;
                 $sProgramStart  = $aResultProgram->start_time;
@@ -315,7 +316,7 @@ class Cron extends CI_Controller
                         } 
                     }
                 }
-		else if($sDevice == 'PS')
+				else if($sDevice == 'PS')
                 {					
                     if($sProgramType == 1 || ($sProgramType == 2 && in_array($sDayret, $aDays)))
                     {
@@ -579,48 +580,48 @@ class Cron extends CI_Controller
                                             if(preg_match('/Emulator/',$sPumpType))
                                                                         {
                                             $sNewResp = '';
-                                                                                $sType          =   '';
-                                                                                if($sPumpSubType == 'VS')
-                                                                                        $sType  =   '2'.' '.$sPumpSpeed;
-                                                                                elseif ($sPumpSubType == 'VF')
-                                                                                        $sType  =   '3'.' '.$sPumpFlow;
+											$sType          =   '';
+											if($sPumpSubType == 'VS')
+													$sType  =   '2'.' '.$sPumpSpeed;
+											elseif ($sPumpSubType == 'VF')
+													$sType  =   '3'.' '.$sPumpFlow;
 
-                                                                                $sNewResp =  $sRelayName.' '.$sType;
+											$sNewResp =  $sRelayName.' '.$sType;
 
-                                                                                onoff_rlb_pump($sNewResp);
+											onoff_rlb_pump($sNewResp);
 
-                                                                                if($sPumpType == 'Emulator12')
-                                                                                {
-                                                                                        $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-                                                                                        onoff_rlb_powercenter($sNewResp12);
-                                                                                }
-                                                                                if($sPumpType == 'Emulator24')
-                                                                                {
-                                                                                        $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-                                                                                        onoff_rlb_relay($sNewResp24);
-                                                                                }
-                                                                        }
-                                                                        else if(preg_match('/Intellicom/',$sPumpType))
-                                                                        {
-                                                                                $sNewResp = '';
-                                                                                $sType  =   '2'.' '.$sPumpSpeed;
-                                                                                $sNewResp =  $sRelayName.' '.$sType;
-                                                                                onoff_rlb_pump($sNewResp);
+											if($sPumpType == 'Emulator12')
+											{
+													$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+													onoff_rlb_powercenter($sNewResp12);
+											}
+											if($sPumpType == 'Emulator24')
+											{
+													$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+													onoff_rlb_relay($sNewResp24);
+											}
+									}
+									else if(preg_match('/Intellicom/',$sPumpType))
+									{
+											$sNewResp = '';
+											$sType  =   '2'.' '.$sPumpSpeed;
+											$sNewResp =  $sRelayName.' '.$sType;
+											onoff_rlb_pump($sNewResp);
 
-                                                                                if($sPumpType == 'Intellicom12')
-                                                                                {
-                                                                                        $sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
-                                                                                        onoff_rlb_powercenter($sNewResp12);
-                                                                                }
-                                                                                if($sPumpType == 'Intellicom24')
-                                                                                {
-                                                                                        $sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
-                                                                                        onoff_rlb_relay($sNewResp24);
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }                
-                                                        $this->home_model->updateDeviceStauts($sRelayName,'PS','1');
+											if($sPumpType == 'Intellicom12')
+											{
+													$sNewResp12 = replace_return($sPowercenter, $iPumpStatus, $sRelayNumber );
+													onoff_rlb_powercenter($sNewResp12);
+											}
+											if($sPumpType == 'Intellicom24')
+											{
+													$sNewResp24 = replace_return($sRelays, $iPumpStatus, $sRelayNumber );
+													onoff_rlb_relay($sNewResp24);
+											}
+									}
+							}
+					}                
+					$this->home_model->updateDeviceStauts($sRelayName,'PS','1');
                     $this->home_model->updateProgramStatus($iProgId, 1);
                 }
             }//off Pump
@@ -978,10 +979,8 @@ class Cron extends CI_Controller
 	
 	public function getPumpProgramStatus()
 	{
-		$iPumpID	=	$_GET['iPumpID'];
-		
+		$iPumpID    =   $_GET['iPumpID'];
 		$this->load->model('home_model');
-		
 		$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsForPump($iPumpID);
 		$strMessage		=	'';	
 		if(!empty($aAllActiveProgram))
@@ -991,42 +990,161 @@ class Cron extends CI_Controller
 				if($aActiveProgram->device_type == 'PS')
 				{
 					$aPumpDetails 	=	$this->home_model->getPumpDetails($aActiveProgram->device_number);
-					
+
 					if(is_array($aPumpDetails) && !empty($aPumpDetails))
 					{
-						foreach($aPumpDetails as $aResultEdit)
-						{ 
-							$sPumpNumber  = $aResultEdit->pump_number;
-							$sPumpType    = $aResultEdit->pump_type;
-							$sPumpSubType = $aResultEdit->pump_sub_type;
-							$sPumpSpeed   = $aResultEdit->pump_speed;
-						}
+							foreach($aPumpDetails as $aResultEdit)
+							{ 
+									$sPumpNumber  = $aResultEdit->pump_number;
+									$sPumpType    = $aResultEdit->pump_type;
+									$sPumpSubType = $aResultEdit->pump_sub_type;
+									$sPumpSpeed   = $aResultEdit->pump_speed;
+							}
 					}
-					
+
 					if($strMessage != '')
 					{
 						$strMessage .= ' <br /><strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
-						
+
 						if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
 						{
-							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+								$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+						}
+						else if($sPumpType	==	'12')
+						{
+							$strMessage .= ' With <strong> 12V DC Relays</strong>';
+						}
+						else if($sPumpType	==	'24')
+						{
+							$strMessage .= ' With <strong> 24V AC Relays</strong>';
+						}
+						else if($sPumpType	==	'2Speed')
+						{
+							if($sPumpSubType == '12')
+							{
+								$strMessage .= ' With <strong> 2 Speed 12V DC Relays</strong>';
+							}
+							else if($sPumpSubType == '24')
+							{
+								$strMessage .= ' With <strong> 2 Speed 24V AC Relays</strong>';
+							}
 						}
 						$strMessage .= '!';
 					}
 					else
 					{
 						$strMessage .= '<strong>'.$aActiveProgram->program_name.'</strong> Program is Running for <strong>Pump '.$aActiveProgram->device_number.'</strong>';
-						
+
 						if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
 						{
 							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+						}
+						else if($sPumpType	==	'12')
+						{
+							$strMessage .= ' With <strong> 12V DC Relays</strong>';
+						}
+						else if($sPumpType	==	'24')
+						{
+							$strMessage .= ' With <strong> 24V AC Relays</strong>';
+						}
+						else if($sPumpType	==	'2Speed')
+						{
+							if($sPumpSubType == '12')
+							{
+								$strMessage .= ' With <strong> 2 Speed 12V DC Relays</strong>';
+							}
+							else if($sPumpSubType == '24')
+							{
+								$strMessage .= ' With <strong> 2 Speed 24V AC Relays</strong>';
+							}
 						}
 						$strMessage .= '!';
 					}
 				}
 			}
 		}
-		
+		else //Check if Pump is ON manually then take the details and show.
+		{
+			//First Check if the pump is ON.
+			$iCheck = $this->home_model->selectPumpsStatus($iPumpID);
+			
+			//If Pump is ON.
+			if($iCheck)
+			{
+				$aPumpDetails 	=	$this->home_model->getPumpDetails($iPumpID);
+
+				if(is_array($aPumpDetails) && !empty($aPumpDetails))
+				{
+					foreach($aPumpDetails as $aResultEdit)
+					{ 
+						$sPumpNumber  = $aResultEdit->pump_number;
+						$sPumpType    = $aResultEdit->pump_type;
+						$sPumpSubType = $aResultEdit->pump_sub_type;
+						$sPumpSpeed   = $aResultEdit->pump_speed;
+					}
+				}
+				//Start Generating the status message.
+				if($strMessage != '')
+				{
+					$strMessage .= ' <br /><strong>Pump '.$aActiveProgram->device_number.'</strong> is Running';
+
+					if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+					{
+						$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+					}
+					else if($sPumpType	==	'12')
+					{
+						$strMessage .= ' With <strong> 12V DC Relays</strong>';
+					}
+					else if($sPumpType	==	'24')
+					{
+						$strMessage .= ' With <strong> 24V AC Relays</strong>';
+					}
+					else if($sPumpType	==	'2Speed')
+					{
+						if($sPumpSubType == '12')
+						{
+							$strMessage .= ' With <strong> 2 Speed 12V DC Relays</strong>';
+						}
+						else if($sPumpSubType == '24')
+						{
+							$strMessage .= ' With <strong> 2 Speed 24V AC Relays</strong>';
+						}
+					}
+					$strMessage .= '!';
+				}
+				else
+				{
+					$strMessage .= '<strong>Pump '.$aActiveProgram->device_number.'</strong> is Running';
+
+					if($sPumpType	==	'Emulator' && $sPumpSubType == 'VS')
+					{
+							$strMessage .= ' With <strong>Speed '.$sPumpSpeed.' </strong>';
+					}
+					else if($sPumpType	==	'12')
+					{
+						$strMessage .= ' With <strong> 12V DC Relays</strong>';
+					}
+					else if($sPumpType	==	'24')
+					{
+						$strMessage .= ' With <strong> 24V AC Relays</strong>';
+					}
+					else if($sPumpType	==	'2Speed')
+					{
+						if($sPumpSubType == '12')
+						{
+							$strMessage .= ' With <strong> 2 Speed 12V DC Relays</strong>';
+						}
+						else if($sPumpSubType == '24')
+						{
+							$strMessage .= ' With <strong> 2 Speed 24V AC Relays</strong>';
+						}
+					}
+					$strMessage .= '!';
+				}//End Generating the status message.
+			}//If pump is ON.
+		}
+
 		$aResult['message']	=	$strMessage;
 		echo json_encode($aResult['message']);
 	}
@@ -1035,15 +1153,16 @@ class Cron extends CI_Controller
 	{
 		$this->load->model('home_model');
 		//First Take all active programs.
-		$aAllActiveProgram	=	$this->home_model->getAllActivePrograms();
+		$aAllActiveProgram	=	$this->home_model->getAllActiveProgramsNew();
 		
 		if(!empty($aAllActiveProgram))
 		{
 			foreach($aAllActiveProgram as $aActive)
 			{
 				//Update all active programs status to inactive.
-				$strChkProgram	=	"UPDATE rlb_program SET program_active = '0', is_on_after_reboot = '1' WHERE program_id = '".$aActive->program_id."' AND program_delete = '0'";
+				$strChkProgram	=	"UPDATE rlb_program SET program_active = '0', is_on_after_reboot = '1' WHERE program_id = '".$aActive->program_id."'";
 				$query  =   $this->db->query($strChkProgram);
+				
 			}
 		}
 		
