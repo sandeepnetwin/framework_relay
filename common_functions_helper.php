@@ -92,6 +92,7 @@
 	
 	function send_command_udp_new($IP,$PORT,$aPumps)
 	{
+		
 		$aPumpNumber	=	json_decode($aPumps);
 		$sServer 		= 	$IP;
 		$iPort 			=	$PORT;
@@ -115,34 +116,86 @@
 		$package = "\x07\x00";
 		socket_send($sSock, $package, strLen($package), 0);
 		$line1 = socket_read($sSock, 255);
-		//var_dump( $line1 );
+		$strPumpResponse	= '';
+		
 		$package = "\x06\x00";
 		socket_send($sSock, $package, strLen($package), 0);
-		$strPumpResponse	= '';
-		for($i=0;$i<=$cntPump; $i++)
+		//echo $cntPump;
+		
+		for($i=0;$i<$cntPump; $i++)
 		{
-			$package = "\x06\x00";
-			$strResponse = socket_read($sSock, 255); 
-			if(!preg_match('/^S/',$strResponse))
+			$strResponse = socket_read($sSock, 255);
+			while(preg_match('/^S/',$strResponse))
 			{
-				if($strPumpResponse == '')
-				{
-					$strPumpResponse = $strResponse;
-				}
-				else
-				{
-					$strPumpResponse .= '|||'.$strResponse;
-				}
+                $strResponse = socket_read($sSock, 255);
 			}
+			
+			if($strPumpResponse == '')
+			{
+				$strPumpResponse = $strResponse;
+			}
+			else
+			{
+				$strPumpResponse .= '|||'.$strResponse;
+			}				
 		}
+		
 		$package ="\x7f\x00";
 		socket_send($sSock, $package, strLen($package), 0);
+		
 		//$line3 = socket_read($sSock, 255);
 		//var_dump($line3); 
 		
 		socket_close($sSock);
-		
+		//die('STOP');
 		return $strPumpResponse;
+	}
+	
+	function response_input_switch($IP,$PORT)
+	{
+		$aPumpNumber	=	json_decode($aPumps);
+		$sServer 		= 	$IP;
+		$iPort 			=	$PORT;
+		
+		$cntPump		=	count($aPumpNumber);
+		
+		$server = $sServer;
+		$port = 13330;
+		
+		if(!($sSock = socket_create(AF_INET, SOCK_DGRAM, 0)))
+		{
+			$iErrorcode = socket_last_error();
+			$sErrormsg = socket_strerror($iErrorcode);
+			 
+			die("Couldn't create socket: [$iErrorcode] $sErrormsg \n");
+		} 
+		
+		socket_connect ( $sSock , $server , $port );
+		$package = "\x07\x00";
+		socket_send($sSock, $package, strLen($package), 0);
+		$line1 = socket_read($sSock, 255);
+		//var_dump($line1);
+		$strPumpResponse	= '';
+		
+		$package = "\x06\x00";
+		socket_send($sSock, $package, strLen($package), 0);
+		
+		$strResponse = socket_read($sSock, 255);
+		while(!preg_match('/^S/',$strResponse))
+		{
+			$strResponse = socket_read($sSock, 255);
+		}			
+		
+		$package ="\x7f\x00";
+		socket_send($sSock, $package, strLen($package), 0);
+		socket_close($sSock);
+		
+		return $strResponse;
+	}
+	
+	function checkResponse($Response,$arrCheck)
+	{
+		
 	}
 	
 	function send_command_udp_new1($IP,$PORT)
@@ -734,6 +787,33 @@
 			
 		return $sResult;
 	}
+	
+	function getTempratureBus($sHexNumber){
+		$sUrl = 't';
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+			
+		return $sResult;
+	}
+	
+	function configureTempratureBus($TS,$BUS)
+	{
+		$sUrl = 'p '.$TS.' '.$BUS;
+		
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+			
+		return $sResult;
+	}
+	
+	function removePumpAddress($Pump)
+	{
+		$sUrl = 'p '.$Pump.' 0';
+		$sReturnUrl = get_url($sUrl);
+		$sResult = relayboard_command($sReturnUrl);
+			
+		return $sResult;
+	}
 
 	function switch_arrays($aOrig, $aNew){
 		$aReturn = array();
@@ -792,16 +872,17 @@
 	{
 		$CI = get_instance();
 		$CI->load->model('access_model');
-	    $aPermissions = $CI->access_model->getPermission($userID);
+		$aPermissions = $CI->access_model->getPermission($userID);
 		$aModules	= array();
 		$aReturn	= array();
 		
+		//var_dump($aPermissions);
 		if(!empty($aPermissions))
 		{
 		  foreach($aPermissions as $sPermission)
 		  {
-			  $aModules['ids'][] = $sPermission->module_id;
-			  $aModules['access_'.$sPermission->module_id] = $sPermission->access;
+			$aModules['ids'][] = $sPermission->module_id;
+			$aModules['access_'.$sPermission->module_id] = $sPermission->access;
 		  }
 		}  
 		
