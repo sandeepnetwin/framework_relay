@@ -2273,6 +2273,18 @@ class Home extends CI_Controller
 		$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
 	}
 	
+	public function saveMiscRelay()
+	{
+		$sRelayNumber   =   $this->input->post('sRelayNumber');
+		$sDevice        =   $this->input->post('sDevice');
+		$sDeviceId      =   $this->input->post('sDeviceId');
+		$sRelayType     =   $this->input->post('sRelayType');
+		
+		$this->load->model('home_model');
+		
+		$this->home_model->saveMiscRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+	}
+	
 	public function updatePoolSpaMode()
 	{
 		$iMode   =   $this->input->post('iMode');
@@ -2843,6 +2855,73 @@ class Home extends CI_Controller
 		exit;
 	}
 	
+	public function saveMiscRelayConf()
+	{
+		$arrMisc 	=	json_decode($this->input->post('misc'));
+		
+		//First Check whether relay is already assigned to other device or not.
+		foreach($arrMisc as $miscNumber => $miscDetails)
+		{
+			$relayType		=	$miscDetails->relayType;
+			$sRelayNumber	=	$miscDetails->relayNumber;
+			
+			$iCheck			=	$this->checkRelayNumbers($sRelayNumber,$sPumpType);
+			if($icheck == '1')				
+			{
+				echo 'Relay number for Light '.$miscNumber.' is already in use by other Device!';
+				exit;
+			}
+			//checkRelayNumbers
+		}
+		
+		foreach($arrMisc as $miscNumber => $miscDetails)
+		{
+			$sRelayType		=	$miscDetails->relayType;
+			$sRelayNumber	=	$miscDetails->relayNumber;
+			$smiscName	=	$miscDetails->name;
+			
+			$sDevice        =   'M';
+			$sDeviceId      =   ($miscNumber-1);
+			
+			$this->load->model('home_model');
+			
+			$this->home_model->saveLightRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType);
+			
+			if($smiscName != '')
+			{
+				$this->home_model->saveDeviceName($sDeviceId,$sDevice,$smiscName);
+			}
+		}
+		
+		$aExtra	=	array();
+		$sSql   =   "SELECT id,extra FROM rlb_setting";
+        $query  =   $this->db->query($sSql);
+
+        if ($query->num_rows() > 0)
+        {
+            foreach($query->result() as $aRow)
+            {  
+				if($aRow->extra != '')
+					$aExtra = unserialize($aRow->extra);
+				
+				$aExtra['MiscNumber'] 	= count((array)$arrMisc);
+				
+                $data = array('extra' => serialize($aExtra) );
+                $this->db->where('id', $aRow->id);
+                $this->db->update('rlb_setting', $data);
+            }
+        }
+        else
+        {
+			$aNumDevice['MiscNumber']	=	count((array)$arrMisc);
+            $data = array('extra' => serialize($aNumDevice) );
+            $this->db->insert('rlb_setting', $data);
+        }
+		
+		echo 'Miscelleneous Device Configuration done successfully!';
+		exit;
+	}
+	
 	public function removePump()
 	{
 		$iPumpNumber	=	$this->input->post('iPumpNumber');
@@ -3017,6 +3096,39 @@ class Home extends CI_Controller
 		echo $sBlowerDetails;
 		exit;
 	}
+	
+	public function getAssignMiscDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$miscNumber	=	$extra['MiscNumber'];
+		$sMiscDetails	=	'';
+		
+		for($i=0;$i<$miscNumber;$i++)
+		{
+			$strMiscName 		=	'Misc Device '.($i+1);	
+			$strMiscNameTmp 	=	$this->home_model->getDeviceName($i,'M');
+			if($strMiscNameTmp != '')
+				$strMiscName	.=	' ('.$strMiscNameTmp.')';
+				
+	
+			if($i != 0){ $sMiscDetails .='<hr />'; }
+			
+			$sMiscDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strMiscName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayMisc-'.$i.'" name="relayMisc[]" hidefocus="true" style="outline: medium none;">
+				<label id="lableRelayMisc-'.$i.'" for="relayMisc-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+			
+		}
+		
+		echo $sMiscDetails;
+		exit;
+	}
+	
 	
 	public function makeInputDeviceOnOff()
 	{

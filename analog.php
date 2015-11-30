@@ -1243,6 +1243,41 @@ class Analog extends CI_Controller
         $this->template->build("Blower",$aViewParameter);
 	}
 	
+	public function showMisc()
+	{
+		$aViewParameter['Title']    =   'Miscelleneous';
+		$aViewParameter['page'] 	=	'home';
+		$aViewParameter['sDevice'] 	=	'M';
+		
+		//Get the status response of devices from relay board.
+        $sResponse      =   get_rlb_status();
+		
+		$sRelays        =   $sResponse['relay'];  // Relay Device Status
+        $sPowercenter   =   $sResponse['powercenter']; // Power Center Device Status
+		
+		$this->load->model('home_model');
+		
+		//Get Extra Details
+		list($aViewParameter['sIP'],$aViewParameter['sPort'],$extra) = $this->home_model->getSettings();
+		
+		$aViewParameter['numMisc']         =	'';
+		
+		if(isset($extra['MiscNumber']))
+            $aViewParameter['numMisc']     =	$extra['MiscNumber'];
+		
+		//START : Parameter for View
+		$aViewParameter['relay_count']      =   strlen($sRelays);
+		$aViewParameter['power_count']      =   strlen($sPowercenter);
+		
+		$aViewParameter['sRelays']          =   $sRelays; 
+		$aViewParameter['sPowercenter']     =   $sPowercenter;
+		
+		//Current mode of the system.
+		$aViewParameter['iActiveMode'] =    $this->home_model->getActiveMode();
+                
+        $this->template->build("Misc",$aViewParameter);
+	}
+	
 	public function removeLight()
 	{
 		$lightNumber	=	$this->input->post('lightNumber');

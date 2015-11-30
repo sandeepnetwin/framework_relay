@@ -1475,13 +1475,49 @@ class Home_model extends CI_Model
 		return '';
 	}
         
-        //Function to change the reboot status
-        public function updateRebootStatus($iProgramID,$sStatus)
-        {
-            $strUpdProgram  =   "UPDATE rlb_program SET is_on_after_reboot = '".$sStatus."' 
-                                 WHERE program_id = '".$iProgramID."'";
-            $this->db->query($strUpdProgram);
-        }
+	//Function to change the reboot status
+	public function updateRebootStatus($iProgramID,$sStatus)
+	{
+		$strUpdProgram  =   "UPDATE rlb_program SET is_on_after_reboot = '".$sStatus."' 
+							 WHERE program_id = '".$iProgramID."'";
+		$this->db->query($strUpdProgram);
+	}
+	
+	
+	public function getMiscDeviceDetails($sDeviceId)
+	{
+		$sSql   =   "SELECT device_number,device_id,light_relay_number FROM rlb_device WHERE device_number = '".$sDeviceId."' AND device_type ='M'";
+		$query  =   $this->db->query($sSql);
+		
+		if($query->num_rows() > 0)
+		{
+			return $query->result();
+		}
+		
+		return '';
+	}
+	
+	public function saveMiscRelay($sRelayNumber,$sDevice,$sDeviceId,$sRelayType)
+	{
+		$sSql   =   "SELECT device_id FROM rlb_device WHERE device_number = ".$sDeviceId." AND device_type ='".$sDevice."'";
+		$query  =   $this->db->query($sSql);
+		
+		$arrLightDetails    =   array('sRelayType'=>$sRelayType,'sRelayNumber'=>$sRelayNumber);
+		
+		if($query->num_rows() > 0)
+		{
+			foreach($query->result() as $aRow)
+			{
+				$sSqlUpdate =   "UPDATE rlb_device SET light_relay_number='".serialize($arrLightDetails)."', last_updated_date='".date('Y-m-d H:i:s')."' WHERE device_id = ".$aRow->device_id;
+				$this->db->query($sSqlUpdate);
+			}
+		}
+		else
+		{
+			$sSqlInsert =   "INSERT INTO rlb_device(device_number,device_type,light_relay_number,last_updated_date) VALUES('".$sDeviceId."','".$sDevice."','".serialize($arrLightDetails)."','".date('Y-m-d H:i:s')."')";
+			$this->db->query($sSqlInsert);
+		}
+	}
 }
 
 /* End of file home_model.php */
