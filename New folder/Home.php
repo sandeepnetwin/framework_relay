@@ -71,8 +71,61 @@ setInterval( function() {
 	jQuery.getJSON('<?php echo site_url('home/getModeTime/');?>', function(json) {
 		jQuery("#welcomeMessage").html(json.message);
 	});
-	},60000); 	
+	},60000);
+
+setInterval( function() {
 	
+	$.ajax({
+                type: "POST",
+                url: "<?php echo site_url('home/getAllDeviceStatus/');?>", 
+                data: {},
+                success: function(data) {
+					
+					var obj = jQuery.parseJSON( data );
+					var analog = obj.arrStatus;
+					$.each(analog, function(index,value){
+						var strChk	=	'';
+						if(value.status == '1')
+							strChk	=	'class="checked"';
+						
+						$("#deviceInput"+index).html('<div class="custom-checkbox"><input type="checkbox" value="'+index+'|||'+value.device+'" id="relay-'+index+'" name="relay-'+index+'" class="relayButton" hidefocus="true" style="outline: medium none;" onclick="onoffAnalog(this.value);"><label '+strChk+' id="lableRelay-'+index+'" for="relay-'+index+'"></label></div>');
+						
+						$("#deviceInputName"+index).html(value.name);
+						
+						strChk	=	'';
+					});
+					//24V AC Relays Status
+					$("#deviceTotalRelays").html('Total : '+obj.relay_count);
+					$("#deviceActiveRelays").html('Active : '+obj.activeCountRelay);
+					$("#deviceOnRelays").html('ON : '+obj.OnCountRelay);
+					$("#deviceOffRelays").html('OFF : '+obj.OFFCountRelay);
+					
+					//12V DC Relays Status
+					$("#deviceTotalPower").html('Total : '+obj.power_count);
+					//$("#deviceActivePower").html('Active : '+obj.activeCountRelay);
+					$("#deviceOnPower").html('ON : '+obj.OnCountPower);
+					$("#deviceOffPower").html('OFF : '+obj.OFFCountPower);
+					
+					//Valve Status
+					$("#deviceTotalValve").html('Total : '+obj.valve_count);
+					$("#deviceActiveValve").html('Active : '+obj.activeCountValve);
+					$("#deviceOnValve").html('ON : '+obj.OnCountValve);
+					$("#deviceOffValve").html('OFF : '+obj.OnCountValve);
+					
+					//Pump Status
+					$("#deviceTotalPump").html('Total : '+obj.pump_count);
+					$("#deviceActivePump").html('Active : '+obj.activeCountPump);
+					$("#deviceOnPump").html('ON : '+obj.OnCountPump);
+					$("#deviceOffPump").html('OFF : '+obj.OFFCountPump);
+					
+					//Temperature Status
+					$("#deviceTotalTemp").html('Total : '+obj.temprature_count);
+					$("#deviceActiveTemp").html('Active : '+obj.activeCountTemperature);
+				}
+		});
+	
+	},5000); 	
+
 	$(".relayButton").click(function(){
 		var clkVal		=	$(this).val();
 		var aDetails	=	clkVal.split('|||');
@@ -90,11 +143,12 @@ setInterval( function() {
 			status = 1;
 		}
 		
-		 $.ajax({
+		$.ajax({
                 type: "POST",
                 url: "<?php echo site_url('home/makeInputDeviceOnOff');?>", 
                 data: {input:input,device:device,status:status},
-                success: function(data) {
+                success: function(data) 
+				{
 					if($("#lableRelay-"+input).hasClass('checked'))
 					{	
 						$("#lableRelay-"+input).removeClass('checked');
@@ -104,9 +158,44 @@ setInterval( function() {
 						$("#lableRelay-"+input).addClass('checked');
 					}
 				}
-		 });
+		});
 	});
 }); 
+
+function onoffAnalog(clkVal)
+{
+	var aDetails	=	clkVal.split('|||');
+	
+	var input		=	aDetails[0];
+	var device		=	aDetails[1];
+	var status		=	'';
+	
+	if($("#lableRelay-"+input).hasClass('checked'))
+	{	
+		status	=	0;
+	}
+	else
+	{
+		status = 1;
+	}
+	
+	$.ajax({
+			type: "POST",
+			url: "<?php echo site_url('home/makeInputDeviceOnOff');?>", 
+			data: {input:input,device:device,status:status},
+			success: function(data) 
+			{
+				if($("#lableRelay-"+input).hasClass('checked'))
+				{	
+					$("#lableRelay-"+input).removeClass('checked');
+				}
+				else
+				{
+					$("#lableRelay-"+input).addClass('checked');
+				}
+			}
+	});
+}
 </script>
 <div class="row">
 	<div class="col-sm-3">
@@ -173,10 +262,6 @@ setInterval( function() {
 			<?php if($Remote_Spa == '1')	{ ?>
 			<div class="tab-pane fade in active" id="remote">
 					<style>
-					/**
-					 * Position icons into circle (SO)
-					 * http://stackoverflow.com/q/12813573/1397351 
-					 */
 					.circle-container {
 						position: relative;
 						width: 20em;
@@ -364,41 +449,49 @@ setInterval( function() {
 							<h3 class="profile-title"><strong style="color:#9CD70E;">Remote Switch</strong></h3>
 							<div class='circle-container'>
 								
-								<a href="javascript:void(0);" class='deg225'>
-								<div class="rowCheckbox switch">
-									<div class="custom-checkbox"><input type="checkbox" value="0|||<?php echo $arrStatus[0]['device'];?>" id="relay-0" name="relay-0" class="relayButton" hidefocus="true" style="outline: medium none;">
+								<a href="javascript:void(0);" class='deg225' >
+								
+									<div class="rowCheckbox switch" id="deviceInput0">
+										<div class="custom-checkbox"><input type="checkbox" value="0|||<?php echo $arrStatus[0]['device'];?>" id="relay-0" name="relay-0" class="relayButton" hidefocus="true" style="outline: medium none;">
 										<label <?php if($arrStatus[0]['status']){ echo 'class="checked"';}?> id="lableRelay-0" for="relay-0"></label>
+										</div>
 									</div>
-								</div>
+								
 								</a>
-								<a class="deg225" style="margin-top: 15px; margin-left: -60px;"><?php echo $arrStatus[0]['name'];?></a>
+								<a class="deg225" style="margin-top: 15px; margin-left: -60px;"><span id="deviceInputName0"><?php echo $arrStatus[0]['name'];?></span></a>
 								
 								<a href="javascript:void(0);" class="deg0" style="margin-left:-30px;">
-								<div class="rowCheckbox switch">
-									<div class="custom-checkbox"><input type="checkbox" value="1|||<?php echo $arrStatus[1]['device'];?>" id="relay-1" name="relay-1" class="relayButton" hidefocus="true" style="outline: medium none;">
-										<label <?php if($arrStatus[1]['status']){ echo 'class="checked"';}?> id="lableRelay-1" for="relay-1"></label>
-									</div>
-								</div>
-								</a>
-								<a class="deg0" style="margin-top: 15px; margin-left: -70px;"><?php echo $arrStatus[1]['name'];?></a>
 								
-								<a href="javascript:void(0);" class='deg45'>
-								<div class="rowCheckbox switch">
-									<div class="custom-checkbox"><input type="checkbox" value="2|||<?php echo $arrStatus[2]['device'];?>" id="relay-2" name="relay-2" class="relayButton" hidefocus="true" style="outline: medium none;">
-										<label <?php if($arrStatus[2]['status']){ echo 'class="checked"';}?> id="lableRelay-2" for="relay-2"></label>
+									<div class="rowCheckbox switch" id="deviceInput1">
+										<div class="custom-checkbox"><input type="checkbox" value="1|||<?php echo $arrStatus[1]['device'];?>" id="relay-1" name="relay-1" class="relayButton" hidefocus="true" style="outline: medium none;">
+											<label <?php if($arrStatus[1]['status']){ echo 'class="checked"';}?> id="lableRelay-1" for="relay-1"></label>
+										</div>
 									</div>
-								</div>
+								
 								</a>
-								<a class="deg45" style="margin-top: 15px; margin-left: -60px;"><?php echo $arrStatus[2]['name'];?></a>
+								<a class="deg0" style="margin-top: 15px; margin-left: -70px;"><span id="deviceInputName1"><?php echo $arrStatus[1]['name'];?></span></a>
+								
+								<a href="javascript:void(0);" class='deg45' >
+								
+									<div class="rowCheckbox switch" id="deviceInput2">
+										<div class="custom-checkbox"><input type="checkbox" value="2|||<?php echo $arrStatus[2]['device'];?>" id="relay-2" name="relay-2" class="relayButton" hidefocus="true" style="outline: medium none;">
+											<label <?php if($arrStatus[2]['status']){ echo 'class="checked"';}?> id="lableRelay-2" for="relay-2"></label>
+										</div>
+									</div>
+								
+								</a>
+								<a class="deg45" style="margin-top: 15px; margin-left: -60px;"><span id="deviceInputName2"><?php echo $arrStatus[2]['name'];?></span></a>
 								
 								<a href="javascript:void(0);" class='deg180'>
-								<div class="rowCheckbox switch">
-									<div class="custom-checkbox"><input type="checkbox" value="3|||<?php echo $arrStatus[3]['device'];?>" id="relay-3" name="relay-3" class="relayButton" hidefocus="true" style="outline: medium none;">
-										<label <?php if($arrStatus[3]['status']){ echo 'class="checked"';}?> id="lableRelay-3" for="relay-3"></label>
+								
+									<div class="rowCheckbox switch" id="deviceInput3">
+										<div class="custom-checkbox"><input type="checkbox" value="3|||<?php echo $arrStatus[3]['device'];?>" id="relay-3" name="relay-3" class="relayButton" hidefocus="true" style="outline: medium none;">
+											<label <?php if($arrStatus[3]['status']){ echo 'class="checked"';}?> id="lableRelay-3" for="relay-3"></label>
+										</div>
 									</div>
-								</div>
+								
 								</a>
-								<a class="deg180" style="margin-top: 15px; margin-left: -60px;"><?php echo $arrStatus[3]['name'];?></a>
+								<a class="deg180" style="margin-top: 15px; margin-left: -60px;"><span id="deviceInputName3"><?php echo $arrStatus[3]['name'];?></span></a>
 								
 								
 								
@@ -411,24 +504,24 @@ setInterval( function() {
 				<!-- Price item -->
 				<?php 
 								
-							  $strRelayUrl	=	'onClick="location.href=\''.base_url('home/setting/R/').'\'"'; 	
-							  if(!empty($aModules))
-							  {
-								if(!in_array(2,$aModules->ids)) 
-								{
-									$strRelayUrl = 'onClick="showRestrict();"'; 
-								} 
-							  }
-							  
-							  $strPowerUrl	=	'onClick="location.href=\''.base_url('home/setting/P/').'\'"'; 	
-							  if(!empty($aModules))
-							  {
-								if(!in_array(3,$aModules->ids)) 
-								{
-									$strPowerUrl = 'onClick="showRestrict();"'; 
-								} 
-							  }
-						?>
+						$strRelayUrl	=	'onClick="location.href=\''.base_url('home/setting/R/').'\'"'; 	
+						if(!empty($aModules))
+						{
+							if(!in_array(2,$aModules->ids)) 
+							{
+								$strRelayUrl = 'onClick="showRestrict();"'; 
+							} 
+						}
+						  
+						$strPowerUrl	=	'onClick="location.href=\''.base_url('home/setting/P/').'\'"'; 	
+						if(!empty($aModules))
+						{
+							if(!in_array(3,$aModules->ids)) 
+							{
+								$strPowerUrl = 'onClick="showRestrict();"'; 
+							} 
+						}
+					?>
 				<div class="price-item style4">
 					<div class="price-content clearfix">
 						<div class="price-content-left">
@@ -439,16 +532,16 @@ setInterval( function() {
 						<div class="price-content-right">
 							<h2 class="price-title">
 							<p>24V AC Relays<span class="price-info" style="cursor:pointer; float:right;" <?php echo $strRelayUrl;?> >Configure</span></p>
-							<a href="#"><span style="color:#1A315F;font-size:20px;" >Total : <?php echo $relay_count;?></span></a>&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;font-size:20px;">Active : <?php echo $activeCountRelay;?></span></h2>
+							<a href="#"><span id="deviceTotalRelays" style="color:#1A315F;font-size:20px;" >Total : <?php echo $relay_count;?></span></a>&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;font-size:20px;" id="deviceActiveRelays">Active : <?php echo $activeCountRelay;?></span></h2>
 							<div class="price clearfix">
-								<strong style="font-size:34px;">ON : <?php echo $OnCountRelay;?></strong><strong style="color:#1A315F; margin-left:10px;font-size:34px;">OFF : <?php echo $OFFCountRelay;?></strong>
+								<strong style="font-size:34px;" id="deviceOnRelays">ON : <?php echo $OnCountRelay;?></strong><strong style="color:#1A315F; margin-left:10px;font-size:34px;" id="deviceOffRelays">OFF : <?php echo $OFFCountRelay;?></strong>
 							</div>
 							<div class="price-desc"></div>
 							
-							<h2 class="price-title"><p>12V DC Relays<span class="price-info" style="cursor:pointer; float:right;" <?php echo $strPowerUrl;?> >Configure</span></p><a href="#"><span style="color:#1A315F;font-size:20px;">Total : <?php echo $power_count;?></span></a>&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;font-size:20px;">Active : <?php echo 8?></span></h2>
+							<h2 class="price-title"><p>12V DC Relays<span class="price-info" style="cursor:pointer; float:right;" <?php echo $strPowerUrl;?> >Configure</span></p><a href="#"><span style="color:#1A315F;font-size:20px;" id="deviceTotalPower">Total : <?php echo $power_count;?></span></a>&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;font-size:20px;" id="deviceActivePower">Active : <?php echo 8?></span></h2>
 							
 							<div class="price clearfix">
-								<strong style="font-size:34px;">ON : <?php echo $OnCountPower;?></strong><strong style="color:#1A315F; margin-left:10px;font-size:34px;">OFF : <?php echo $OFFCountPower;?></strong>
+								<strong style="font-size:34px;" id="deviceOnPower">ON : <?php echo $OnCountPower;?></strong><strong style="color:#1A315F; margin-left:10px;font-size:34px;" id="deviceOffPower">OFF : <?php echo $OFFCountPower;?></strong>
 							</div>
 						</div>
 					</div>
@@ -472,12 +565,13 @@ setInterval( function() {
 							</div>
 						</div>
 						<div class="price-content-right">
-							<h2 class="price-title"><a href="#"><span style="color:#1A315F">Total : <?php echo $valve_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;">Active : <?php echo $activeCountValve?></span></h2>
+							<h2 class="price-title"><a href="#"><span style="color:#1A315F" id="deviceTotalValve">Total : <?php echo $valve_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;" id="deviceActiveValve">Active : <?php echo $activeCountValve?></span></h2>
 							<div class="price-desc">
 							
 							</div>
 							<div class="price clearfix">
-								<strong>ON : <?php echo $OnCountValve?></strong><strong style="color:#1A315F; margin-left:10px;">OFF : <?php echo $OFFCountValve?></strong>
+								<strong id="deviceOnValve">ON : <?php echo $OnCountValve?></strong>
+								<strong style="color:#1A315F; margin-left:10px;" id="deviceOffValve">OFF : <?php echo $OFFCountValve?></strong>
 							</div>
 						</div>
 					</div>
@@ -511,12 +605,13 @@ setInterval( function() {
 							</div>
 						</div>
 						<div class="price-content-right">
-							<h2 class="price-title"><a href="#"><span style="color:#1A315F">Total : <?php echo $pump_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;">Active : <?php echo $activeCountPump?></span></h2>
+							<h2 class="price-title"><a href="#"><span style="color:#1A315F" id="deviceTotalPump">Total : <?php echo $pump_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;" id="deviceActivePump">Active : <?php echo $activeCountPump?></span></h2>
 							<div class="price-desc">
 							
 							</div>
 							<div class="price clearfix">
-								<strong>ON : <?php echo $OnCountPump?></strong><strong style="color:#1A315F; margin-left:10px;">OFF : <?php echo $OFFCountPump?></strong>
+								<strong id="deviceOnPump">ON : <?php echo $OnCountPump?></strong>
+								<strong style="color:#1A315F; margin-left:10px;" id="deviceOffPump">OFF : <?php echo $OFFCountPump?></strong>
 							</div>
 						</div>
 					</div>
@@ -550,7 +645,7 @@ setInterval( function() {
 							</div>
 						</div>
 						<div class="price-content-right">
-							<h2 class="price-title"><a href="#"><span style="color:#1A315F">Total : <?php echo $temprature_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;">Active : <?php echo $activeCountTemperature;?></span></h2>
+							<h2 class="price-title"><a href="#"><span style="color:#1A315F" id="deviceTotalTemp">Total : <?php echo $temprature_count;?></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#"><span style="color:#9CD70E;" id="deviceActiveTemp">Active : <?php echo $activeCountTemperature;?></span></h2>
 						</div>
 					</div>
 					<?php 
