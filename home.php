@@ -1965,7 +1965,7 @@ class Home extends CI_Controller
 			$arrGeneral['spa_manual']		=	trim($this->input->post('spa_manual'));
 			
 			//All Device
-			$arrDevice			=	array();
+			$arrDevice						=	array();
 			$arrDevice['valve'] 			= 	trim($this->input->post('strValve'));
 			$arrDevice['valve_actuated'] 	= 	$this->input->post('valve_actuated');
 			$arrDevice['reasonValve']		=	trim($this->input->post('reasonValve'));
@@ -1980,8 +1980,8 @@ class Home extends CI_Controller
 			//$arrDevice['pumpSequence'] 		= 	trim($this->input->post('pumpSequence'));
 			
 			//Heater Questions
-			$arrHeater			=	array();
-			$arrHeater['heater']			=	trim($this->input->post('automatic_heaters_question1'));
+			$arrHeater							=	array();
+			$arrHeater['heater']				=	trim($this->input->post('automatic_heaters_question1'));
 			$arrHeater['heater1_equip']			=	trim($this->input->post('heater1_equiment'));
 			$arrHeater['heater2_equip']			=	trim($this->input->post('heater2_equiment'));
 			$arrHeater['heater3_equip']			=	trim($this->input->post('heater3_equiment'));
@@ -1994,7 +1994,7 @@ class Home extends CI_Controller
 			$arrHeater['HeaterPump3']			=	trim($this->input->post('HeaterPump3'));
 			
 			//More questions
-			$arrMore			=	array();
+			$arrMore							=	array();
 			$arrMore['light']					=	trim($this->input->post('no_light'));
 			$arrMore['lightRunTime']			=	trim($this->input->post('lightRunTime'));
 			//$arrMore['lightSequence']			=	trim($this->input->post('lightSequence'));
@@ -2013,7 +2013,7 @@ class Home extends CI_Controller
 			
 		}
 		
-		$aViewParameter['arrDetails']	=	$this->home_model->getPoolSpaModeQuestions();
+		$aViewParameter['arrDetails']	 =	$this->home_model->getPoolSpaModeQuestions();
 		
 		//Get the status response of devices from relay board.
         $sResponse      =   get_rlb_status();
@@ -3053,8 +3053,8 @@ class Home extends CI_Controller
 			
 			$sLightDetails .='<div class="rowCheckbox switch">
 				<div style="margin-bottom:10px;">'.$strLightName.'</div>
-				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayLight-'.$i.'" name="relayLight[]" hidefocus="true" style="outline: medium none;">
-				<label id="lableRelay-'.$i.'" for="relayLight-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayLight-'.$i.'" name="relayLight[]" hidefocus="true" style="outline: medium none;" class="lightAssign" onclick="checkLightAssign(this.value)">
+				<label id="lableRelayLight-'.$i.'" for="relayLight-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
 				</div>
 			</div>';
 			
@@ -3064,6 +3064,106 @@ class Home extends CI_Controller
 		exit;
 		
 	}
+	
+	public function getAssignValveDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$valveNumber	=	$extra['ValveNumber'];
+		$sValveDetails	=	'';
+		
+		for($i=0;$i<$valveNumber;$i++)
+		{
+			$strValveName 		=	'Valve '.($i+1);	
+			$strValveNameTmp 	=	$this->home_model->getDeviceName($i,'V');
+			if($strValveNameTmp != '')
+				$strValveName	.=	' ('.$strValveNameTmp.')';
+				
+	
+			if($i != 0){ $sValveDetails .='<hr />'; }
+			
+			$sValveDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strValveName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayValve-'.$i.'" name="relayValve[]" hidefocus="true" style="outline: medium none;" onclick="checkValveAssign(this.value)" class="valveAssign">
+				<label id="lableRelayValve-'.$i.'" for="relayValve-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+			
+		}
+		
+		echo $sValveDetails;
+		exit;
+		
+	}
+	
+	public function getAssignPumpDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$pumpNumber	=	$extra['PumpsNumber'];
+		$sPumpDetails	=	'';
+		
+		for($i=0;$i<$pumpNumber;$i++)
+		{
+			$strPumpName 		=	'Valve '.($i+1);	
+			$strPumpNameTmp 	=	$this->home_model->getDeviceName($i,'PS');
+			if($strPumpNameTmp != '')
+				$strPumpName	.=	' ('.$strPumpNameTmp.')';
+				
+	
+			if($i != 0){ $sPumpDetails .='<hr />'; }
+			
+			$sPumpDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strPumpName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayPump-'.$i.'" name="relayPumpchk[]" hidefocus="true" style="outline: medium none;" onclick="checkPumpAssign(this.value)" class="pumpAssign">
+				<label id="lableRelayPump-'.$i.'" for="relayPump-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+			
+		}
+		
+		echo $sPumpDetails;
+		exit;
+		
+	}
+	
+	public function getAssignHeaterDetails()
+	{
+		$this->load->model('home_model');
+		//Get Extra Details
+		list($sIP,$sPort,$extra) = $this->home_model->getSettings();
+		
+		$heaterNumber	=	$extra['HeaterNumber'];
+		$sHeaterDetails	=	'';
+		
+		for($i=0;$i<$heaterNumber;$i++)
+		{
+			$strHeaterName 		=	'Valve '.($i+1);	
+			$strHeaterNameTmp 	=	$this->home_model->getDeviceName($i,'H');
+			if($strHeaterNameTmp != '')
+				$strHeaterName	.=	' ('.$strHeaterNameTmp.')';
+				
+	
+			if($i != 0){ $sHeaterDetails .='<hr />'; }
+			
+			$sHeaterDetails .='<div class="rowCheckbox switch">
+				<div style="margin-bottom:10px;">'.$strHeaterName.'</div>
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayHeater-'.$i.'" name="relayHeater[]" hidefocus="true" style="outline: medium none;" onclick="checkHeaterAssign(this.value)" class="heaterAssign">
+				<label id="lableRelayHeater-'.$i.'" for="relayHeater-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
+				</div>
+			</div>';
+		}
+		
+		echo $sHeaterDetails;
+		exit;
+		
+	}
+	
+	
 	
 	public function getAssignBlowerDetails()
 	{
@@ -3086,7 +3186,7 @@ class Home extends CI_Controller
 			
 			$sBlowerDetails .='<div class="rowCheckbox switch">
 				<div style="margin-bottom:10px;">'.$strBlowerName.'</div>
-				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayBlower-'.$i.'" name="relayBlower[]" hidefocus="true" style="outline: medium none;">
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayBlower-'.$i.'" name="relayBlower[]" hidefocus="true" style="outline: medium none;" onclick="checkBlowerAssign(this.value)" class="blowerAssign">
 				<label id="lableRelayBlower-'.$i.'" for="relayBlower-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
 				</div>
 			</div>';
@@ -3118,7 +3218,7 @@ class Home extends CI_Controller
 			
 			$sMiscDetails .='<div class="rowCheckbox switch">
 				<div style="margin-bottom:10px;">'.$strMiscName.'</div>
-				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayMisc-'.$i.'" name="relayMisc[]" hidefocus="true" style="outline: medium none;">
+				<div class="custom-checkbox"><input type="checkbox" value="'.$i.'" id="relayMisc-'.$i.'" name="relayMisc[]" hidefocus="true" style="outline: medium none;" onclick="checkMiscAssign(this.value)" class="miscAssign">
 				<label id="lableRelayMisc-'.$i.'" for="relayMisc-'.$i.'"><span style="color:#C9376E;">&nbsp;</span></label>
 				</div>
 			</div>';
