@@ -233,6 +233,7 @@
 									<?php if($this->session->userdata('user_type') == 'SA') { ?>
 									<li><a href="<?php echo base_url('dashboard/users/');?>"><i class="glyphicon glyphicon-user"></i>Sub Users</a></li>
 									<li><a href="<?php echo base_url('dashboard/module/');?>"><i class="glyphicon glyphicon-th-list"></i>Modules</a></li>
+									<li><a href="<?php echo base_url('dashboard/position/');?>"><i class="glyphicon glyphicon-th"></i>Positions</a></li>
 									<?php } ?>
 								</ul>
 								</li>
