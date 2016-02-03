@@ -1900,6 +1900,21 @@
 			
 			return '';
 	   }
+	   
+	   public function getAllCustomProgramGID($GID)
+	   {
+		   $arrDetails	=	();
+			$strCheckProgram = $this->db->select('id,program_details')->where(array('isremoved'=>'0','g_id'=>$GID))get('rlb_custom_program');
+			if($strCheckProgram->num_rows() > 0)
+			{
+				foreach($strCheckProgram->result() as $rowProgram)
+				{
+					$arrDetails[$rowProgram->id] = $rowProgram->program_details;
+				}
+			}
+			
+			return json_encode($arrDetails);
+	   }
 	}
 
 /* End of file home_model.php */
