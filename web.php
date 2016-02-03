@@ -3795,7 +3795,7 @@
 			$this->load->model('home_model');
 			
 			//Get Program Details.
-			$sResult = $this->home_model->getAllCustomProgramGID($g_id);
+			$sResult = $this->home_model->getAllCustomProgramGID($iGID);
 			
 			$aResponse['code']      = 1;
 			$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
@@ -3804,6 +3804,64 @@
 			$this->webResponse($sformat, $aResponse);
 		}
 		//END: Get Custom Program Using GID.
+		
+		//START: DELETE Custom Program Using ID.
+		public function getCustomProgram()
+		{
+			// Set default HTTP response of 'ok'
+            $aResponse              =   array();
+            $aResponse['code']      =   0;
+            $aResponse['status']    =   404;
+            $aResponse['data']      =   NULL;
+            $sformat                =   isset($_REQUEST['format']) ? $_REQUEST['format'] : '' ; // Get response Format (json,xml,html etc.)
+            $sAuth                  =   isset($_REQUEST['auth']) ? $_REQUEST['auth'] : '' ;// Check if Authentication is required.
+            $this->isAuthenticationRequired =   $sAuth;
+                
+            // Optionally require connections to be made via HTTPS
+            if( $this->isHTTPSRequired && $_SERVER['HTTPS'] != 'on' )
+            {
+                $aResponse['code']      = 2;
+                $aResponse['status']    = $aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+                $aResponse['data']      = $aApiResponseCode[ $aResponse['code'] ]['Message'];
+
+                // Return Response to browser. This will exit the script.
+                $this->webResponse($sformat, $aResponse);
+            }
+            
+            if($this->isAuthenticationRequired)
+            {
+                //START : Authorisation
+                $sUsername       = isset($_REQUEST['username']) ? $_REQUEST['username'] : '' ;   // Get the username of webservice 
+                $sPassword       = isset($_REQUEST['password']) ? $_REQUEST['password'] : '' ;   // Get the password of webservice 
+                $this->webAuthorisation($sUsername, $sPassword,$sformat); // Check if username and password is valid.
+                // END : Authorisation
+            }
+			
+			//Input Data
+			$iGID	=	trim($_REQUEST['id']);
+			
+			if($iGID == '')
+			{
+				$aResponse['code']      = 5;
+				$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+				$aResponse['data']      = 'Invalid ID!';
+				// Return Response.
+				$this->webResponse($sformat, $aResponse);
+				exit;
+			}
+			
+			$this->load->model('home_model');
+			
+			//Get Program Details.
+			$this->home_model->deleteCustomProgram($iGID);
+			
+			$aResponse['code']      = 1;
+			$aResponse['status']    = $this->aApiResponseCode[ $aResponse['code'] ]['HTTP Response'];
+			$aResponse['data']      = "Custom Program Deleted Succesfully!";
+			
+			$this->webResponse($sformat, $aResponse);
+		}
+		//END: DELETE Custom Program Using ID.
 		
 	} //END : Class Service
     

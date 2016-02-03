@@ -1826,7 +1826,6 @@
 			
 			return '';
 	   }
-	   
 	   //END: GET BOARD IP and Name.
 	   
 	   //START: GET BOARD IP FROM ID.
@@ -1903,8 +1902,8 @@
 	   
 	   public function getAllCustomProgramGID($GID)
 	   {
-		   $arrDetails	=	();
-			$strCheckProgram = $this->db->select('id,program_details')->where(array('isremoved'=>'0','g_id'=>$GID))get('rlb_custom_program');
+		    $arrDetails	=	array();
+			$strCheckProgram = $this->db->select('id,program_details')->where(array('isremoved'=>'0','g_id'=>$GID))->get('rlb_custom_program');
 			if($strCheckProgram->num_rows() > 0)
 			{
 				foreach($strCheckProgram->result() as $rowProgram)
@@ -1914,6 +1913,13 @@
 			}
 			
 			return json_encode($arrDetails);
+	   }
+	   
+	   public function deleteCustomProgram($ID)
+	   {
+		    $data = array('isremoved' => '1');
+			$this->db->where('id', $ID);
+			$this->db->update('rlb_custom_program', $data); 
 	   }
 	}
 
