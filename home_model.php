@@ -1921,6 +1921,21 @@
 			$this->db->where('id', $ID);
 			$this->db->update('rlb_custom_program', $data); 
 	   }
+	   
+	  /**
+	  * Function to Remove Valve details of the IP/Board.
+	  * @param ipID : ID of the IP/Board.
+	  * @param iDeviceNumber : Number of Valve to remove.
+	  * @return
+	  **/
+	   
+	   public function removeValveDetails($ipID,$iDeviceNumber)
+	   {
+		    //Delete Valve From the Device Table.
+			$strDeleteValve	=	"DELETE FROM rlb_device WHERE device_number='".$iDeviceNumber."' AND device_type = 'V' AND ip_id='".$ipID."'";
+			$this->db->query($strDeleteValve);
+			
+	   }
 	}
 
 /* End of file home_model.php */
