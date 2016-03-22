@@ -24,7 +24,7 @@ class ImageReadyEvent(QEvent):
 
 class IPCam():
   def __init__(self):
-    self.foscam = foscam.FoscamCamera('70.189.244.70:8100', 'admin', 'lucky777')
+    self.foscam = foscam.FoscamCamera('70.189.244.70:8099', 'admin', 'lucky777')
   
 
   def up(self):
